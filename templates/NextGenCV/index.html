@@ -7,42 +7,59 @@
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 <body>
+  {% include "NextGenCV/navbar.html" %}
+
+  {% comment %} Hero Section {% endcomment %}
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1>Welcome to NextGenCV</h1>
+      <p>Your journey to the perfect resume starts here.</p>
+    </div>
+  </section>
+
+  <div class="container">
+    <div class="left-side">
+      <p>Create a beautiful resume quickly with the help of artificial intelligence and our customizable templates. Impress your future employer with a perfect resume created in minutes.</p>
+    </div>
     <div class="card">
-        <h2>Start Building Your Resume</h2>
-        <button><a href="#footer">Scroll</a></button>
+      <h2>Start Building Your Resume</h2>
+      <a href="#footer">
+        <img src="{% static "images/ResumeSample.png" %}" alt="Resume Image">
+      </a>
+    </div>
+  </div>
+  
+
+  <footer id="footer">
+    <div class="col col1">
+      <h3>NextGenCV</h3>
+      <p>Made with <span style="color: #BA6573;">❤</span> by MustafaPinjari</p>
+      <div class="social">
+        <a href="https://www.linkedin.com/in/mustafa-pinjari-287625256/" target="_blank" class="link">
+          <img src="{% static "images/linkedin.png" %}" alt="LinkedIn" />
+        </a>
+        <a href="https://github.com/MustafaPinjari" target="_blank" class="link">
+          <img src="{% static "images/github.png" %}" alt="GitHub" />
+        </a>
+        <a href="https://www.instagram.com/its_ur_musuuu" target="_blank" class="link">
+          <img src="{% static 'images/instagram.png' %}" alt="Instagram" />
+        </a>
       </div>
-      <footer id="footer">
-        <div class="col col1">
-          <h3>NextGenCV</h3>
-          <p>Made with <span style="color: #BA6573;">❤</span> by MustafaPinjari</p>
-          <div class="social">
-            <a href="https://www.linkedin.com/in/mustafa-pinjari-287625256/" target="_blank" class="link">
-                <img src="{% static "images/linkedin.png" %}" alt="LinkedIn" />
-            </a>
-            <a href="https://github.com/MustafaPinjari" target="_blank" class="link">
-                <img src="{% static "images/github.png" %}" alt="GitHub" />
-            </a>
-            <a href="https://www.instagram.com/its_ur_musuuu" target="_blank" class="link">
-                <img src="{% static 'images/instagram.png' %}" alt="Instagram" />
-            </a>
-            
-        </div>
-        
-          <p style="color: #818181; font-size: smaller">2024 © All Rights Reserved</p>
-        </div>
-        <div class="col col2">
-          <p>About</p>
-          <p>Our mission</p>
-          <p>Privacy Policy</p>
-          <p>Terms of service</p>
-        </div>
-        <div class="col col3">
-          <p>Services</p>
-          <p>Products</p>
-          <p>Join our team</p>
-          <p>Partner with us</p>
-        </div>
-        <div class="backdrop"></div>
-      </footer>
+      <p style="color: #818181; font-size: smaller">2024 © All Rights Reserved</p>
+    </div>
+    <div class="col col2">
+      <p>About</p>
+      <p>Our mission</p>
+      <p>Privacy Policy</p>
+      <p>Terms of service</p>
+    </div>
+    <div class="col col3">
+      <p>Services</p>
+      <p>Products</p>
+      <p>Join our team</p>
+      <p>Partner with us</p>
+    </div>
+    <div class="backdrop"></div>
+  </footer>
 </body>
 </html>
