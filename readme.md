@@ -90,12 +90,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 For any inquiries, please reach out to [Mustafa Pinjari](https://www.linkedin.com/in/mustafa-pinjari-287625256/) or email at [unlessuser99@gmail.com](mailto:unlessuser99@gmail.com). 
 
 Happy coding! 😊
-```
-
-### Instructions:
-
-1. **Capture Screenshots**: Take screenshots of key parts of your application or use mockups/diagrams that represent the features.
-2. **Upload Images**: Host these images in your project repository, or use an image hosting service.
-3. **Update Paths**: Replace the `path/to/your/` placeholders with the actual paths or URLs of your images.
-
-This will help make your README more engaging and visually informative.
