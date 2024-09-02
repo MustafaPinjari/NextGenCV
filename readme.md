@@ -1,6 +1,4 @@
-To enhance your README file with images, you can include screenshots or diagrams that illustrate the functionality of your application. Here’s an updated version of your README with placeholders for images. You should replace the placeholder URLs with the actual paths to your images.
 
-```markdown
 # NextGenCV 🎨📄
 
 NextGenCV is an AI-powered resume builder developed using Django. This web application allows users to create, manage, and download professional resumes with ease. The application provides a user-friendly interface and various features to help users build standout resumes.
