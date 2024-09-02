@@ -179,53 +179,56 @@
     padding: 100px;
   }
 
+  
+
   .left-side {
     flex: 1;
     padding: 1px;
   }
 
+  /* Card at hero section */
+.card {
+  width: 380px; /* Adjust width to be more appropriate */
+  height: 480px; /* Adjust height to be more appropriate */
+  background: linear-gradient(120deg, #ff8064, #725bdc);
+  color: black;
+  border-radius: 10px; /* Adjust border-radius as needed */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  padding: 10px; /* Add padding to ensure space around content */
+  position: relative;
+  overflow: hidden; /* Ensure contents don’t overflow */
+  text-align: center; /* Center text inside card */
+  margin: 0 auto; /* Center card horizontally within its container */
+}
 
-  .card img {
-    width: 100%; /* Make the image fill the width of the card */
-    height: 40%; /* Adjust height as needed */
-    margin-top: 275px;
-    object-fit: cover; /* Maintain aspect ratio and fill the space */
-    cursor: pointer;
-  }
-  
-  .card h2, /* Apply specific styles to text inside card */
-  .card p {
-    margin: 0; /* Remove default margins */
-    padding: 0; /* Remove default paddings */
-    text-align: center; /* Center text inside card */
-    display: flex;
-    flex-direction: column;
+/* Image styling */
+.card img {
+  width: 90%; /* Adjust width to be slightly smaller than the card */
+  height: 90%; /* Maintain aspect ratio */
+  object-fit: cover; /* Maintain aspect ratio and fill the space */
+  cursor: pointer;
+  margin-bottom: 20px;
+  margin-left: 20px;
+  padding-top: 15%;
+  border-radius: 5px; /* Slight rounding for the image */
+  display: block; /* Ensure the image is a block-level element */
+}
+
+.card h2 {
+    margin: 0;
+    padding: 0;
     font-weight: 700;
-    flex: 1;
-  }
-  .card {
-    /* height: calc(8 * var(--m));
-    width: calc(10 * var(--m)); */
-    width: 100px; /* Make the image fill the width of the card */
-    height: 40%;
-    background: linear-gradient(120deg, #ff8064, #725bdc);
-    color: black;
-    border-radius: calc(1 * var(--m));
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: var(--m);
-    flex: 1;
-    text-align: right;
-    padding: 50px;
-    position: relative;
-    margin-top: -100px;
-    overflow: hidden; /* Ensure contents don’t overflow */
-  }
+    margin-bottom: 20px; /* Space between text and image */
+}
 
+.card a {
+    display: block; /* Ensure the image takes the full width of the anchor */
+}
 
-/* Button CSS */
+  /* Button CSS */
 button {
   align-items: center;
   background-image: linear-gradient(144deg, #FF9A76, #FF6363 50%, #FF1E62);

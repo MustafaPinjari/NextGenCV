@@ -30,14 +30,14 @@
 
     </div>
     <div class="card">
-      <h2>Start Building Your Resume</h2>
       <a href="#footer">
-        <img src="{% static "images/ResumeSample.png" %}" alt="Resume Image">
+        <img src="{% static 'images/ResumeSample.png' %}" alt="Resume Image">
       </a>
     </div>
-  </div>
-  
 
+  </div>
+  {% comment %} Templates {% endcomment %}
+  {% include "NextGenCV/ResumeTemplates.html" %}
   <footer id="footer">
     <div class="col col1">
       <h3>NextGenCV</h3>
