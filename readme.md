@@ -8,12 +8,10 @@ NextGenCV is an AI-powered resume builder developed using Django. This web appli
 ![NextGenCV Screenshot](/static/images/Home.png) <!-- Replace with actual path to your screenshot -->
 
 
-## Video Example
+## Demo GIF
 
-<video width="640" height="360" controls>
-  <source src="/SampleUsage.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![Demo](/SampleUsage.gif) <!-- Replace with actual URL to your GIF -->
+
 
 ## Features ✨
 
