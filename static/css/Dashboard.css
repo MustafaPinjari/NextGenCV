@@ -1,0 +1,168 @@
+:root {
+    --main-blue: rgba(0, 0, 255, 0.2); /* Transparent blue */
+    --text-color: #d5d5d5;
+    --font-size: calc(0.3 * var(--m));
+}
+
+* {
+    box-sizing: border-box;
+    scroll-behavior: smooth;
+}
+
+body {
+    background-color: black;
+    color: var(--text-color);
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 300;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.header {
+    width: 100%;
+    background: var(--main-blue);
+    padding: 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+}
+
+.header-content h1 {
+    margin: 0;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.profile-icon {
+    height: 40px;
+    width: 40px;
+    margin-right: 20px;
+}
+
+.logout-btn {
+    background-color: #ff6363;
+    border: none;
+    border-radius: 25px;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+    background-color: #ff1e62;
+}
+
+.sidebar {
+    width: 200px;
+    height: 100vh;
+    background-color: #121212;
+    position: fixed;
+    top: 60px; /* Adjust to be below the header */
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-nav li {
+    margin: 20px 0;
+}
+
+.sidebar-nav a {
+    color: #d5d5d5;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 10px 20px;
+    display: block;
+}
+
+.sidebar-nav a:hover {
+    background-color: #333;
+    border-radius: 5px;
+}
+
+.main-content {
+    margin-left: 220px; /* Space for the sidebar */
+    padding: 20px;
+    flex: 1;
+}
+
+.dashboard-welcome {
+    background: var(--main-blue);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: white;
+}
+
+.dashboard-welcome h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.dashboard-welcome p {
+    margin: 10px 0 0;
+    font-size: 1rem;
+}
+
+.dashboard-widgets {
+    display: flex;
+    gap: 20px;
+}
+
+.widget {
+    background: linear-gradient(120deg, #ff8064, #725bdc);
+    border-radius: 10px;
+    padding: 20px;
+    width: 300px;
+    color: black;
+    text-align: center;
+}
+
+.widget h3 {
+    margin: 0 0 10px;
+}
+
+.widget p {
+    margin: 0;
+}
+
+.widget-btn {
+    background-color: #ff6363;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.widget-btn:hover {
+    background-color: #ff1e62;
+}
+
+.footer {
+    width: 100%;
+    background: var(--main-blue);
+    padding: 10px;
+    text-align: center;
+    color: white;
+}

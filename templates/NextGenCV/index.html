@@ -38,36 +38,7 @@
   </div>
   {% comment %} Templates {% endcomment %}
   {% include "NextGenCV/ResumeTemplates.html" %}
-  <footer id="footer">
-    <div class="col col1">
-      <h3>NextGenCV</h3>
-      <p>Made with <span style="color: #BA6573;">❤</span> by MustafaPinjari</p>
-      <div class="social">
-        <a href="https://www.linkedin.com/in/mustafa-pinjari-287625256/" target="_blank" class="link">
-          <img src="{% static "images/linkedin.png" %}" alt="LinkedIn" />
-        </a>
-        <a href="https://github.com/MustafaPinjari" target="_blank" class="link">
-          <img src="{% static "images/github.png" %}" alt="GitHub" />
-        </a>
-        <a href="https://www.instagram.com/its_ur_musuuu" target="_blank" class="link">
-          <img src="{% static 'images/instagram.png' %}" alt="Instagram" />
-        </a>
-      </div>
-      <p style="color: #818181; font-size: smaller">2024 © All Rights Reserved</p>
-    </div>
-    <div class="col col2">
-      <p>About</p>
-      <p>Our mission</p>
-      <p>Privacy Policy</p>
-      <p>Terms of service</p>
-    </div>
-    <div class="col col3">
-      <p>Services</p>
-      <p>Products</p>
-      <p>Join our team</p>
-      <p>Partner with us</p>
-    </div>
-    <div class="backdrop"></div>
-  </footer>
+ {% comment %} Footer {% endcomment %}
+ {% include "NextGenCV/Footer.html" %}
 </body>
 </html>
