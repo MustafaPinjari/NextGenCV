@@ -64,11 +64,11 @@ Visit `http://127.0.0.1:8000/` in your web browser to view the application. 🌐
 ## Usage 🚀
 
 1. **Create an Account**: Sign up to start using the resume builder. 📝
-   ![Create Account](path/to/your/create-account-screenshot.png) <!-- Replace with actual path to create account screenshot -->
+   ![Create Account](/static/images/LoginPage.png) <!-- Replace with actual path to create account screenshot -->
 2. **Build Your Resume**: Follow the on-screen instructions to create and edit your resume. 🛠️
-   ![Build Resume](path/to/your/build-resume-screenshot.png) <!-- Replace with actual path to build resume screenshot -->
+   ![Build Resume](/static/images/Dashboarf.png) <!-- Replace with actual path to build resume screenshot -->
 3. **Download**: Once completed, download your resume in PDF format. 📥
-   ![Download Resume](path/to/your/download-resume-screenshot.png) <!-- Replace with actual path to download resume screenshot -->
+   ![Download Resume](/static/images/Dashboarf.png) <!-- Replace with actual path to download resume screenshot -->
 
 ## Contributing 🤝
 
