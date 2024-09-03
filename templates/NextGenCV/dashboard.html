@@ -1,7 +1,7 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NextGenCV</title>
@@ -10,7 +10,6 @@
         function confirmLogout() {
             const userConfirmed = confirm("Sorry to see you go. Do you want to logout?");
             if (userConfirmed) {
-                // Perform logout action
                 window.location.href = "{% url 'logout' %}"; // Adjust the URL to your logout endpoint
             }
         }
@@ -21,12 +20,14 @@
         <div class="header-content">
             <h1>NextGenCV Dashboard</h1>
             <div class="header-right">
-                <img src="{% static 'images/Login.png' %}" alt="Profile Icon" class="profile-icon">
-                <button class="logout-btn" onclick="confirmLogout()">Logout</button>
+                <button class="logout-btn" onclick="confirmLogout()">
+                    <img src="{% static 'images/Login.png' %}" alt="Profile Icon" class="profile-icon">
+                    Logout
+                </button>
             </div>
+            
         </div>
     </header>
-    
 
     <aside class="sidebar">
         <nav class="sidebar-nav">
@@ -44,7 +45,6 @@
             <h2>Welcome back, {{ user.username }}!</h2>
             <p>Manage and build your resumes with ease.</p>
         </section>
-
         <section class="dashboard-widgets">
             <div class="widget">
                 <h3>Create a New Resume</h3>
@@ -62,8 +62,6 @@
                 <a href="#" class="widget-btn">View Resumes</a>
             </div>
         </section>
-    </main>
-
-    {% comment %} {% include "NextGenCV/Footer.html" %} {% endcomment %}
+            </main>
 </body>
 </html>
