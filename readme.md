@@ -3,7 +3,17 @@
 
 NextGenCV is an AI-powered resume builder developed using Django. This web application allows users to create, manage, and download professional resumes with ease. The application provides a user-friendly interface and various features to help users build standout resumes.
 
+
+
 ![NextGenCV Screenshot](/static/images/Home.png) <!-- Replace with actual path to your screenshot -->
+
+
+## Video Example
+
+<video width="640" height="360" controls>
+  <source src="/SampleUsage.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 ## Features ✨
 
