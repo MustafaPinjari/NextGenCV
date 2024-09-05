@@ -1,0 +1,23 @@
+<!-- templates/NextGenCV/sidebar.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar - NextGenCV</title>
+    <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
+</head>
+<body>
+    <aside class="sidebar">
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="{% url 'dashboard' %}">Home</a></li>
+                <li><a href="{% url 'create_resume' %}" class="Active">Create Resume</a></li>
+                <li><a href="#">My Resumes</a></li>
+                <li><a href="#">Settings</a></li>
+            </ul>
+        </nav>
+    </aside>
+</body>
+</html>

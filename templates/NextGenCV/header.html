@@ -1,0 +1,25 @@
+<!-- templates/NextGenCV/header.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Header - NextGenCV</title>
+    <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>NextGenCV Dashboard</h1>
+            <div class="header-right">
+                <button class="logout-btn" id="logout-btn">
+                    <img src="{% static 'images/Login.png' %}" alt="Profile Icon" class="profile-icon">
+                    Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+</body>
+</html>

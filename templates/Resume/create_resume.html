@@ -1,0 +1,32 @@
+<!-- create_resume.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Resume - NextGenCV</title>
+    <link rel="stylesheet" href="{% static 'css/CreateResume.css' %}">
+    <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
+</head>
+<body>
+    <!-- Example in dashboard.html -->
+{% include 'NextGenCV/header.html' %}
+{% include 'NextGenCV/sidebar.html' %}
+
+    <main class="main-container">
+        <div class="form-wrapper">
+            <h2>Build Your Resume</h2>
+            <form method="POST" action="{% url 'create_resume' %}">
+                {% csrf_token %}
+                <div class="form-grid">
+                    {{ form.as_p }}  <!-- Django will render form fields here -->
+                </div>
+
+                <button type="submit" class="custom-btn"><span>Submit</span></button>
+            </form>
+        </div>
+    </main>
+
+</body>
+</html>

@@ -6,39 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - NextGenCV</title>
     <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
-    <script>
-        function confirmLogout() {
-            const userConfirmed = confirm("Sorry to see you go. Do you want to logout?");
-            if (userConfirmed) {
-                window.location.href = "{% url 'logout' %}"; // Adjust the URL to your logout endpoint
-            }
-        }
-    </script>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <h1>NextGenCV Dashboard</h1>
-            <div class="header-right">
-                <button class="logout-btn" onclick="confirmLogout()">
-                    <img src="{% static 'images/Login.png' %}" alt="Profile Icon" class="profile-icon">
-                    Logout
-                </button>
-            </div>
-            
-        </div>
-    </header>
-
-    <aside class="sidebar">
-        <nav class="sidebar-nav">
-            <ul>
-                <li><a href="#">Home</a></li>
-                <li><a href="#">Create Resume</a></li>
-                <li><a href="#">My Resumes</a></li>
-                <li><a href="#">Settings</a></li>
-            </ul>
-        </nav>
-    </aside>
+    <!-- Example in dashboard.html -->
+{% include 'NextGenCV/header.html' %}
+{% include 'NextGenCV/sidebar.html' %}
 
     <main class="main-content">
         <section class="dashboard-welcome">
@@ -49,7 +21,7 @@
             <div class="widget">
                 <h3>Create a New Resume</h3>
                 <p>Use our builder to create a fresh resume.</p>
-                <a href="#" class="widget-btn">Start Now</a>
+                <a href="{% url 'create_resume' %}" class="widget-btn">Start Now</a>
             </div>
             <div class="widget">
                 <h3>Resume Templates</h3>
@@ -62,6 +34,20 @@
                 <a href="#" class="widget-btn">View Resumes</a>
             </div>
         </section>
-            </main>
+        <br>
+        {% if resume %}
+        <h2>Your Resume</h2>
+        <p><strong>Name:</strong> {{ resume.full_name }}</p>
+        <p><strong>Email:</strong> {{ resume.email }}</p>
+        <p><strong>Phone:</strong> {{ resume.phone }}</p>
+        <p><strong>Summary:</strong> {{ resume.summary }}</p>
+        <p><strong>Education:</strong> {{ resume.education }}</p>
+        <p><strong>Experience:</strong> {{ resume.experience }}</p>
+        <p><strong>Skills:</strong> {{ resume.skills }}</p>
+        {% else %}
+        <p>No resume found. <a href="{% url 'create_resume' %}">Create one now</a></p>
+        {% endif %}
+    </main>
+<script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>

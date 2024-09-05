@@ -1,6 +1,9 @@
+# NextGenCV/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
+from django.views.generic import TemplateView
+from resume.models import Resume  # Ensure this import is correct
 
 User = get_user_model()
 
@@ -50,10 +53,13 @@ def logout_view(request):
     logout(request)
     return redirect('index')
 
-@login_required
-def dashboard_view(request):
-    return render(request, 'NextGenCV/dashboard.html')
+class DashboardView(TemplateView):
+    template_name = 'NextGenCV/dashboard.html'
 
-@login_required
-def some_protected_view(request):
-    return render(request, 'NextGenCV/some_protected_page.html')
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated:
+            # Fetch the logged-in user's resume
+            resume = Resume.objects.filter(user=self.request.user).first()
+            context['resume'] = resume
+        return context
