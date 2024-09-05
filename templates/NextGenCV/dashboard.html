@@ -48,6 +48,8 @@
         <p>No resume found. <a href="{% url 'create_resume' %}">Create one now</a></p>
         {% endif %}
     </main>
+
+    {% include "NextGenCV/ResumeTemplates.html" %}
 <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>
