@@ -15,77 +15,31 @@ body {
     margin: 0;
     padding: 0;
 }
-
 .main-container {
     padding: 100px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     height: 100%;
-    position: relative; /* Needed for the button positioning */
-}
-
-.animated-button,
-.select-template-button {
-    background-image: linear-gradient(144deg, #FF9A76, #FF6363 50%, #FF1E62);
-    border: 0;
-    border-radius: 40px;
-    box-shadow: rgba(255, 154, 118, 0.2) 0 15px 30px -5px;
-    box-sizing: border-box;
-    color: #FFFFFF;
-    display: inline-flex;
-    font-family: Phantomsans, sans-serif;
-    font-size: 18px;
-    justify-content: center;
-    line-height: 1em;
-    max-width: 100%;
-    min-width: 120px;
-    padding: 2px;
-    text-decoration: none;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    white-space: nowrap;
-    cursor: pointer;
-    transition: all .3s;
-    margin-right: 10px;
-}
-
-.animated-button span,
-.select-template-button span {
-    background-color: rgb(5, 6, 45);
-    padding: 12px 20px;
-    border-radius: 38px;
-    width: 100%;
-    height: 100%;
-    transition: 300ms;
-}
-
-.animated-button:hover span,
-.select-template-button:hover span {
-    background: none;
-}
-
-.animated-button:active,
-.select-template-button:active {
-    transform: scale(0.9);
+    position: relative;
 }
 
 .form-wrapper {
     display: flex;
-    width: 100%;
-    max-width: 1200px;
+    width: 90%; /* Increased width to 90% of the available space */
+    max-width: 1400px; /* Increased the maximum width for larger screens */
     justify-content: space-between;
-    position: relative; /* Make this the positioning context for the button */
+    margin-top: 60px;
 }
 
 .form-section, .preview-section {
-    width: 48%;
+    width: 48%; /* Both sections take up more width */
     padding: 20px;
     background-color: var(--form-bg-color);
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
 }
+
 
 h2 {
     margin-bottom: 20px;
@@ -113,15 +67,65 @@ input, textarea {
     border-radius: 5px;
     font-size: 1rem;
     box-sizing: border-box;
-    margin-top: 5px; /* Add margin to separate labels from fields */
+    margin-top: 5px;
 }
 
 textarea {
-    height: 100px; /* Adjust as needed for larger input fields */
-    resize: vertical; /* Allow vertical resizing only */
+    height: 100px;
+    resize: vertical;
 }
 
+
+  /* Button CSS */
 button {
+  align-items: center;
+  background-image: linear-gradient(144deg, #FF9A76, #FF6363 50%, #FF1E62);
+  border: 0;
+  border-radius: 40px;
+  box-shadow: rgba(255, 154, 118, 0.2) 0 15px 30px -5px;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  display: inline-flex; /* Changed to inline-flex to allow buttons to be side by side */
+  font-family: Phantomsans, sans-serif;
+  font-size: 18px;
+  justify-content: center;
+  line-height: 1em;
+  max-width: 100%;
+  min-width: 120px; /* Slightly decreased width */
+  padding: 2px; /* Slightly decreased padding */
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all .3s;
+  margin-right: 10px; /* Added margin to separate buttons */
+}
+
+button:active,
+button:hover {
+  outline: 0;
+}
+
+button span {
+  background-color: rgb(5, 6, 45);
+  padding: 12px 20px; /* Slightly decreased padding */
+  border-radius: 38px;
+  width: 100%;
+  height: 100%;
+  transition: 300ms;
+}
+
+button:hover span {
+  background: none;
+}
+
+button:active {
+  transform: scale(0.9);
+}
+
+.Goback {
     align-items: center;
     background-image: linear-gradient(144deg, #FF9A76, #FF6363 50%, #FF1E62);
     border: 0;
@@ -129,14 +133,12 @@ button {
     box-shadow: rgba(255, 154, 118, 0.2) 0 15px 30px -5px;
     box-sizing: border-box;
     color: #FFFFFF;
-    display: inline-flex;
+    display: inline-flex; /* Changed to inline-flex to allow buttons to be side by side */
     font-family: Phantomsans, sans-serif;
     font-size: 18px;
     justify-content: center;
     line-height: 1em;
-    max-width: 100%;
-    min-width: 120px;
-    padding: 2px;
+    width: 20px;
     text-decoration: none;
     user-select: none;
     -webkit-user-select: none;
@@ -144,79 +146,23 @@ button {
     white-space: nowrap;
     cursor: pointer;
     transition: all .3s;
-    margin-right: 10px;
+    margin-right: 10px; /* Added margin to separate buttons */
+    position: absolute;
+    top: 150px;
+    left: 130px;
 }
-
-button:active,
-button:hover {
-    outline: 0;
-}
-
-button span {
-    background-color: rgb(5, 6, 45);
-    padding: 12px 20px;
-    border-radius: 38px;
+#word-content {
     width: 100%;
-    height: 100%;
-    transition: 300ms;
+    height: 100%; /* Ensure the container takes full height */
+    background-color: var(--form-bg-color); /* Use form background color for consistency */
+    border-radius: 10px; /* Rounded corners for a modern look */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+    overflow: hidden;
+    position: relative;
 }
 
-button:hover span {
-    background: none;
-}
-
-button:active {
-    transform: scale(0.9);
-}
-
-.resume-preview {
-    border: 1px solid #444;
-    padding: 20px;
-    background-color: var(--input-bg-color);
-    border-radius: 5px;
-    overflow-y: auto;
-}
-
-.resume-preview p {
-    margin: 5px 0;
-    font-size: 1rem;
-    color: var(--text-color);
-}
-/* Modal styles */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1000; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.5); /* Black background with opacity */
-    transition: opacity 0.3s ease;
-}
-
-.modal-content {
-    background-color: var(--form-bg-color);
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-    max-width: 800px; /* Adjust the max-width to suit your needs */
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
-}
-
-.close {
-    color: var(--text-color);
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: #000;
-    text-decoration: none;
-    cursor: pointer;
+#word-content iframe {
+    width: 100%;
+    height: 250vh; /* Set height to viewport height or adjust as needed */
+    border: none; /* Removes the default iframe border */
 }

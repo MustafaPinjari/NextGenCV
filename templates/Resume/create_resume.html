@@ -10,12 +10,11 @@
 <body>
 
     {% include 'NextGenCV/header.html' %}
-
+    <button type="submit" class="Goback">
+        <span class="text">GoBack </span>
+    </button>
     <main class="main-container">
-        <button class="animated-button" onclick="redirectToDashboard()">
-            <span class="text"><-- Go back</span>
-        </button>
-
+        
         <div class="form-wrapper">
             <!-- Form Section -->
             <div class="form-section">
@@ -32,75 +31,28 @@
             <!-- Live Preview Section -->
             <div class="preview-section">
                 <h2>Resume Preview</h2>
-                <div class="resume-preview">
-                    <p><strong>Name:</strong> <span id="preview-name">{{ form.full_name.value|default:"Your Name" }}</span></p>
-                    <p><strong>Email:</strong> <span id="preview-email">{{ form.email.value|default:"Your Email" }}</span></p>
-                    <p><strong>Phone:</strong> <span id="preview-phone">{{ form.phone.value|default:"Your Phone" }}</span></p>
-                    <p><strong>Address:</strong> <span id="preview-address">{{ form.address.value|default:"Your Address" }}</span></p>
-                    <p><strong>Education:</strong> <span id="preview-education">{{ form.education.value|default:"Your Education" }}</span></p>
-                    <p><strong>Experience:</strong> <span id="preview-experience">{{ form.experience.value|default:"Your Experience" }}</span></p>
-                    <p><strong>Skills:</strong> <span id="preview-skills">{{ form.skills.value|default:"Your Skills" }}</span></p>
-                    <p><strong>Summary:</strong> <span id="preview-summary">{{ form.summary.value|default:"Your Summary" }}</span></p>
+                <div class="resume-preview" id="resume-preview">
+                    <!-- Display Word file content here -->
+                    <div id="word-content">
+                        <iframe src="https://docs.google.com/document/d/1IcbxvSvbNEXmOmFKP10RP6oG13OvIkKx/pub?embedded=true"></iframe>    
+                    </div>
                 </div>
-                <!-- Add button to open the template modal -->
-                <button class="select-template-button" onclick="openTemplateModal()">
-                    Select a Template
-                </button>
             </div>
         </div>
     </main>
-
-    <!-- Modal for selecting templates -->
-    <div id="template-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeTemplateModal()">&times;</span>
-            <h2>Select a Template</h2>
-            <iframe src="{% url 'resume_templates' %}" frameborder="0" class="modal-iframe"></iframe>
-        </div>
-    </div>
-
-    <!-- JavaScript to update preview and handle modal -->
-    <!-- JavaScript to handle modal -->
-<script>
-    function updatePreview() {
-        document.getElementById('preview-name').textContent = document.getElementById('id_full_name').value || 'Your Name';
-        document.getElementById('preview-email').textContent = document.getElementById('id_email').value || 'Your Email';
-        document.getElementById('preview-phone').textContent = document.getElementById('id_phone').value || 'Your Phone';
-        document.getElementById('preview-address').textContent = document.getElementById('id_address').value || 'Your Address';
-        document.getElementById('preview-education').textContent = document.getElementById('id_education').value || 'Your Education';
-        document.getElementById('preview-experience').textContent = document.getElementById('id_experience').value || 'Your Experience';
-        document.getElementById('preview-skills').textContent = document.getElementById('id_skills').value || 'Your Skills';
-        document.getElementById('preview-summary').textContent = document.getElementById('id_summary').value || 'Your Summary';
-    }
-
-    document.getElementById('id_full_name').addEventListener('input', updatePreview);
-    document.getElementById('id_email').addEventListener('input', updatePreview);
-    document.getElementById('id_phone').addEventListener('input', updatePreview);
-    document.getElementById('id_address').addEventListener('input', updatePreview);
-    document.getElementById('id_education').addEventListener('input', updatePreview);
-    document.getElementById('id_experience').addEventListener('input', updatePreview);
-    document.getElementById('id_skills').addEventListener('input', updatePreview);
-    document.getElementById('id_summary').addEventListener('input', updatePreview);
-
-    function openTemplateModal() {
-        document.getElementById('template-modal').style.display = 'block';
-    }
-
-    function closeTemplateModal() {
-        document.getElementById('template-modal').style.display = 'none';
-    }
-
-    function redirectToDashboard() {
-        window.location.href = '{% url "dashboard" %}'; // Ensure this URL is correct
-    }
-
-    // Close modal when clicking outside of modal-content
-    window.onclick = function(event) {
-        if (event.target === document.getElementById('template-modal')) {
-            closeTemplateModal();
+   <script>
+    <script>
+        function resizeIframe() {
+            var iframe = document.querySelector('#word-content iframe');
+            iframe.onload = function() {
+                // Adjust iframe height
+                iframe.style.height = iframe.contentWindow.document.body.scrollHeight + 'px';
+            };
         }
-    }
-</script>
-
+        
+        window.addEventListener('load', resizeIframe);
+        </script>
+        
+   </script>
 </body>
 </html>
