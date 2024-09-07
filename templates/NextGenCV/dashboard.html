@@ -40,13 +40,17 @@
         <br>
         {% if resume %}
         <h2>Your Resume</h2>
-        <p><strong>Name:</strong> {{ resume.full_name }}</p>
+        <p><strong>Name:</strong> {{ resume.First_Name }} {{ resume.Last_Name }}</p>
         <p><strong>Email:</strong> {{ resume.email }}</p>
         <p><strong>Phone:</strong> {{ resume.phone }}</p>
         <p><strong>Summary:</strong> {{ resume.summary }}</p>
         <p><strong>Education:</strong> {{ resume.education }}</p>
         <p><strong>Experience:</strong> {{ resume.experience }}</p>
         <p><strong>Skills:</strong> {{ resume.skills }}</p>
+        <p><strong>address:</strong> {{ resume.address }}</p>
+        <p><strong>Profile image :</strong> {{ resume.profile_image }}</p>
+        
+        
         {% else %}
         <p>No resume found. <a href="{% url 'create_resume' %}">Create one now</a></p>
         {% endif %}

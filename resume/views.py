@@ -11,7 +11,7 @@ def create_resume_view(request):
 
     if request.method == 'POST':
         # Load existing data if present, or create a new form if not
-        form = ResumeForm(request.POST, instance=existing_resume)
+        form = ResumeForm(request.POST, request.FILES,instance=existing_resume)
         if form.is_valid():
             resume = form.save(commit=False)
             resume.user = request.user  # Ensure the resume is linked to the logged-in user
