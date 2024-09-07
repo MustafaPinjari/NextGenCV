@@ -8,15 +8,17 @@
     <link rel="stylesheet" href="{% static 'css/Dashboard.css' %}">
 </head>
 <body>
-    <!-- Example in dashboard.html -->
-{% include 'NextGenCV/header.html' %}
-{% include 'NextGenCV/sidebar.html' %}
+
+    <!-- Only include header and sidebar -->
+    {% include 'NextGenCV/header.html' %}
+    {% include 'NextGenCV/sidebar.html' %}
 
     <main class="main-content">
         <section class="dashboard-welcome">
             <h2>Welcome back, {{ user.username }}!</h2>
             <p>Manage and build your resumes with ease.</p>
         </section>
+
         <section class="dashboard-widgets">
             <div class="widget">
                 <h3>Create a New Resume</h3>
@@ -34,6 +36,7 @@
                 <a href="#" class="widget-btn">View Resumes</a>
             </div>
         </section>
+
         <br>
         {% if resume %}
         <h2>Your Resume</h2>
@@ -49,7 +52,6 @@
         {% endif %}
     </main>
 
-    {% include "NextGenCV/ResumeTemplates.html" %}
-<script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
 </body>
 </html>

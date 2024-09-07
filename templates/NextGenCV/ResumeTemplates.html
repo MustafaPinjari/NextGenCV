@@ -6,76 +6,57 @@
     <title>NextGenCV</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/CardsResumeSample.css' %}">
-
 </head>
 <body>
-  {% include "NextGenCV/navbar.html" %}
+    {% include "NextGenCV/navbar.html" %}
 
-  {% comment %} Create some card to show resume templates {% endcomment %}
-  <div class="resume-grid">
-    <div class="resume-card" id="resume1">
+    <!-- Create some card to show resume templates -->
+    <div class="resume-grid">
+        <div class="resume-card" id="resume1">
+            <a href="{% url 'editor_template' 'resume1' %}">
+                <img src="{% static 'images/ResumeSample1.png' %}" alt="Resume Sample 1">
+                <div class="overlay">Try it now!!</div>
+            </a>
+        </div>
 
-      <a href="#footer">
-        <img src="{% static 'images/ResumeSample1.png' %}" alt="Resume Sample 1">
-        <div class="overlay">Try it now!!</div>
-      </a>
+        <div class="resume-card" id="resume2">
+            <a href="{% url 'editor_template' 'resume2' %}">
+                <img src="{% static 'images/ResumeSample2.png' %}" alt="Resume Sample 2">
+                <div class="overlay">Try it now!!</div>
+            </a>
+        </div>
+
+        <div class="resume-card" id="resume3">
+            <a href="{% url 'editor_template' 'resume3' %}">
+                <img src="{% static 'images/ResumeSample3.png' %}" alt="Resume Sample 3">
+                <div class="overlay">Try it now!!</div>
+            </a>
+        </div>
+
+        <div class="resume-card" id="resume4">
+            <a href="{% url 'editor_template' 'resume4' %}">
+                <img src="{% static 'images/ResumeSample4.png' %}" alt="Resume Sample 4">
+                <div class="overlay">Try it now!!</div>
+            </a>
+        </div>
+
+        <div class="resume-card" id="resume5">
+            <a href="{% url 'editor_template' 'resume5' %}">
+                <img src="{% static 'images/ResumeSample5.png' %}" alt="Resume Sample 5">
+                <div class="overlay">Try it now!!</div>
+            </a>
+        </div>
+
+        <div class="resume-card" id="resume6">
+            <a href="{% url 'editor_template' 'resume6' %}">
+                <img src="{% static 'images/ResumeSample6.png' %}" alt="Resume Sample 6">
+                <div class="overlay">Try it now!!</div>
+            </a>
+        </div>
     </div>
-  
-    <div class="resume-card" id="resume2">
-      
-      <a href="#footer">
-        <img src="{% static 'images/ResumeSample2.png' %}" alt="Resume Sample 2">
-        <div class="overlay">Try it now!!</div>
-      </a>
-    </div>
-  
-    <div class="resume-card" id="resume3">
-      
-        <a href="#footer">
-          <img src="{% static 'images/ResumeSample3.png' %}" alt="Resume Sample 3">
-          <div class="overlay">Try it now!!</div>
-        </a>
-      </div>
-      <div class="resume-card" id="resume4">
-      
-        <a href="#footer">
-          <img src="{% static 'images/ResumeSample4.png' %}" alt="Resume Sample 4">
-          <div class="overlay">Try it now!!</div>
-        </a>
-      </div>
 
-      <div class="resume-card" id="resume5">
-      
-        <a href="#footer">
-          <img src="{% static 'images/ResumeSample6.png' %}" alt="Resume Sample 6">
-          <div class="overlay">Try it now!!</div>
-        </a>
-      </div>
-
-      <div class="resume-card" id="resume2">
-      
-        <a href="#footer">
-          <img src="{% static 'images/ResumeSample2.png' %}" alt="Resume Sample 2">
-          <div class="overlay">Try it now!!</div>
-        </a>
-      </div>
-
-      <div class="resume-card" id="resume2">
-      
-        <a href="#footer">
-          <img src="{% static 'images/ResumeSample.png' %}" alt="Resume Sample 2">
-          <div class="overlay">Try it now!!</div>
-        </a>
-      </div>
-
-      <div class="resume-card" id="resume2">
-      
-        <a href="#footer">
-          <img src="{% static 'images/ResumeSample5.png' %}" alt="Resume Sample 2">
-          <div class="overlay">Try it now!!</div>
-        </a>
-      </div>
-      </div>
-    
+    {% if request.path != '/dashboard/' %}
+        {% include "NextGenCV/navbar.html" %}
+    {% endif %}
 </body>
 </html>
