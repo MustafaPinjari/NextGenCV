@@ -1,6 +1,6 @@
 .resume-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 cards per row */
+    grid-template-columns: repeat(3, 1fr); /* 4 cards per row */
     gap: 40px;
     padding: 20px;
 }

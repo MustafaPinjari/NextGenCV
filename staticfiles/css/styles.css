@@ -207,10 +207,10 @@
 
   /* Card at hero section */
 .card {
-  width: 380px; /* Adjust width to be more appropriate */
-  height: 480px; /* Adjust height to be more appropriate */
+  width: 350px; /* Adjust width to be more appropriate */
+  height: 300px; /* Adjust height to be more appropriate */
   background: linear-gradient(120deg, #ff8064, #725bdc);
-  color: black;
+
   border-radius: 10px; /* Adjust border-radius as needed */
   display: flex;
   flex-direction: column;
@@ -225,13 +225,11 @@
 
 /* Image styling */
 .card img {
-  width: 90%; /* Adjust width to be slightly smaller than the card */
-  height: 90%; /* Maintain aspect ratio */
+  width: 100%; /* Adjust width to be slightly smaller than the card */
+  height: 100%; /* Maintain aspect ratio */
   object-fit: cover; /* Maintain aspect ratio and fill the space */
   cursor: pointer;
-  margin-bottom: 20px;
-  margin-left: 20px;
-  padding-top: 15%;
+ 
   border-radius: 5px; /* Slight rounding for the image */
   display: block; /* Ensure the image is a block-level element */
 }
