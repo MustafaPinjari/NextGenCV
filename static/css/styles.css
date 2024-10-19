@@ -203,6 +203,7 @@
   .left-side {
     flex: 1;
     padding: 1px;
+    text-wrap: balance;
   }
 
   /* Card at hero section */
