@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Upload Resume PDF{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-upload"></i> Upload Resume PDF
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">
+                        Upload your existing resume in PDF format. We'll automatically extract and parse the content
+                        so you can review and import it into your account.
+                    </p>
+
+                    <!-- Upload Instructions -->
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Requirements:</h5>
+                        <ul class="mb-0">
+                            <li>File must be in PDF format</li>
+                            <li>Maximum file size: 10MB</li>
+                            <li>PDF must be text-based (not a scanned image)</li>
+                            <li>File should not contain embedded scripts</li>
+                        </ul>
+                    </div>
+
+                    <!-- Upload Form -->
+                    <form method="post" enctype="multipart/form-data" id="uploadForm">
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label for="resume_file" class="form-label">
+                                <strong>Select PDF File:</strong>
+                            </label>
+                            <div class="custom-file-upload">
+                                <input 
+                                    type="file" 
+                                    class="form-control" 
+                                    id="resume_file" 
+                                    name="resume_file" 
+                                    accept=".pdf,application/pdf"
+                                    required
+                                >
+                                <div class="file-info mt-2 text-muted" id="fileInfo"></div>
+                            </div>
+                        </div>
+
+                        <!-- Drag and Drop Area -->
+                        <div class="drop-zone mb-4" id="dropZone">
+                            <div class="drop-zone-content">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <p class="mb-2"><strong>Drag and drop your PDF here</strong></p>
+                                <p class="text-muted">or click to browse</p>
+                            </div>
+                        </div>
+
+                        <!-- Progress Bar (hidden initially) -->
+                        <div class="progress mb-3" id="uploadProgress" style="display: none;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 style="width: 0%"
+                                 id="progressBar">
+                                0%
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'resume_list' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="uploadBtn">
+                                <i class="fas fa-upload"></i> Upload and Parse
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Tips for Best Results</h5>
+                </div>
+                <div class="card-body">
+                    <ul>
+                        <li>Use a well-formatted resume with clear section headings (Experience, Education, Skills, etc.)</li>
+                        <li>Avoid complex layouts with multiple columns or text boxes</li>
+                        <li>Ensure your PDF is text-based, not a scanned image</li>
+                        <li>Include standard information: name, email, phone, work experience, education</li>
+                        <li>After upload, you'll be able to review and edit the extracted data before importing</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.drop-zone {
+    border: 2px dashed #007bff;
+    border-radius: 8px;
+    padding: 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.drop-zone:hover {
+    background-color: #e9ecef;
+    border-color: #0056b3;
+}
+
+.drop-zone.dragover {
+    background-color: #cfe2ff;
+    border-color: #0056b3;
+    border-style: solid;
+}
+
+.custom-file-upload {
+    position: relative;
+}
+
+.file-info {
+    font-size: 0.9rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('resume_file');
+    const dropZone = document.getElementById('dropZone');
+    const fileInfo = document.getElementById('fileInfo');
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('progressBar');
+
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            displayFileInfo(this.files[0]);
+        }
+    });
+
+    // Drop zone click handler
+    dropZone.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    // Drag and drop handlers
+    dropZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            displayFileInfo(files[0]);
+        }
+    });
+
+    // Form submit handler
+    uploadForm.addEventListener('submit', function(e) {
+        if (fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Please select a PDF file to upload.');
+            return;
+        }
+
+        // Show progress bar
+        uploadProgress.style.display = 'block';
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+        // Simulate progress (actual upload happens server-side)
+        let progress = 0;
+        const interval = setInterval(function() {
+            progress += 10;
+            if (progress <= 90) {
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+            } else {
+                clearInterval(interval);
+            }
+        }, 200);
+    });
+
+    function displayFileInfo(file) {
+        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        fileInfo.innerHTML = `
+            <i class="fas fa-file-pdf text-danger"></i> 
+            <strong>${file.name}</strong> (${sizeMB} MB)
+        `;
+    }
+});
+</script>
+{% endblock %}

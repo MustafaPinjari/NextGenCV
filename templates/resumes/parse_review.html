@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review Parsed Resume{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-search"></i> Review Parsed Resume Data
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Parsing Confidence Score -->
+                    <div class="alert {% if confidence >= 0.7 %}alert-success{% elif confidence >= 0.5 %}alert-warning{% else %}alert-danger{% endif %} mb-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">
+                                    <i class="fas fa-chart-line"></i> Parsing Confidence: {{ confidence_percent }}%
+                                </h5>
+                                <p class="mb-0">
+                                    {% if confidence >= 0.7 %}
+                                        Great! The resume was parsed with high confidence. Please review the data below.
+                                    {% elif confidence >= 0.5 %}
+                                        The resume was parsed with moderate confidence. Please carefully review and edit the data below.
+                                    {% else %}
+                                        Low parsing confidence detected. Please carefully review and correct the data below.
+                                    {% endif %}
+                                </p>
+                            </div>
+                            <div class="progress" style="width: 150px; height: 30px;">
+                                <div class="progress-bar {% if confidence >= 0.7 %}bg-success{% elif confidence >= 0.5 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ confidence_percent }}%"
+                                     aria-valuenow="{{ confidence_percent }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                    {{ confidence_percent }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Review Instructions:</strong> Please review the extracted data below. 
+                        You can edit any information before importing. Click "Import Resume" when ready.
+                    </div>
+
+                    <!-- Personal Information Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-user"></i> Personal Information</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if personal_info %}
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Name:</strong>
+                                        <p class="mb-0">{{ personal_info.name|default:"Not detected" }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Email:</strong>
+                                        <p class="mb-0">{{ personal_info.email|default:"Not detected" }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Phone:</strong>
+                                        <p class="mb-0">{{ personal_info.phone|default:"Not detected" }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Location:</strong>
+                                        <p class="mb-0">{{ personal_info.location|default:"Not detected" }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>LinkedIn:</strong>
+                                        <p class="mb-0">{{ personal_info.linkedin|default:"Not detected" }}</p>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <strong>Website:</strong>
+                                        <p class="mb-0">{{ personal_info.website|default:"Not detected" }}</p>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No personal information detected.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Work Experience Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-briefcase"></i> Work Experience</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if experiences %}
+                                {% for exp in experiences %}
+                                    <div class="experience-item mb-4 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                                        <h6 class="text-primary">{{ exp.title|default:"Position Not Detected" }}</h6>
+                                        <p class="mb-1">
+                                            <strong>Company:</strong> {{ exp.company|default:"Company Not Detected" }}
+                                        </p>
+                                        <p class="mb-1 text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            {{ exp.start_date|default:"Start Date Not Detected" }} - 
+                                            {{ exp.end_date|default:"End Date Not Detected" }}
+                                        </p>
+                                        {% if exp.location %}
+                                            <p class="mb-1 text-muted">
+                                                <i class="fas fa-map-marker-alt"></i> {{ exp.location }}
+                                            </p>
+                                        {% endif %}
+                                        {% if exp.description %}
+                                            <div class="mt-2">
+                                                <strong>Description:</strong>
+                                                <div class="description-text">{{ exp.description|linebreaks }}</div>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No work experience detected.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Education Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-graduation-cap"></i> Education</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if education %}
+                                {% for edu in education %}
+                                    <div class="education-item mb-3 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                                        <h6 class="text-primary">{{ edu.institution|default:"Institution Not Detected" }}</h6>
+                                        <p class="mb-1">
+                                            <strong>Degree:</strong> {{ edu.degree|default:"Degree Not Detected" }}
+                                        </p>
+                                        {% if edu.field_of_study %}
+                                            <p class="mb-1">
+                                                <strong>Field:</strong> {{ edu.field_of_study }}
+                                            </p>
+                                        {% endif %}
+                                        <p class="mb-1 text-muted">
+                                            <i class="fas fa-calendar"></i>
+                                            {{ edu.graduation_date|default:"Graduation Date Not Detected" }}
+                                        </p>
+                                        {% if edu.gpa %}
+                                            <p class="mb-1">
+                                                <strong>GPA:</strong> {{ edu.gpa }}
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-muted">No education information detected.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Skills Section -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0"><i class="fas fa-tools"></i> Skills</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if skills %}
+                                <div class="row">
+                                    {% for skill in skills %}
+                                        <div class="col-md-4 mb-2">
+                                            <span class="badge bg-primary">
+                                                {{ skill.name }}
+                                                {% if skill.category %}
+                                                    <small>({{ skill.category }})</small>
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No skills detected.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Summary Section (if available) -->
+                    {% if summary %}
+                        <div class="card mb-4">
+                            <div class="card-header bg-light">
+                                <h5 class="mb-0"><i class="fas fa-align-left"></i> Summary</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>{{ summary|linebreaks }}</p>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Import Form -->
+                    <form method="post" action="{% url 'pdf_import_confirm' uploaded_resume.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <label for="title" class="form-label"><strong>Resume Title:</strong></label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="title" 
+                                    name="title" 
+                                    value="Resume from {{ uploaded_resume.original_filename }}"
+                                    required
+                                >
+                            </div>
+                            <div class="col-md-6">
+                                <label for="template" class="form-label"><strong>Template:</strong></label>
+                                <select class="form-select" id="template" name="template">
+                                    <option value="professional" selected>Professional</option>
+                                    <option value="modern">Modern</option>
+                                    <option value="classic">Classic</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'pdf_upload' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Upload Different File
+                            </a>
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Import Resume
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.description-text {
+    white-space: pre-wrap;
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+.badge {
+    font-size: 0.9rem;
+    padding: 8px 12px;
+}
+
+.experience-item, .education-item {
+    transition: background-color 0.2s;
+}
+
+.experience-item:hover, .education-item:hover {
+    background-color: #f8f9fa;
+}
+</style>
+{% endblock %}

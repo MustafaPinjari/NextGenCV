@@ -10,6 +10,11 @@ urlpatterns = [
     path('<int:pk>/duplicate/', views.resume_duplicate, name='resume_duplicate'),
     path('<int:pk>/export/', views.resume_export, name='resume_export'),
     
+    # PDF Upload Module
+    path('upload/', views.pdf_upload, name='pdf_upload'),
+    path('upload/<int:upload_id>/review/', views.pdf_parse_review, name='pdf_parse_review'),
+    path('upload/<int:upload_id>/confirm/', views.pdf_import_confirm, name='pdf_import_confirm'),
+    
     # Experience management
     path('<int:resume_pk>/experience/add/', views.experience_add, name='experience_add'),
     path('<int:resume_pk>/experience/<int:experience_pk>/edit/', views.experience_edit, name='experience_edit'),

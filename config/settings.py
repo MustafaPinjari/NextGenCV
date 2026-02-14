@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'apps.authentication',
     'apps.resumes',
     'apps.analyzer',
+    'apps.analytics',
+    'apps.templates_mgmt',
 ]
 
 MIDDLEWARE = [

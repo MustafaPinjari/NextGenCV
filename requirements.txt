@@ -4,3 +4,6 @@ pydyf==0.6.0
 hypothesis==6.92.1
 Pillow==10.1.0
 bleach==6.1.0
+pdfplumber==0.10.3
+spacy==3.7.2
+python-docx==1.1.0

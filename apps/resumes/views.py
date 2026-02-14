@@ -4,8 +4,12 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
 from django.db import models
 from .services import ResumeService
-from .models import Resume
+from .models import Resume, UploadedResume
+from .services.pdf_parser import PDFParserService
+from .services.section_parser import SectionParserService
+from .utils.file_validators import validate_pdf_file, has_embedded_scripts
 import logging
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -779,3 +783,348 @@ def project_delete(request, resume_pk, project_pk):
         'project': project
     }
     return render(request, 'resumes/project_confirm_delete.html', context)
+
+
+# ============================================================================
+# PDF Upload Module Views
+# ============================================================================
+
+@login_required
+def pdf_upload(request):
+    """
+    Handle PDF resume upload with validation and parsing.
+    
+    GET: Display upload form
+    POST: Validate file, extract text, parse sections, redirect to review
+    
+    Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.8
+    """
+    if request.method == 'POST':
+        # Check if file was uploaded
+        if 'resume_file' not in request.FILES:
+            messages.error(request, 'Please select a PDF file to upload.')
+            return render(request, 'resumes/pdf_upload.html')
+        
+        uploaded_file = request.FILES['resume_file']
+        
+        # Step 1: Validate file type and size
+        is_valid, error_message = validate_pdf_file(uploaded_file)
+        if not is_valid:
+            messages.error(request, error_message)
+            return render(request, 'resumes/pdf_upload.html')
+        
+        # Step 2: Check for embedded scripts
+        if has_embedded_scripts(uploaded_file):
+            messages.error(
+                request,
+                'The uploaded file contains potentially malicious content and cannot be processed.'
+            )
+            return render(request, 'resumes/pdf_upload.html')
+        
+        # Step 3: Create UploadedResume record
+        try:
+            uploaded_resume = UploadedResume.objects.create(
+                user=request.user,
+                original_filename=uploaded_file.name,
+                file_path=uploaded_file,
+                file_size=uploaded_file.size,
+                status='uploaded'
+            )
+            
+            logger.info(
+                f'PDF uploaded successfully: {uploaded_file.name} '
+                f'by user {request.user.username} (ID: {uploaded_resume.id})'
+            )
+            
+        except Exception as e:
+            logger.error(f'Failed to save uploaded file: {e}', exc_info=True)
+            messages.error(request, 'Failed to save uploaded file. Please try again.')
+            return render(request, 'resumes/pdf_upload.html')
+        
+        # Step 4: Extract text from PDF
+        try:
+            uploaded_resume.status = 'parsing'
+            uploaded_resume.save()
+            
+            # Extract text using PDFParserService
+            raw_text = PDFParserService.extract_text_from_pdf(uploaded_file)
+            
+            # Clean extracted text
+            cleaned_text = PDFParserService.clean_extracted_text(raw_text)
+            
+            uploaded_resume.extracted_text = cleaned_text
+            uploaded_resume.save()
+            
+            logger.info(f'Text extracted successfully from upload ID: {uploaded_resume.id}')
+            
+        except Exception as e:
+            logger.error(f'PDF text extraction failed for upload ID {uploaded_resume.id}: {e}', exc_info=True)
+            uploaded_resume.status = 'failed'
+            uploaded_resume.error_message = f'Text extraction failed: {str(e)}'
+            uploaded_resume.save()
+            
+            messages.error(
+                request,
+                'Failed to extract text from PDF. Please ensure the file is a text-based PDF (not a scanned image).'
+            )
+            return redirect('pdf_upload')
+        
+        # Step 5: Parse sections using SectionParserService
+        try:
+            parsed_data = SectionParserService.parse_resume(cleaned_text)
+            
+            # Calculate parsing confidence
+            confidence = PDFParserService.calculate_parsing_confidence(
+                cleaned_text,
+                parsed_data
+            )
+            
+            uploaded_resume.parsed_data = parsed_data
+            uploaded_resume.parsing_confidence = confidence
+            uploaded_resume.status = 'parsed'
+            uploaded_resume.save()
+            
+            logger.info(
+                f'Resume parsed successfully (ID: {uploaded_resume.id}, '
+                f'Confidence: {confidence:.2f})'
+            )
+            
+            # Show confidence warning if low
+            if confidence < 0.7:
+                messages.warning(
+                    request,
+                    f'Parsing confidence is {confidence*100:.0f}%. '
+                    'Please review the extracted data carefully.'
+                )
+            else:
+                messages.success(
+                    request,
+                    f'Resume parsed successfully with {confidence*100:.0f}% confidence!'
+                )
+            
+        except Exception as e:
+            logger.error(f'Resume parsing failed for upload ID {uploaded_resume.id}: {e}', exc_info=True)
+            uploaded_resume.status = 'failed'
+            uploaded_resume.error_message = f'Parsing failed: {str(e)}'
+            uploaded_resume.save()
+            
+            messages.error(
+                request,
+                'Failed to parse resume sections. Please review the extracted data manually.'
+            )
+            # Still redirect to review page so user can see what was extracted
+        
+        # Step 6: Redirect to review page
+        return redirect('pdf_parse_review', upload_id=uploaded_resume.id)
+    
+    # GET request - display upload form
+    return render(request, 'resumes/pdf_upload.html')
+
+
+@login_required
+def pdf_parse_review(request, upload_id):
+    """
+    Display parsed resume data for user review and editing.
+    
+    Shows:
+    - Parsing confidence score
+    - Extracted personal information (editable)
+    - Extracted experiences (editable)
+    - Extracted education (editable)
+    - Extracted skills (editable)
+    
+    Requirements: 5.1, 5.2, 5.3, 5.4
+    """
+    # Load UploadedResume
+    uploaded_resume = get_object_or_404(UploadedResume, id=upload_id)
+    
+    # Authorization check
+    if uploaded_resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view upload {upload_id} owned by {uploaded_resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view this upload.")
+    
+    # Check if resume has been parsed
+    if uploaded_resume.status not in ['parsed', 'failed']:
+        messages.warning(request, 'Resume is still being processed. Please wait.')
+        return redirect('pdf_upload')
+    
+    # Get parsed data
+    parsed_data = uploaded_resume.parsed_data or {}
+    
+    # Prepare context
+    context = {
+        'uploaded_resume': uploaded_resume,
+        'parsed_data': parsed_data,
+        'personal_info': parsed_data.get('personal_info', {}),
+        'experiences': parsed_data.get('experiences', []),
+        'education': parsed_data.get('education', []),
+        'skills': parsed_data.get('skills', []),
+        'summary': parsed_data.get('summary', ''),
+        'confidence': uploaded_resume.parsing_confidence or 0.0,
+        'confidence_percent': int((uploaded_resume.parsing_confidence or 0.0) * 100),
+    }
+    
+    return render(request, 'resumes/parse_review.html', context)
+
+
+@login_required
+def pdf_import_confirm(request, upload_id):
+    """
+    Create Resume from parsed PDF data.
+    
+    POST only: Creates Resume, ResumeVersion, and runs initial ATS analysis.
+    
+    Requirements: 4.8, 5.4
+    """
+    if request.method != 'POST':
+        return redirect('pdf_parse_review', upload_id=upload_id)
+    
+    # Load UploadedResume
+    uploaded_resume = get_object_or_404(UploadedResume, id=upload_id)
+    
+    # Authorization check
+    if uploaded_resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to import upload {upload_id} owned by {uploaded_resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to import this upload.")
+    
+    # Check if already imported
+    if uploaded_resume.status == 'imported':
+        messages.warning(request, 'This resume has already been imported.')
+        return redirect('resume_list')
+    
+    try:
+        # Get parsed data (may have been edited by user in review page)
+        parsed_data = uploaded_resume.parsed_data or {}
+        
+        # Prepare resume data for creation
+        resume_data = {
+            'title': request.POST.get('title', f"Resume from {uploaded_resume.original_filename}"),
+            'template': request.POST.get('template', 'professional'),
+        }
+        
+        # Add personal info if available
+        personal_info = parsed_data.get('personal_info', {})
+        if personal_info and personal_info.get('name'):
+            resume_data['personal_info'] = {
+                'full_name': personal_info.get('name', ''),
+                'email': personal_info.get('email', ''),
+                'phone': personal_info.get('phone', ''),
+                'linkedin': personal_info.get('linkedin', ''),
+                'github': personal_info.get('website', ''),  # Map website to github field
+                'location': personal_info.get('location', ''),
+            }
+        
+        # Add experiences if available
+        experiences = parsed_data.get('experiences', [])
+        if experiences:
+            resume_data['experiences'] = []
+            for exp in experiences:
+                # Convert date strings to date objects if possible
+                from datetime import datetime
+                start_date = None
+                end_date = None
+                
+                # Try to parse start date
+                if exp.get('start_date'):
+                    try:
+                        # Try various date formats
+                        for fmt in ['%B %Y', '%m/%Y', '%Y']:
+                            try:
+                                start_date = datetime.strptime(exp['start_date'], fmt).date()
+                                break
+                            except ValueError:
+                                continue
+                    except Exception:
+                        pass
+                
+                # Try to parse end date
+                if exp.get('end_date') and exp['end_date'].lower() not in ['present', 'current']:
+                    try:
+                        for fmt in ['%B %Y', '%m/%Y', '%Y']:
+                            try:
+                                end_date = datetime.strptime(exp['end_date'], fmt).date()
+                                break
+                            except ValueError:
+                                continue
+                    except Exception:
+                        pass
+                
+                # Use today's date as fallback for start_date if not parsed
+                if not start_date:
+                    start_date = datetime.today().date()
+                
+                resume_data['experiences'].append({
+                    'company': exp.get('company', 'Unknown Company'),
+                    'role': exp.get('title', 'Unknown Role'),
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'description': exp.get('description', ''),
+                })
+        
+        # Add education if available
+        education = parsed_data.get('education', [])
+        if education:
+            resume_data['education'] = []
+            for edu in education:
+                # Extract year from graduation_date
+                year = None
+                if edu.get('graduation_date'):
+                    try:
+                        year = int(re.search(r'\d{4}', edu['graduation_date']).group(0))
+                    except Exception:
+                        year = datetime.today().year
+                
+                if not year:
+                    year = datetime.today().year
+                
+                resume_data['education'].append({
+                    'institution': edu.get('institution', 'Unknown Institution'),
+                    'degree': edu.get('degree', 'Unknown Degree'),
+                    'field': edu.get('field_of_study', 'Unknown Field'),
+                    'start_year': year - 4,  # Assume 4-year program
+                    'end_year': year,
+                })
+        
+        # Add skills if available
+        skills = parsed_data.get('skills', [])
+        if skills:
+            resume_data['skills'] = []
+            for skill in skills:
+                resume_data['skills'].append({
+                    'name': skill.get('name', ''),
+                    'category': skill.get('category') or 'General',
+                })
+        
+        # Create the resume using ResumeService
+        resume = ResumeService.create_resume(request.user, resume_data)
+        
+        # Mark upload as imported
+        uploaded_resume.status = 'imported'
+        uploaded_resume.save()
+        
+        logger.info(
+            f'Resume created from upload ID {upload_id}: '
+            f'Resume ID {resume.id} for user {request.user.username}'
+        )
+        
+        messages.success(
+            request,
+            f'Resume "{resume.title}" has been created successfully from your uploaded PDF!'
+        )
+        
+        # Redirect to resume detail
+        return redirect('resume_detail', pk=resume.id)
+        
+    except Exception as e:
+        logger.error(f'Failed to create resume from upload ID {upload_id}: {e}', exc_info=True)
+        messages.error(
+            request,
+            f'Failed to create resume: {str(e)}. Please try creating a resume manually.'
+        )
+        return redirect('pdf_parse_review', upload_id=upload_id)
