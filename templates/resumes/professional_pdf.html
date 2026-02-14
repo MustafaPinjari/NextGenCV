@@ -1,0 +1,260 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ resume.title }}</title>
+    
+    <style>
+        /* 
+         * Print-friendly CSS for PDF Resume Generation
+         * Uses absolute units (pt, px) for consistent PDF rendering
+         * Ensures text is selectable and ATS-compatible
+         */
+
+        /* Base styles with absolute units */
+        body {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 11pt;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Container with fixed width for consistent PDF output */
+        .resume-container {
+            width: 8.5in;
+            margin: 0 auto;
+            padding: 0.5in;
+            background: #fff;
+        }
+
+        /* Header styling with absolute units */
+        .resume-header {
+            text-align: center;
+            margin-bottom: 20pt;
+            border-bottom: 2pt solid #333;
+            padding-bottom: 15pt;
+        }
+
+        .resume-header h1 {
+            font-size: 24pt;
+            font-weight: bold;
+            margin: 0 0 8pt 0;
+            color: #000;
+        }
+
+        .resume-header .contact-info {
+            font-size: 10pt;
+            color: #333;
+            margin: 0;
+        }
+
+        .resume-header .contact-info a {
+            color: #000;
+            text-decoration: none;
+        }
+
+        /* Section styling */
+        .resume-section {
+            margin-bottom: 20pt;
+            page-break-inside: avoid;
+        }
+
+        .resume-section h2 {
+            font-size: 14pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-bottom: 1pt solid #333;
+            padding-bottom: 5pt;
+            margin: 0 0 12pt 0;
+            color: #000;
+        }
+
+        /* Experience and Education entries */
+        .entry {
+            margin-bottom: 15pt;
+            page-break-inside: avoid;
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4pt;
+        }
+
+        .entry-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .entry-date {
+            font-size: 10pt;
+            color: #333;
+            font-style: italic;
+        }
+
+        .entry-subtitle {
+            font-size: 10pt;
+            color: #333;
+            margin-bottom: 6pt;
+        }
+
+        .entry-description {
+            font-size: 10pt;
+            color: #000;
+            margin: 0;
+            white-space: pre-wrap;
+        }
+
+        /* Skills styling */
+        .skills-category {
+            margin-bottom: 8pt;
+        }
+
+        .skills-category strong {
+            font-weight: bold;
+            color: #000;
+        }
+
+        .skills-list {
+            display: inline;
+            font-size: 10pt;
+        }
+
+        /* Projects styling */
+        .project-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 4pt;
+        }
+
+        .project-description {
+            font-size: 10pt;
+            color: #000;
+            margin-bottom: 4pt;
+            white-space: pre-wrap;
+        }
+
+        .project-tech {
+            font-size: 9pt;
+            color: #555;
+        }
+
+        /* Ensure links are visible and selectable */
+        a {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        /* Ensure all text is selectable (no images for text) */
+        * {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+    </style>
+</head>
+<body>
+    <div class="resume-container">
+        <!-- Personal Information Header -->
+        {% if personal_info %}
+        <div class="resume-header">
+            <h1>{{ personal_info.full_name }}</h1>
+            <div class="contact-info">
+                {% if personal_info.email %}{{ personal_info.email }}{% endif %}
+                {% if personal_info.phone %}
+                    {% if personal_info.email %} | {% endif %}{{ personal_info.phone }}
+                {% endif %}
+                {% if personal_info.location %}
+                    {% if personal_info.email or personal_info.phone %} | {% endif %}{{ personal_info.location }}
+                {% endif %}
+                <br>
+                {% if personal_info.linkedin %}
+                    <a href="{{ personal_info.linkedin }}">{{ personal_info.linkedin }}</a>
+                {% endif %}
+                {% if personal_info.github %}
+                    {% if personal_info.linkedin %} | {% endif %}
+                    <a href="{{ personal_info.github }}">{{ personal_info.github }}</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Work Experience Section -->
+        {% if experiences %}
+        <div class="resume-section">
+            <h2>Work Experience</h2>
+            {% for exp in experiences %}
+            <div class="entry">
+                <div class="entry-header">
+                    <div class="entry-title">{{ exp.role }}</div>
+                    <div class="entry-date">
+                        {{ exp.start_date|date:"M Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}
+                    </div>
+                </div>
+                <div class="entry-subtitle">{{ exp.company }}</div>
+                <div class="entry-description">{{ exp.description }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Education Section -->
+        {% if education %}
+        <div class="resume-section">
+            <h2>Education</h2>
+            {% for edu in education %}
+            <div class="entry">
+                <div class="entry-header">
+                    <div class="entry-title">{{ edu.degree }} in {{ edu.field }}</div>
+                    <div class="entry-date">
+                        {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
+                    </div>
+                </div>
+                <div class="entry-subtitle">{{ edu.institution }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Skills Section -->
+        {% if skills %}
+        <div class="resume-section">
+            <h2>Skills</h2>
+            {% regroup skills by category as skills_by_category %}
+            {% for category in skills_by_category %}
+            <div class="skills-category">
+                <strong>{{ category.grouper }}:</strong>
+                <span class="skills-list">
+                    {% for skill in category.list %}{{ skill.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Projects Section -->
+        {% if projects %}
+        <div class="resume-section">
+            <h2>Projects</h2>
+            {% for proj in projects %}
+            <div class="entry">
+                <div class="project-title">
+                    {{ proj.name }}{% if proj.url %} - <a href="{{ proj.url }}">{{ proj.url }}</a>{% endif %}
+                </div>
+                <div class="project-description">{{ proj.description }}</div>
+                <div class="project-tech"><strong>Technologies:</strong> {{ proj.technologies }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</body>
+</html>

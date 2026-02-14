@@ -1,0 +1,6 @@
+Django==4.2.7
+WeasyPrint==59.0
+pydyf==0.6.0
+hypothesis==6.92.1
+Pillow==10.1.0
+bleach==6.1.0

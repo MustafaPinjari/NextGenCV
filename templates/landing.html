@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Welcome - ATS Resume Builder{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="row">
+        <div class="col-lg-10 mx-auto text-center">
+            <h1 class="display-4 mb-4">Build ATS-Optimized Resumes That Get You Hired</h1>
+            <p class="lead mb-5">
+                Create professional, ATS-friendly resumes that pass applicant tracking systems 
+                and land you more interviews. Analyze, optimize, and export in minutes.
+            </p>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg me-3">
+                    <i class="bi bi-speedometer2"></i> Go to Dashboard
+                </a>
+                <a href="{% url 'resume_create' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Create New Resume
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">
+                    <i class="bi bi-person-plus"></i> Get Started Free
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5 mb-5">
+    <div class="col-12 text-center mb-4">
+        <h2 class="display-6 mb-3">Why Choose Our Resume Builder?</h2>
+        <p class="lead text-muted">Everything you need to create a winning resume</p>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="feature-card card">
+            <div class="card-body text-center">
+                <i class="bi bi-magic"></i>
+                <h5 class="card-title">Easy to Use</h5>
+                <p class="card-text">
+                    Our intuitive step-by-step wizard guides you through creating your perfect resume. 
+                    No design skills required - just fill in your information and we'll handle the rest.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="feature-card card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up-arrow"></i>
+                <h5 class="card-title">ATS Analysis</h5>
+                <p class="card-text">
+                    Analyze your resume against any job description to see your match score. 
+                    Get actionable suggestions to optimize keywords and improve your chances of passing ATS filters.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="feature-card card">
+            <div class="card-body text-center">
+                <i class="bi bi-file-earmark-pdf"></i>
+                <h5 class="card-title">Professional PDF Export</h5>
+                <p class="card-text">
+                    Export your resume as a professional, ATS-compatible PDF with selectable text. 
+                    Clean formatting that looks great and works with all applicant tracking systems.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Features -->
+<div class="row mt-5 mb-5">
+    <div class="col-md-6 mb-4">
+        <div class="feature-card card">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-files me-3" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    <div>
+                        <h5 class="card-title">Multiple Resume Versions</h5>
+                        <p class="card-text">
+                            Create and manage multiple resume versions tailored for different job applications. 
+                            Easily duplicate and customize resumes for specific roles or industries.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="feature-card card">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-shield-check me-3" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    <div>
+                        <h5 class="card-title">Secure & Private</h5>
+                        <p class="card-text">
+                            Your data is secure with industry-standard encryption. Only you have access to your resumes. 
+                            We never share your information with third parties.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="feature-card card">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-palette me-3" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    <div>
+                        <h5 class="card-title">Professional Templates</h5>
+                        <p class="card-text">
+                            Choose from professionally designed templates that are proven to work with ATS systems. 
+                            Clean, modern layouts that highlight your experience and skills.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="feature-card card">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <i class="bi bi-lightning-charge me-3" style="font-size: 2rem; color: var(--primary-color);"></i>
+                    <div>
+                        <h5 class="card-title">Fast & Efficient</h5>
+                        <p class="card-text">
+                            Create a complete resume in minutes, not hours. Our streamlined process helps you 
+                            focus on content while we handle formatting and optimization.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="row mt-5 mb-5">
+    <div class="col-12 text-center mb-4">
+        <h2 class="display-6 mb-3">How It Works</h2>
+        <p class="lead text-muted">Get started in three simple steps</p>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 text-center">
+            <div class="card-body">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    1
+                </div>
+                <h5 class="card-title">Create Your Resume</h5>
+                <p class="card-text text-muted">
+                    Fill in your information using our guided wizard. Add your experience, education, skills, and projects.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 text-center">
+            <div class="card-body">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    2
+                </div>
+                <h5 class="card-title">Analyze & Optimize</h5>
+                <p class="card-text text-muted">
+                    Paste a job description to analyze your resume. Get your match score and suggestions for improvement.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 text-center">
+            <div class="card-body">
+                <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" 
+                     style="width: 60px; height: 60px; font-size: 1.5rem; font-weight: bold;">
+                    3
+                </div>
+                <h5 class="card-title">Export & Apply</h5>
+                <p class="card-text text-muted">
+                    Download your ATS-optimized resume as a PDF and start applying to jobs with confidence.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action Section -->
+<div class="cta-section text-center">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h2 class="display-6 mb-3">Ready to Build Your Perfect Resume?</h2>
+            <p class="lead mb-4">
+                Join thousands of job seekers who have successfully landed interviews with our ATS-optimized resumes.
+            </p>
+            
+            {% if user.is_authenticated %}
+                <a href="{% url 'resume_create' %}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-plus-circle"></i> Create Your First Resume
+                </a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-primary btn-lg me-3">
+                    <i class="bi bi-person-plus"></i> Sign Up Free
+                </a>
+                <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-box-arrow-in-right"></i> Login
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row mt-5 text-center">
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 bg-transparent">
+            <div class="card-body">
+                <h2 class="display-4 text-primary mb-2">95%</h2>
+                <p class="text-muted">ATS Compatibility Rate</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 bg-transparent">
+            <div class="card-body">
+                <h2 class="display-4 text-primary mb-2">&lt;5 min</h2>
+                <p class="text-muted">Average Resume Creation Time</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card border-0 bg-transparent">
+            <div class="card-body">
+                <h2 class="display-4 text-primary mb-2">100%</h2>
+                <p class="text-muted">Free to Use</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

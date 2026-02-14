@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Resume - ATS Resume Builder{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h2 class="mb-4">Edit Resume</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Resume Info -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Resume Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Title *</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ resume.title }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="template" class="form-label">Template *</label>
+                        <select class="form-select" id="template" name="template" required>
+                            <option value="professional" {% if resume.template == 'professional' %}selected{% endif %}>Professional</option>
+                            <option value="modern" {% if resume.template == 'modern' %}selected{% endif %}>Modern</option>
+                            <option value="classic" {% if resume.template == 'classic' %}selected{% endif %}>Classic</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Personal Info -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5>Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if personal_info %}
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" value="{{ personal_info.full_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{ personal_info.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{ personal_info.phone }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="location" class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" name="location" value="{{ personal_info.location }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="linkedin" class="form-label">LinkedIn URL</label>
+                            <input type="url" class="form-control" id="linkedin" name="linkedin" value="{{ personal_info.linkedin }}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="github" class="form-label">GitHub URL</label>
+                            <input type="url" class="form-control" id="github" name="github" value="{{ personal_info.github }}">
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No personal information added yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Experiences -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Work Experience</h5>
+                    <a href="{% url 'experience_add' resume.id %}" class="btn btn-sm btn-success">+ Add Experience</a>
+                </div>
+                <div class="card-body">
+                    {% for exp in experiences %}
+                        <div class="border p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">{{ exp.role }} at {{ exp.company }}</h6>
+                                    <small class="text-muted">
+                                        {{ exp.start_date|date:"M Y" }} - 
+                                        {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}
+                                    </small>
+                                </div>
+                                <div>
+                                    <a href="{% url 'experience_edit' resume.id exp.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <a href="{% url 'experience_delete' resume.id exp.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </div>
+                            <p class="mb-0">{{ exp.description|truncatewords:30 }}</p>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No experience entries added yet. Click "Add Experience" to get started.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Education -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Education</h5>
+                    <a href="{% url 'education_add' resume.id %}" class="btn btn-sm btn-success">+ Add Education</a>
+                </div>
+                <div class="card-body">
+                    {% for edu in education %}
+                        <div class="border p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">{{ edu.degree }} in {{ edu.field }}</h6>
+                                    <p class="mb-1">{{ edu.institution }}</p>
+                                    <small class="text-muted">
+                                        {{ edu.start_year }} - 
+                                        {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
+                                    </small>
+                                </div>
+                                <div>
+                                    <a href="{% url 'education_edit' resume.id edu.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <a href="{% url 'education_delete' resume.id edu.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No education entries added yet. Click "Add Education" to get started.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Skills -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Skills</h5>
+                    <a href="{% url 'skill_add' resume.id %}" class="btn btn-sm btn-success">+ Add Skill</a>
+                </div>
+                <div class="card-body">
+                    {% if skills %}
+                        {% regroup skills by category as skills_by_category %}
+                        {% for category in skills_by_category %}
+                            <div class="mb-3">
+                                <h6 class="text-muted">{{ category.grouper }}</h6>
+                                <div class="row">
+                                    {% for skill in category.list %}
+                                        <div class="col-md-6 mb-2">
+                                            <div class="d-flex justify-content-between align-items-center border p-2 rounded">
+                                                <span>{{ skill.name }}</span>
+                                                <div>
+                                                    <a href="{% url 'skill_edit' resume.id skill.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                                    <a href="{% url 'skill_delete' resume.id skill.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted">No skills added yet. Click "Add Skill" to get started.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Projects -->
+            <div class="card mb-3">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Projects</h5>
+                    <a href="{% url 'project_add' resume.id %}" class="btn btn-sm btn-success">+ Add Project</a>
+                </div>
+                <div class="card-body">
+                    {% for proj in projects %}
+                        <div class="border p-3 mb-3">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">{{ proj.name }}</h6>
+                                    {% if proj.technologies %}
+                                        <p class="mb-1"><small><strong>Technologies:</strong> {{ proj.technologies }}</small></p>
+                                    {% endif %}
+                                    {% if proj.url %}
+                                        <p class="mb-1"><small><strong>URL:</strong> <a href="{{ proj.url }}" target="_blank">{{ proj.url }}</a></small></p>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <a href="{% url 'project_edit' resume.id proj.id %}" class="btn btn-sm btn-outline-primary me-1">Edit</a>
+                                    <a href="{% url 'project_delete' resume.id proj.id %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                                </div>
+                            </div>
+                            <p class="mb-0">{{ proj.description|truncatewords:30 }}</p>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted">No projects added yet. Click "Add Project" to get started.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="d-flex justify-content-between mb-4">
+                <a href="{% url 'resume_detail' resume.id %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

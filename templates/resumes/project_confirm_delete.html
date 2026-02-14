@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Project - {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h3>Delete Project</h3>
+                </div>
+                <div class="card-body">
+                    <p>Are you sure you want to delete the following project from <strong>{{ resume.title }}</strong>?</p>
+                    
+                    <div class="alert alert-warning">
+                        <h5><strong>{{ project.name }}</strong></h5>
+                        <p>{{ project.description|truncatewords:30 }}</p>
+                        {% if project.technologies %}
+                            <p><small><strong>Technologies:</strong> {{ project.technologies }}</small></p>
+                        {% endif %}
+                        {% if project.url %}
+                            <p><small><strong>URL:</strong> {{ project.url }}</small></p>
+                        {% endif %}
+                    </div>
+                    
+                    <p class="text-danger">This action cannot be undone.</p>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'resume_update' resume.id %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-danger">Delete Project</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

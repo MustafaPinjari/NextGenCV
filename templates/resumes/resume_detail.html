@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ resume.title }} - ATS Resume Builder{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">{{ resume.title }}</h2>
+            <div class="btn-group">
+                <a href="{% url 'resume_detail' resume.id %}?view=template" class="btn btn-outline-primary" target="_blank" title="View formatted template">
+                    <i class="bi bi-eye"></i> Preview Template
+                </a>
+                <a href="{% url 'resume_update' resume.id %}" class="btn btn-primary" title="Edit resume">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a href="#" onclick="analyzeResume({{ resume.id }}); return false;" class="btn btn-warning" title="Analyze with ATS">
+                    <i class="bi bi-graph-up"></i> Analyze
+                </a>
+                <a href="{% url 'resume_export' resume.id %}" class="btn btn-success" title="Export to PDF">
+                    <i class="bi bi-download"></i> Export PDF
+                </a>
+                <a href="{% url 'resume_duplicate' resume.id %}" class="btn btn-info" title="Duplicate resume">
+                    <i class="bi bi-files"></i> Duplicate
+                </a>
+                <a href="{% url 'resume_delete' resume.id %}" class="btn btn-danger" title="Delete resume">
+                    <i class="bi bi-trash"></i> Delete
+                </a>
+            </div>
+        </div>
+        
+        <div class="alert alert-info">
+            <strong>Template:</strong> {{ resume.template|title }} | 
+            <strong>Last Updated:</strong> {{ resume.updated_at|date:"F d, Y g:i A" }}
+        </div>
+        
+        <div class="card shadow">
+            <div class="card-body p-5">
+                <!-- Personal Information -->
+                {% if personal_info %}
+                <div class="text-center mb-4">
+                    <h3 class="mb-2">{{ personal_info.full_name }}</h3>
+                    <p class="text-muted mb-1">
+                        {% if personal_info.email %}{{ personal_info.email }}{% endif %}
+                        {% if personal_info.phone %} | {{ personal_info.phone }}{% endif %}
+                    </p>
+                    <p class="text-muted mb-1">
+                        {% if personal_info.location %}{{ personal_info.location }}{% endif %}
+                    </p>
+                    <p class="mb-0">
+                        {% if personal_info.linkedin %}
+                            <a href="{{ personal_info.linkedin }}" target="_blank" class="text-decoration-none me-3">
+                                <i class="bi bi-linkedin"></i> LinkedIn
+                            </a>
+                        {% endif %}
+                        {% if personal_info.github %}
+                            <a href="{{ personal_info.github }}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-github"></i> GitHub
+                            </a>
+                        {% endif %}
+                    </p>
+                </div>
+                <hr>
+                {% endif %}
+                
+                <!-- Experience -->
+                {% if experiences %}
+                <div class="mb-4">
+                    <h4 class="mb-3">Work Experience</h4>
+                    {% for exp in experiences %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-1">{{ exp.role }}</h5>
+                            <span class="text-muted">
+                                {{ exp.start_date|date:"M Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}
+                            </span>
+                        </div>
+                        <h6 class="text-muted mb-2">{{ exp.company }}</h6>
+                        <p class="mb-0">{{ exp.description }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Education -->
+                {% if education %}
+                <div class="mb-4">
+                    <h4 class="mb-3">Education</h4>
+                    {% for edu in education %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <h5 class="mb-1">{{ edu.degree }} in {{ edu.field }}</h5>
+                            <span class="text-muted">
+                                {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
+                            </span>
+                        </div>
+                        <h6 class="text-muted mb-0">{{ edu.institution }}</h6>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Skills -->
+                {% if skills %}
+                <div class="mb-4">
+                    <h4 class="mb-3">Skills</h4>
+                    {% regroup skills by category as skills_by_category %}
+                    {% for category in skills_by_category %}
+                        <div class="mb-2">
+                            <strong>{{ category.grouper }}:</strong>
+                            {% for skill in category.list %}
+                                <span class="badge bg-secondary me-1">{{ skill.name }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Projects -->
+                {% if projects %}
+                <div class="mb-4">
+                    <h4 class="mb-3">Projects</h4>
+                    {% for proj in projects %}
+                    <div class="mb-3">
+                        <h5 class="mb-1">
+                            {{ proj.name }}
+                            {% if proj.url %}
+                                <a href="{{ proj.url }}" target="_blank" class="text-decoration-none">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            {% endif %}
+                        </h5>
+                        <p class="mb-1">{{ proj.description }}</p>
+                        <p class="text-muted mb-0"><small><strong>Technologies:</strong> {{ proj.technologies }}</small></p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                {% if not personal_info and not experiences and not education and not skills and not projects %}
+                <div class="text-center py-5">
+                    <p class="text-muted">This resume is empty. Click "Edit" to add content.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <a href="{% url 'resume_list' %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+function analyzeResume(resumeId) {
+    // Placeholder for ATS analysis - will be implemented in task 14
+    alert('ATS Analysis feature will be implemented in task 14');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load resume_filters %}
+
+{% block title %}Create Resume - ATS Resume Builder{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h2 class="mb-4">Create New Resume</h2>
+        
+        <!-- Progress indicator -->
+        <div class="mb-4">
+            <div class="progress" style="height: 25px;">
+                <div class="progress-bar" role="progressbar" style="width: {{ step|multiply:14.28 }}%;" 
+                     aria-valuenow="{{ step }}" aria-valuemin="0" aria-valuemax="7">
+                    Step {{ step }} of 7
+                </div>
+            </div>
+        </div>
+
+        {% if step == 1 %}
+            <!-- Step 1: Resume Title and Template -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 1: Resume Information</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">Resume Title *</label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.template.id_for_label }}" class="form-label">Template *</label>
+                            {{ form.template }}
+                            {% if form.template.errors %}
+                                <div class="text-danger">{{ form.template.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'resume_list' %}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif step == 2 %}
+            <!-- Step 2: Personal Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 2: Personal Information</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.full_name.id_for_label }}" class="form-label">Full Name *</label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                                <div class="text-danger">{{ form.full_name.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email *</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">{{ form.email.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone</label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger">{{ form.phone.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.linkedin.id_for_label }}" class="form-label">LinkedIn URL</label>
+                            {{ form.linkedin }}
+                            {% if form.linkedin.errors %}
+                                <div class="text-danger">{{ form.linkedin.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.github.id_for_label }}" class="form-label">GitHub URL</label>
+                            {{ form.github }}
+                            {% if form.github.errors %}
+                                <div class="text-danger">{{ form.github.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <a href="?back=1" class="btn btn-secondary">Back</a>
+                            <button type="submit" class="btn btn-primary">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif step == 3 %}
+            <!-- Step 3: Experience -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 3: Work Experience</h4>
+                </div>
+                <div class="card-body">
+                    {% if experiences %}
+                        <h5>Added Experiences:</h5>
+                        <ul class="list-group mb-3">
+                            {% for exp in experiences %}
+                            <li class="list-group-item">
+                                <strong>{{ exp.role }}</strong> at {{ exp.company }}<br>
+                                <small class="text-muted">{{ exp.start_date }} - {{ exp.end_date|default:"Present" }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    <h5>Add Experience:</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.company.id_for_label }}" class="form-label">Company *</label>
+                            {{ form.company }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.role.id_for_label }}" class="form-label">Role *</label>
+                            {{ form.role }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date *</label>
+                                {{ form.start_date }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date (leave blank if current)</label>
+                                {{ form.end_date }}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                            {{ form.description }}
+                        </div>
+                        <button type="submit" name="action" value="add_experience" class="btn btn-success mb-3">Add Experience</button>
+                    </form>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="?back=1" class="btn btn-secondary">Back</a>
+                            <button type="submit" name="action" value="next" class="btn btn-primary">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif step == 4 %}
+            <!-- Step 4: Education -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 4: Education</h4>
+                </div>
+                <div class="card-body">
+                    {% if education %}
+                        <h5>Added Education:</h5>
+                        <ul class="list-group mb-3">
+                            {% for edu in education %}
+                            <li class="list-group-item">
+                                <strong>{{ edu.degree }}</strong> in {{ edu.field }}<br>
+                                <small class="text-muted">{{ edu.institution }} ({{ edu.start_year }} - {{ edu.end_year|default:"Present" }})</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    <h5>Add Education:</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.institution.id_for_label }}" class="form-label">Institution *</label>
+                            {{ form.institution }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.degree.id_for_label }}" class="form-label">Degree *</label>
+                            {{ form.degree }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.field.id_for_label }}" class="form-label">Field of Study *</label>
+                            {{ form.field }}
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.start_year.id_for_label }}" class="form-label">Start Year *</label>
+                                {{ form.start_year }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.end_year.id_for_label }}" class="form-label">End Year (leave blank if current)</label>
+                                {{ form.end_year }}
+                            </div>
+                        </div>
+                        <button type="submit" name="action" value="add_education" class="btn btn-success mb-3">Add Education</button>
+                    </form>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="?back=1" class="btn btn-secondary">Back</a>
+                            <button type="submit" name="action" value="next" class="btn btn-primary">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif step == 5 %}
+            <!-- Step 5: Skills -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 5: Skills</h4>
+                </div>
+                <div class="card-body">
+                    {% if skills %}
+                        <h5>Added Skills:</h5>
+                        <ul class="list-group mb-3">
+                            {% for skill in skills %}
+                            <li class="list-group-item">
+                                <strong>{{ skill.name }}</strong> <span class="badge bg-secondary">{{ skill.category }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    <h5>Add Skill:</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Skill Name *</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
+                            {{ form.category }}
+                        </div>
+                        <button type="submit" name="action" value="add_skill" class="btn btn-success mb-3">Add Skill</button>
+                    </form>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="?back=1" class="btn btn-secondary">Back</a>
+                            <button type="submit" name="action" value="next" class="btn btn-primary">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif step == 6 %}
+            <!-- Step 6: Projects -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 6: Projects</h4>
+                </div>
+                <div class="card-body">
+                    {% if projects %}
+                        <h5>Added Projects:</h5>
+                        <ul class="list-group mb-3">
+                            {% for project in projects %}
+                            <li class="list-group-item">
+                                <strong>{{ project.name }}</strong><br>
+                                <small class="text-muted">{{ project.technologies }}</small>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    
+                    <h5>Add Project:</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Project Name *</label>
+                            {{ form.name }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                            {{ form.description }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.technologies.id_for_label }}" class="form-label">Technologies *</label>
+                            {{ form.technologies }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="{{ form.url.id_for_label }}" class="form-label">Project URL</label>
+                            {{ form.url }}
+                        </div>
+                        <button type="submit" name="action" value="add_project" class="btn btn-success mb-3">Add Project</button>
+                    </form>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="?back=1" class="btn btn-secondary">Back</a>
+                            <button type="submit" name="action" value="next" class="btn btn-primary">Next</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        {% elif step == 7 %}
+            <!-- Step 7: Review and Save -->
+            <div class="card">
+                <div class="card-header">
+                    <h4>Step 7: Review and Save</h4>
+                </div>
+                <div class="card-body">
+                    <h5>Resume Summary</h5>
+                    <p><strong>Title:</strong> {{ wizard_data.title }}</p>
+                    <p><strong>Template:</strong> {{ wizard_data.template|title }}</p>
+                    
+                    {% if wizard_data.personal_info %}
+                        <h6 class="mt-3">Personal Information</h6>
+                        <p>{{ wizard_data.personal_info.full_name }} - {{ wizard_data.personal_info.email }}</p>
+                    {% endif %}
+                    
+                    {% if wizard_data.experiences %}
+                        <h6 class="mt-3">Experience ({{ wizard_data.experiences|length }} entries)</h6>
+                    {% endif %}
+                    
+                    {% if wizard_data.education %}
+                        <h6 class="mt-3">Education ({{ wizard_data.education|length }} entries)</h6>
+                    {% endif %}
+                    
+                    {% if wizard_data.skills %}
+                        <h6 class="mt-3">Skills ({{ wizard_data.skills|length }} skills)</h6>
+                    {% endif %}
+                    
+                    {% if wizard_data.projects %}
+                        <h6 class="mt-3">Projects ({{ wizard_data.projects|length }} projects)</h6>
+                    {% endif %}
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="d-flex justify-content-between">
+                            <a href="?back=1" class="btn btn-secondary">Back</a>
+                            <button type="submit" name="action" value="save" class="btn btn-success">Save Resume</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

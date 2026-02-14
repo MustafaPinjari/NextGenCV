@@ -1,0 +1,157 @@
+/* 
+ * Print-friendly CSS for PDF Resume Generation
+ * Uses absolute units (pt, px) for consistent PDF rendering
+ * Ensures text is selectable and ATS-compatible
+ */
+
+/* Base styles with absolute units */
+body {
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    font-size: 11pt;
+    line-height: 1.5;
+    color: #000;
+    background: #fff;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container with fixed width for consistent PDF output */
+.resume-container {
+    width: 8.5in;
+    margin: 0 auto;
+    padding: 0.5in;
+    background: #fff;
+}
+
+/* Header styling with absolute units */
+.resume-header {
+    text-align: center;
+    margin-bottom: 20pt;
+    border-bottom: 2pt solid #333;
+    padding-bottom: 15pt;
+}
+
+.resume-header h1 {
+    font-size: 24pt;
+    font-weight: bold;
+    margin: 0 0 8pt 0;
+    color: #000;
+}
+
+.resume-header .contact-info {
+    font-size: 10pt;
+    color: #333;
+    margin: 0;
+}
+
+.resume-header .contact-info a {
+    color: #000;
+    text-decoration: none;
+}
+
+/* Section styling */
+.resume-section {
+    margin-bottom: 20pt;
+}
+
+.resume-section h2 {
+    font-size: 14pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    border-bottom: 1pt solid #333;
+    padding-bottom: 5pt;
+    margin: 0 0 12pt 0;
+    color: #000;
+}
+
+/* Experience and Education entries */
+.entry {
+    margin-bottom: 15pt;
+    page-break-inside: avoid;
+}
+
+.entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4pt;
+}
+
+.entry-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000;
+}
+
+.entry-date {
+    font-size: 10pt;
+    color: #333;
+    font-style: italic;
+}
+
+.entry-subtitle {
+    font-size: 10pt;
+    color: #333;
+    margin-bottom: 6pt;
+}
+
+.entry-description {
+    font-size: 10pt;
+    color: #000;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Skills styling */
+.skills-category {
+    margin-bottom: 8pt;
+}
+
+.skills-category strong {
+    font-weight: bold;
+    color: #000;
+}
+
+.skills-list {
+    display: inline;
+    font-size: 10pt;
+}
+
+/* Projects styling */
+.project-title {
+    font-size: 11pt;
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 4pt;
+}
+
+.project-description {
+    font-size: 10pt;
+    color: #000;
+    margin-bottom: 4pt;
+    white-space: pre-wrap;
+}
+
+.project-tech {
+    font-size: 9pt;
+    color: #555;
+}
+
+/* Ensure links are visible and selectable */
+a {
+    color: #000;
+    text-decoration: underline;
+}
+
+/* Page break control */
+.resume-section {
+    page-break-inside: avoid;
+}
+
+/* Ensure all text is selectable (no images for text) */
+* {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
