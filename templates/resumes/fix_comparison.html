@@ -1,0 +1,694 @@
+{% extends 'base.html' %}
+
+{% block title %}Optimization Preview - {{ resume.title }} - ATS Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+.score-comparison {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.score-box {
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.score-value {
+    font-size: 3rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.score-label {
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+.improvement-delta {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+.improvement-delta.negative {
+    color: #ffc107;
+}
+
+.comparison-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.resume-column {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.resume-column.original {
+    border-color: #6c757d;
+}
+
+.resume-column.optimized {
+    border-color: #28a745;
+    background-color: #f0f9f4;
+}
+
+.column-header {
+    position: sticky;
+    top: 0;
+    background-color: inherit;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 2px solid currentColor;
+    z-index: 10;
+}
+
+.change-item {
+    background-color: white;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.change-item.bullet-rewrite {
+    border-left-color: #007bff;
+}
+
+.change-item.keyword-injection {
+    border-left-color: #28a745;
+}
+
+.change-item.quantification-suggestion {
+    border-left-color: #ffc107;
+}
+
+.change-item.formatting-standardization {
+    border-left-color: #6c757d;
+}
+
+.change-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.text-comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.text-box {
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.text-box.old {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+.text-box.new {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+.text-box-label {
+    font-weight: bold;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    color: #6c757d;
+}
+
+.highlight-keyword {
+    background-color: #fff3cd;
+    padding: 2px 4px;
+    border-radius: 2px;
+    font-weight: 600;
+}
+
+.changes-summary {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.summary-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.summary-icon {
+    font-size: 1.5rem;
+    margin-right: 15px;
+    width: 40px;
+    text-align: center;
+}
+
+.action-buttons {
+    position: sticky;
+    bottom: 0;
+    background-color: white;
+    padding: 20px;
+    border-top: 2px solid #dee2e6;
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+@media (max-width: 768px) {
+    .comparison-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .text-comparison {
+        grid-template-columns: 1fr;
+    }
+    
+    .score-comparison {
+        padding: 20px;
+    }
+    
+    .score-value {
+        font-size: 2rem;
+    }
+}
+
+.section-content {
+    margin-bottom: 20px;
+}
+
+.section-title {
+    font-weight: bold;
+    color: #495057;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.bullet-point {
+    padding-left: 20px;
+    margin-bottom: 8px;
+    position: relative;
+}
+
+.bullet-point:before {
+    content: "•";
+    position: absolute;
+    left: 5px;
+}
+
+.experience-item, .education-item, .project-item {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.experience-item:last-child, .education-item:last-child, .project-item:last-child {
+    border-bottom: none;
+}
+
+.item-title {
+    font-weight: bold;
+    color: #212529;
+}
+
+.item-subtitle {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.skill-badge {
+    display: inline-block;
+    background-color: #e9ecef;
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin: 3px;
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="bi bi-magic"></i> Optimization Preview
+            </h2>
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+        </div>
+        
+        <!-- Score Comparison -->
+        <div class="score-comparison">
+            <h3 class="text-center mb-4">
+                <i class="bi bi-graph-up-arrow"></i> ATS Score Improvement
+            </h3>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="score-box">
+                        <div class="score-label">Original Score</div>
+                        <div class="score-value">{{ original_score|floatformat:1 }}</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="score-box">
+                        <div class="score-label">Improvement</div>
+                        <div class="improvement-delta {% if improvement_delta < 0 %}negative{% endif %}">
+                            {% if improvement_delta > 0 %}+{% endif %}{{ improvement_delta|floatformat:1 }}
+                            <i class="bi bi-arrow-{% if improvement_delta >= 0 %}up{% else %}down{% endif %}"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="score-box">
+                        <div class="score-label">Optimized Score</div>
+                        <div class="score-value">{{ optimized_score|floatformat:1 }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <p class="mb-0">
+                    {% if improvement_delta >= 10 %}
+                        <i class="bi bi-emoji-smile"></i> Excellent improvement! Your resume is significantly more ATS-friendly.
+                    {% elif improvement_delta >= 5 %}
+                        <i class="bi bi-emoji-smile"></i> Great improvement! Your resume will perform better in ATS systems.
+                    {% elif improvement_delta > 0 %}
+                        <i class="bi bi-emoji-neutral"></i> Good improvement! Your resume is more optimized for ATS.
+                    {% else %}
+                        <i class="bi bi-info-circle"></i> Your resume is already well-optimized!
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Changes Summary -->
+        <div class="changes-summary">
+            <h4 class="mb-3"><i class="bi bi-list-check"></i> Changes Summary</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="summary-item">
+                        <div class="summary-icon text-primary">
+                            <i class="bi bi-pencil-square"></i>
+                        </div>
+                        <div>
+                            <strong>Bullet Points Rewritten:</strong>
+                            <span class="badge bg-primary ms-2">{{ changes_summary.bullet_rewrite|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="summary-item">
+                        <div class="summary-icon text-success">
+                            <i class="bi bi-key"></i>
+                        </div>
+                        <div>
+                            <strong>Keywords Injected:</strong>
+                            <span class="badge bg-success ms-2">{{ changes_summary.keyword_injection|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="summary-item">
+                        <div class="summary-icon text-warning">
+                            <i class="bi bi-123"></i>
+                        </div>
+                        <div>
+                            <strong>Quantifications Added:</strong>
+                            <span class="badge bg-warning ms-2">{{ changes_summary.quantification_suggestion|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="summary-item">
+                        <div class="summary-icon text-secondary">
+                            <i class="bi bi-layout-text-window"></i>
+                        </div>
+                        <div>
+                            <strong>Formatting Fixes:</strong>
+                            <span class="badge bg-secondary ms-2">{{ changes_summary.formatting_standardization|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detailed Changes by Category -->
+        {% if detailed_changes %}
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-list-ul"></i> Detailed Changes</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="changesAccordion">
+                    
+                    <!-- Bullet Point Changes -->
+                    {% if bullet_changes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingBullets">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBullets">
+                                <i class="bi bi-pencil-square text-primary me-2"></i>
+                                <strong>Bullet Points Rewritten ({{ bullet_changes|length }})</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseBullets" class="accordion-collapse collapse show" data-bs-parent="#changesAccordion">
+                            <div class="accordion-body">
+                                {% for change in bullet_changes %}
+                                <div class="change-item bullet-rewrite">
+                                    <div class="mb-2">
+                                        <span class="change-badge bg-primary text-white">BULLET REWRITE</span>
+                                        <span class="text-muted ms-2">{{ change.section }}</span>
+                                    </div>
+                                    {% if change.reason %}
+                                    <p class="mb-2"><small><strong>Reason:</strong> {{ change.reason }}</small></p>
+                                    {% endif %}
+                                    <div class="text-comparison">
+                                        <div>
+                                            <div class="text-box-label text-danger">Original</div>
+                                            <div class="text-box old">{{ change.old_text }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-box-label text-success">Optimized</div>
+                                            <div class="text-box new">{{ change.new_text }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Keyword Changes -->
+                    {% if keyword_changes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingKeywords">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseKeywords">
+                                <i class="bi bi-key text-success me-2"></i>
+                                <strong>Keywords Injected ({{ keyword_changes|length }})</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseKeywords" class="accordion-collapse collapse" data-bs-parent="#changesAccordion">
+                            <div class="accordion-body">
+                                {% for change in keyword_changes %}
+                                <div class="change-item keyword-injection">
+                                    <div class="mb-2">
+                                        <span class="change-badge bg-success text-white">KEYWORD ADDED</span>
+                                        <span class="text-muted ms-2">{{ change.section }}</span>
+                                    </div>
+                                    <p class="mb-2">
+                                        <strong>Keyword:</strong> 
+                                        <span class="highlight-keyword">{{ change.keyword }}</span>
+                                    </p>
+                                    {% if change.reason %}
+                                    <p class="mb-2"><small><strong>Reason:</strong> {{ change.reason }}</small></p>
+                                    {% endif %}
+                                    <div class="text-comparison">
+                                        <div>
+                                            <div class="text-box-label text-danger">Original</div>
+                                            <div class="text-box old">{{ change.old_text }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-box-label text-success">Optimized</div>
+                                            <div class="text-box new">{{ change.new_text }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Quantification Changes -->
+                    {% if quantification_changes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingQuant">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseQuant">
+                                <i class="bi bi-123 text-warning me-2"></i>
+                                <strong>Quantifications Suggested ({{ quantification_changes|length }})</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseQuant" class="accordion-collapse collapse" data-bs-parent="#changesAccordion">
+                            <div class="accordion-body">
+                                {% for change in quantification_changes %}
+                                <div class="change-item quantification-suggestion">
+                                    <div class="mb-2">
+                                        <span class="change-badge bg-warning text-dark">QUANTIFICATION</span>
+                                        <span class="text-muted ms-2">{{ change.section }}</span>
+                                    </div>
+                                    {% if change.reason %}
+                                    <p class="mb-2"><small><strong>Suggestion:</strong> {{ change.reason }}</small></p>
+                                    {% endif %}
+                                    <div class="text-comparison">
+                                        <div>
+                                            <div class="text-box-label text-danger">Original</div>
+                                            <div class="text-box old">{{ change.old_text }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-box-label text-success">Optimized</div>
+                                            <div class="text-box new">{{ change.new_text }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Formatting Changes -->
+                    {% if formatting_changes %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header" id="headingFormat">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFormat">
+                                <i class="bi bi-layout-text-window text-secondary me-2"></i>
+                                <strong>Formatting Standardized ({{ formatting_changes|length }})</strong>
+                            </button>
+                        </h2>
+                        <div id="collapseFormat" class="accordion-collapse collapse" data-bs-parent="#changesAccordion">
+                            <div class="accordion-body">
+                                {% for change in formatting_changes %}
+                                <div class="change-item formatting-standardization">
+                                    <div class="mb-2">
+                                        <span class="change-badge bg-secondary text-white">FORMATTING</span>
+                                        <span class="text-muted ms-2">{{ change.section }}</span>
+                                    </div>
+                                    {% if change.reason %}
+                                    <p class="mb-2"><small><strong>Fix:</strong> {{ change.reason }}</small></p>
+                                    {% endif %}
+                                    <div class="text-comparison">
+                                        <div>
+                                            <div class="text-box-label text-danger">Original</div>
+                                            <div class="text-box old">{{ change.old_text }}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-box-label text-success">Optimized</div>
+                                            <div class="text-box new">{{ change.new_text }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Side-by-Side Resume Comparison -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-columns-gap"></i> Side-by-Side Comparison</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="comparison-container p-3">
+                    <!-- Original Resume Column -->
+                    <div class="resume-column original">
+                        <div class="column-header">
+                            <h5 class="text-center mb-0">
+                                <i class="bi bi-file-earmark-text"></i> Original Resume
+                            </h5>
+                        </div>
+                        
+                        {% if resume.personal_info %}
+                        <div class="section-content">
+                            <div class="text-center mb-3">
+                                <h5 class="mb-1">{{ resume.personal_info.full_name }}</h5>
+                                <p class="text-muted mb-0 small">
+                                    {{ resume.personal_info.email }}
+                                    {% if resume.personal_info.phone %} | {{ resume.personal_info.phone }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if resume.experiences.all %}
+                        <div class="section-content">
+                            <div class="section-title">Work Experience</div>
+                            {% for exp in resume.experiences.all %}
+                            <div class="experience-item">
+                                <div class="item-title">{{ exp.role }}</div>
+                                <div class="item-subtitle">{{ exp.company }}</div>
+                                <div class="bullet-point">{{ exp.description|truncatewords:20 }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if resume.education.all %}
+                        <div class="section-content">
+                            <div class="section-title">Education</div>
+                            {% for edu in resume.education.all %}
+                            <div class="education-item">
+                                <div class="item-title">{{ edu.degree }} in {{ edu.field }}</div>
+                                <div class="item-subtitle">{{ edu.institution }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if resume.skills.all %}
+                        <div class="section-content">
+                            <div class="section-title">Skills</div>
+                            {% for skill in resume.skills.all %}
+                            <span class="skill-badge">{{ skill.name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Optimized Resume Column -->
+                    <div class="resume-column optimized">
+                        <div class="column-header">
+                            <h5 class="text-center mb-0">
+                                <i class="bi bi-stars"></i> Optimized Resume
+                            </h5>
+                        </div>
+                        
+                        {% if optimized_data.personal_info %}
+                        <div class="section-content">
+                            <div class="text-center mb-3">
+                                <h5 class="mb-1">{{ optimized_data.personal_info.full_name }}</h5>
+                                <p class="text-muted mb-0 small">
+                                    {{ optimized_data.personal_info.email }}
+                                    {% if optimized_data.personal_info.phone %} | {{ optimized_data.personal_info.phone }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if optimized_data.experiences %}
+                        <div class="section-content">
+                            <div class="section-title">Work Experience</div>
+                            {% for exp in optimized_data.experiences %}
+                            <div class="experience-item">
+                                <div class="item-title">{{ exp.role }}</div>
+                                <div class="item-subtitle">{{ exp.company }}</div>
+                                <div class="bullet-point">{{ exp.description|truncatewords:20 }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if optimized_data.education %}
+                        <div class="section-content">
+                            <div class="section-title">Education</div>
+                            {% for edu in optimized_data.education %}
+                            <div class="education-item">
+                                <div class="item-title">{{ edu.degree }} in {{ edu.field }}</div>
+                                <div class="item-subtitle">{{ edu.institution }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        {% if optimized_data.skills %}
+                        <div class="section-content">
+                            <div class="section-title">Skills</div>
+                            {% for skill in optimized_data.skills %}
+                            <span class="skill-badge">{{ skill.name }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <div class="row">
+                <div class="col-md-6 mb-2 mb-md-0">
+                    <form method="post" action="{% url 'fix_reject' resume.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger btn-lg w-100">
+                            <i class="bi bi-x-circle"></i> Reject Changes
+                        </button>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <form method="post" action="{% url 'fix_accept' resume.id %}" id="acceptForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-lg w-100" id="acceptBtn">
+                            <i class="bi bi-check-circle"></i> Accept & Apply Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 
+                    Accepting changes will create a new version of your resume. Your original will be preserved.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const acceptForm = document.getElementById('acceptForm');
+    const acceptBtn = document.getElementById('acceptBtn');
+    
+    // Show loading state on accept
+    acceptForm.addEventListener('submit', function() {
+        acceptBtn.disabled = true;
+        acceptBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Applying changes...';
+    });
+});
+</script>
+{% endblock %}

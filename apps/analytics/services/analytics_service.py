@@ -5,18 +5,32 @@ from django.db.models import Avg, Count, Q
 from apps.resumes.models import Resume, ResumeAnalysis, OptimizationHistory
 from apps.analyzer.services.action_verb_analyzer import ActionVerbAnalyzerService
 from apps.analyzer.services.quantification_detector import QuantificationDetectorService
+from .cache_utils import (
+    get_cached_resume_health,
+    cache_resume_health,
+    get_cached_score_trends,
+    cache_score_trends,
+    get_cached_analytics_data,
+    cache_analytics_data
+)
 
 
 class AnalyticsService:
     """
     Service for calculating resume analytics and health metrics.
     Provides comprehensive insights into resume quality and improvement trends.
+    
+    Uses caching to improve performance for expensive calculations.
+    Requirements: 18.3
     """
     
     @staticmethod
     def calculate_resume_health(resume: Resume) -> float:
         """
         Calculate overall resume health score (0-100).
+        
+        Uses caching to avoid recalculating for the same resume.
+        Cache is valid for 5 minutes.
         
         Components:
         - Section completeness (40 points)
@@ -30,7 +44,15 @@ class AnalyticsService:
             
         Returns:
             float: Health score between 0 and 100
+            
+        Requirements: 18.3
         """
+        # Try to get from cache first
+        cached_score = get_cached_resume_health(resume.id)
+        if cached_score is not None:
+            return cached_score
+        
+        # Calculate health score
         health_score = 0.0
         
         # 1. Section completeness (40 points)
@@ -95,12 +117,19 @@ class AnalyticsService:
         if resume.template in ats_friendly_templates:
             health_score += 10
         
-        return round(health_score, 2)
+        # Round and cache the result
+        health_score = round(health_score, 2)
+        cache_resume_health(resume.id, health_score)
+        
+        return health_score
     
     @staticmethod
     def get_score_trends(user: User, window_size: int = 5) -> Dict:
         """
         Calculate score trends over time with moving average.
+        
+        Uses caching to avoid recalculating for the same user.
+        Cache is valid for 10 minutes.
         
         Args:
             user: User instance
@@ -108,7 +137,14 @@ class AnalyticsService:
             
         Returns:
             Dict: Trend data including scores, moving average, and improvement rate
+            
+        Requirements: 18.3
         """
+        # Try to get from cache first
+        cached_trends = get_cached_score_trends(user.id)
+        if cached_trends is not None:
+            return cached_trends
+        
         # Get all analyses for user's resumes
         analyses = ResumeAnalysis.objects.filter(
             resume__user=user
@@ -143,13 +179,18 @@ class AnalyticsService:
         else:
             trend = 'stable'
         
-        return {
+        result = {
             'scores': scores,
             'timestamps': timestamps,
             'moving_average': moving_avg,
             'improvement_rate': round(improvement_rate, 2),
             'trend': trend
         }
+        
+        # Cache the result
+        cache_score_trends(user.id, result)
+        
+        return result
     
     @staticmethod
     def _calculate_moving_average(scores: List[float], window_size: int) -> List[float]:

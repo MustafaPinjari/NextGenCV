@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}Version {{ version.version_number }} - {{ resume.title }} - ATS Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .version-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .metadata-card {
+        background: #f8f9fa;
+        border-left: 4px solid #0d6efd;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .read-only-badge {
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(255, 193, 7, 0.95);
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .section-header {
+        border-bottom: 2px solid #0d6efd;
+        padding-bottom: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .score-display {
+        font-size: 3rem;
+        font-weight: 700;
+    }
+    
+    .score-good {
+        color: #198754;
+    }
+    
+    .score-medium {
+        color: #ffc107;
+    }
+    
+    .score-poor {
+        color: #dc3545;
+    }
+    
+    @media (max-width: 768px) {
+        .read-only-badge {
+            position: static;
+            margin-bottom: 1rem;
+        }
+        
+        .version-header {
+            padding: 1rem;
+        }
+        
+        .score-display {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Read-Only Badge -->
+        <div class="read-only-badge">
+            <i class="bi bi-lock-fill"></i>
+            <strong>Read-Only View</strong> - Historical Version
+        </div>
+
+        <!-- Version Header -->
+        <div class="version-header">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="mb-2">
+                        <i class="bi bi-clock-history"></i> Version {{ version.version_number }}
+                    </h2>
+                    <h4 class="mb-0">{{ resume.title }}</h4>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    {% if is_current_version %}
+                    <span class="badge bg-light text-dark fs-5">
+                        <i class="bi bi-check-circle-fill text-success"></i> Current Version
+                    </span>
+                    {% else %}
+                    <span class="badge bg-light text-dark fs-5">
+                        <i class="bi bi-archive"></i> Historical Version
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Metadata Card -->
+        <div class="metadata-card">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="mb-2 mb-md-0">
+                        <div class="text-muted small">Created</div>
+                        <div class="fw-bold">
+                            <i class="bi bi-calendar"></i> {{ version.created_at|date:"M d, Y" }}
+                        </div>
+                        <div class="text-muted small">{{ version.created_at|date:"g:i A" }}</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-2 mb-md-0">
+                        <div class="text-muted small">Modification Type</div>
+                        <div class="fw-bold">
+                            {% if version.modification_type == 'optimized' %}
+                            <span class="badge bg-success">
+                                <i class="bi bi-stars"></i> Optimized
+                            </span>
+                            {% elif version.modification_type == 'restored' %}
+                            <span class="badge bg-warning">
+                                <i class="bi bi-arrow-counterclockwise"></i> Restored
+                            </span>
+                            {% elif version.modification_type == 'manual' %}
+                            <span class="badge bg-secondary">
+                                <i class="bi bi-pencil"></i> Manual Edit
+                            </span>
+                            {% else %}
+                            <span class="badge bg-info">
+                                <i class="bi bi-file-earmark"></i> {{ version.modification_type|title }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="mb-2 mb-md-0">
+                        <div class="text-muted small">ATS Score</div>
+                        {% if version.ats_score %}
+                        <div class="fw-bold {% if version.ats_score >= 80 %}text-success{% elif version.ats_score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                            <i class="bi bi-graph-up"></i> {{ version.ats_score|floatformat:1 }}%
+                        </div>
+                        {% else %}
+                        <div class="text-muted">Not analyzed</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div>
+                        <div class="text-muted small">Version Number</div>
+                        <div class="fw-bold">
+                            <i class="bi bi-hash"></i> {{ version.version_number }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if version.user_notes %}
+            <div class="mt-3 pt-3 border-top">
+                <div class="text-muted small">Notes</div>
+                <div class="fst-italic">
+                    <i class="bi bi-chat-left-text"></i> {{ version.user_notes }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'version_list' resume.id %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Version History
+            </a>
+            
+            <div class="btn-group">
+                {% if not is_current_version %}
+                <form method="post" action="{% url 'version_restore' resume.id version.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-arrow-counterclockwise"></i> Restore This Version
+                    </button>
+                </form>
+                {% endif %}
+                <a href="{% url 'resume_detail' resume.id %}" class="btn btn-primary">
+                    <i class="bi bi-file-earmark-text"></i> View Current Resume
+                </a>
+            </div>
+        </div>
+
+        <!-- Resume Content (Read-Only) -->
+        <div class="card shadow">
+            <div class="card-body p-4 p-md-5">
+                <!-- Personal Information -->
+                {% if personal_info %}
+                <div class="text-center mb-4 pb-4 border-bottom">
+                    <h3 class="mb-2">{{ personal_info.full_name|default:"[Name Not Set]" }}</h3>
+                    <p class="text-muted mb-1">
+                        {% if personal_info.email %}
+                            <i class="bi bi-envelope"></i> {{ personal_info.email }}
+                        {% endif %}
+                        {% if personal_info.phone %}
+                            {% if personal_info.email %} | {% endif %}
+                            <i class="bi bi-telephone"></i> {{ personal_info.phone }}
+                        {% endif %}
+                    </p>
+                    {% if personal_info.location %}
+                    <p class="text-muted mb-1">
+                        <i class="bi bi-geo-alt"></i> {{ personal_info.location }}
+                    </p>
+                    {% endif %}
+                    <p class="mb-0">
+                        {% if personal_info.linkedin %}
+                            <a href="{{ personal_info.linkedin }}" target="_blank" class="text-decoration-none me-3">
+                                <i class="bi bi-linkedin"></i> LinkedIn
+                            </a>
+                        {% endif %}
+                        {% if personal_info.github %}
+                            <a href="{{ personal_info.github }}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-github"></i> GitHub
+                            </a>
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+                
+                <!-- Work Experience -->
+                {% if experiences %}
+                <div class="mb-4">
+                    <h4 class="section-header">
+                        <i class="bi bi-briefcase"></i> Work Experience
+                    </h4>
+                    {% for exp in experiences %}
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h5 class="mb-1">{{ exp.role }}</h5>
+                                <h6 class="text-muted mb-0">{{ exp.company }}</h6>
+                            </div>
+                            <span class="badge bg-secondary">
+                                {{ exp.start_date }} - {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}
+                            </span>
+                        </div>
+                        <div class="text-muted">{{ exp.description|linebreaks }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Education -->
+                {% if education %}
+                <div class="mb-4">
+                    <h4 class="section-header">
+                        <i class="bi bi-mortarboard"></i> Education
+                    </h4>
+                    {% for edu in education %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <div>
+                                <h5 class="mb-1">{{ edu.degree }} in {{ edu.field }}</h5>
+                                <h6 class="text-muted mb-0">{{ edu.institution }}</h6>
+                            </div>
+                            <span class="badge bg-secondary">
+                                {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Skills -->
+                {% if skills %}
+                <div class="mb-4">
+                    <h4 class="section-header">
+                        <i class="bi bi-gear"></i> Skills
+                    </h4>
+                    {% regroup skills by category as skills_by_category %}
+                    {% for category in skills_by_category %}
+                        <div class="mb-3">
+                            <strong class="text-primary">{{ category.grouper }}:</strong>
+                            <div class="mt-2">
+                                {% for skill in category.list %}
+                                    <span class="badge bg-light text-dark border me-1 mb-1">{{ skill.name }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Projects -->
+                {% if projects %}
+                <div class="mb-4">
+                    <h4 class="section-header">
+                        <i class="bi bi-code-square"></i> Projects
+                    </h4>
+                    {% for proj in projects %}
+                    <div class="mb-3">
+                        <h5 class="mb-1">
+                            {{ proj.name }}
+                            {% if proj.url %}
+                                <a href="{{ proj.url }}" target="_blank" class="text-decoration-none">
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                </a>
+                            {% endif %}
+                        </h5>
+                        <p class="mb-1">{{ proj.description }}</p>
+                        {% if proj.technologies %}
+                        <p class="text-muted mb-0">
+                            <small><strong>Technologies:</strong> {{ proj.technologies }}</small>
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Empty State -->
+                {% if not personal_info and not experiences and not education and not skills and not projects %}
+                <div class="text-center py-5">
+                    <i class="bi bi-file-earmark-x text-muted" style="font-size: 4rem;"></i>
+                    <p class="text-muted mt-3">This version has no content.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bottom Actions -->
+        <div class="mt-4 d-flex justify-content-between">
+            <a href="{% url 'version_list' resume.id %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Version History
+            </a>
+            
+            {% if not is_current_version %}
+            <form method="post" action="{% url 'version_restore' resume.id version.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-warning">
+                    <i class="bi bi-arrow-counterclockwise"></i> Restore This Version
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

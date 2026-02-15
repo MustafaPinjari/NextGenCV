@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Version History - {{ resume.title }} - ATS Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding: 20px 0;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 50px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #dee2e6;
+    }
+    
+    .version-card {
+        position: relative;
+        margin-bottom: 30px;
+        padding-left: 90px;
+    }
+    
+    .version-marker {
+        position: absolute;
+        left: 38px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        background: #fff;
+        border: 3px solid #0d6efd;
+        z-index: 1;
+    }
+    
+    .version-marker.current {
+        background: #0d6efd;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.2);
+    }
+    
+    .version-marker.optimized {
+        border-color: #198754;
+    }
+    
+    .version-marker.restored {
+        border-color: #ffc107;
+    }
+    
+    .version-badge {
+        position: absolute;
+        left: 0;
+        top: 0;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #6c757d;
+    }
+    
+    .score-badge {
+        font-size: 1.25rem;
+        font-weight: 700;
+    }
+    
+    .score-good {
+        color: #198754;
+    }
+    
+    .score-medium {
+        color: #ffc107;
+    }
+    
+    .score-poor {
+        color: #dc3545;
+    }
+    
+    @media (max-width: 768px) {
+        .timeline::before {
+            left: 20px;
+        }
+        
+        .version-card {
+            padding-left: 60px;
+        }
+        
+        .version-marker {
+            left: 8px;
+        }
+        
+        .version-badge {
+            font-size: 0.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Version History</h2>
+                <p class="text-muted mb-0">{{ resume.title }}</p>
+            </div>
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Resume
+            </a>
+        </div>
+
+        <!-- Info Alert -->
+        <div class="alert alert-info mb-4">
+            <i class="bi bi-info-circle"></i>
+            <strong>Version Control:</strong> Every change to your resume creates a new version. 
+            You can compare versions, restore previous versions, or view the complete history of changes.
+            Current version: <strong>v{{ current_version_number }}</strong>
+        </div>
+
+        {% if versions %}
+            <!-- Compare Mode Toggle -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1">Compare Versions</h5>
+                            <p class="text-muted mb-0 small">Select two versions to see what changed</p>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary" id="toggleCompareMode">
+                            <i class="bi bi-arrow-left-right"></i> Enable Compare Mode
+                        </button>
+                    </div>
+                    
+                    <!-- Compare Form (hidden by default) -->
+                    <form method="get" action="{% url 'version_compare' resume.id %}" id="compareForm" style="display: none;" class="mt-3">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label">First Version (Older)</label>
+                                <select name="version1" class="form-select" required>
+                                    <option value="">Select version...</option>
+                                    {% for version in versions %}
+                                    <option value="{{ version.id }}">
+                                        v{{ version.version_number }} - {{ version.created_at|date:"M d, Y g:i A" }}
+                                        {% if version.ats_score %} (Score: {{ version.ats_score|floatformat:1 }}){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label">Second Version (Newer)</label>
+                                <select name="version2" class="form-select" required>
+                                    <option value="">Select version...</option>
+                                    {% for version in versions %}
+                                    <option value="{{ version.id }}">
+                                        v{{ version.version_number }} - {{ version.created_at|date:"M d, Y g:i A" }}
+                                        {% if version.ats_score %} (Score: {{ version.ats_score|floatformat:1 }}){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-arrow-left-right"></i> Compare
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Timeline View -->
+            <div class="timeline">
+                {% for version in versions %}
+                <div class="version-card">
+                    <!-- Version Marker -->
+                    <div class="version-marker {% if version.version_number == current_version_number %}current{% elif version.modification_type == 'optimized' %}optimized{% elif version.modification_type == 'restored' %}restored{% endif %}"></div>
+                    
+                    <!-- Version Badge -->
+                    <div class="version-badge">
+                        v{{ version.version_number }}
+                    </div>
+                    
+                    <!-- Version Card -->
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <!-- Version Header -->
+                                    <div class="d-flex align-items-center mb-2">
+                                        <h5 class="mb-0 me-2">Version {{ version.version_number }}</h5>
+                                        {% if version.version_number == current_version_number %}
+                                        <span class="badge bg-primary">Current</span>
+                                        {% endif %}
+                                        {% if version.modification_type == 'optimized' %}
+                                        <span class="badge bg-success ms-1">
+                                            <i class="bi bi-stars"></i> Optimized
+                                        </span>
+                                        {% elif version.modification_type == 'restored' %}
+                                        <span class="badge bg-warning ms-1">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Restored
+                                        </span>
+                                        {% elif version.modification_type == 'manual' %}
+                                        <span class="badge bg-secondary ms-1">
+                                            <i class="bi bi-pencil"></i> Manual Edit
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <!-- Metadata -->
+                                    <p class="text-muted mb-2">
+                                        <i class="bi bi-clock"></i> {{ version.created_at|date:"F d, Y g:i A" }}
+                                    </p>
+                                    
+                                    <!-- User Notes -->
+                                    {% if version.user_notes %}
+                                    <p class="mb-2">
+                                        <i class="bi bi-chat-left-text"></i>
+                                        <em>{{ version.user_notes }}</em>
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-4 text-md-end">
+                                    <!-- ATS Score -->
+                                    {% if version.ats_score %}
+                                    <div class="mb-3">
+                                        <div class="text-muted small">ATS Score</div>
+                                        <div class="score-badge {% if version.ats_score >= 80 %}score-good{% elif version.ats_score >= 60 %}score-medium{% else %}score-poor{% endif %}">
+                                            {{ version.ats_score|floatformat:1 }}%
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Action Buttons -->
+                                    <div class="btn-group-vertical w-100" role="group">
+                                        <a href="{% url 'version_detail' resume.id version.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        {% if version.version_number != current_version_number %}
+                                        <form method="post" action="{% url 'version_restore' resume.id version.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-warning w-100">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Restore
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-5">
+                <div class="mb-4">
+                    <i class="bi bi-clock-history text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h3 class="text-muted">No Version History</h3>
+                <p class="text-muted mb-4">This resume doesn't have any version history yet.</p>
+                <a href="{% url 'resume_detail' resume.id %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Back to Resume
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('toggleCompareMode');
+    const compareForm = document.getElementById('compareForm');
+    
+    if (toggleBtn && compareForm) {
+        toggleBtn.addEventListener('click', function() {
+            if (compareForm.style.display === 'none') {
+                compareForm.style.display = 'block';
+                toggleBtn.innerHTML = '<i class="bi bi-x-circle"></i> Cancel Compare';
+                toggleBtn.classList.remove('btn-outline-primary');
+                toggleBtn.classList.add('btn-outline-secondary');
+            } else {
+                compareForm.style.display = 'none';
+                toggleBtn.innerHTML = '<i class="bi bi-arrow-left-right"></i> Enable Compare Mode';
+                toggleBtn.classList.remove('btn-outline-secondary');
+                toggleBtn.classList.add('btn-outline-primary');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

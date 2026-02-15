@@ -14,6 +14,9 @@
                 <a href="{% url 'resume_update' resume.id %}" class="btn btn-primary" title="Edit resume">
                     <i class="bi bi-pencil"></i> Edit
                 </a>
+                <a href="{% url 'version_list' resume.id %}" class="btn btn-outline-info" title="View version history">
+                    <i class="bi bi-clock-history"></i> Versions
+                </a>
                 <a href="#" onclick="analyzeResume({{ resume.id }}); return false;" class="btn btn-warning" title="Analyze with ATS">
                     <i class="bi bi-graph-up"></i> Analyze
                 </a>

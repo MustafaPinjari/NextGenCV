@@ -45,12 +45,13 @@ class PDFExportService:
         return html_string
 
     @staticmethod
-    def generate_pdf(resume_id):
+    def generate_pdf(resume_id, version_id=None):
         """
         Generate PDF from resume and return as bytes.
         
         Args:
             resume_id: ID of the resume to export
+            version_id: Optional ID of specific version to export
         
         Returns:
             bytes: PDF file content as bytes
@@ -71,6 +72,13 @@ class PDFExportService:
                 id=resume_id
             )
             
+            # If version_id is provided, create a temporary resume from version snapshot
+            if version_id:
+                from .models import ResumeVersion
+                from .services.snapshot_utils import create_resume_from_snapshot
+                version = get_object_or_404(ResumeVersion, id=version_id, resume=resume)
+                resume = create_resume_from_snapshot(resume, version.snapshot_data)
+            
             # Render HTML
             html_string = PDFExportService.render_resume_html(resume)
             
@@ -78,7 +86,8 @@ class PDFExportService:
             # Note: WeasyPrint 60.1 has simplified API
             pdf_bytes = HTML(string=html_string).write_pdf()
             
-            logger.info(f'Successfully generated PDF for resume {resume_id}')
+            logger.info(f'Successfully generated PDF for resume {resume_id}' + 
+                       (f' version {version_id}' if version_id else ''))
             return pdf_bytes, resume
             
         except Exception as e:

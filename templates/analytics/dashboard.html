@@ -1,0 +1,636 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - ATS Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.health-meter-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.health-meter {
+    position: relative;
+    height: 40px;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 20px 0;
+}
+
+.health-meter-fill {
+    height: 100%;
+    border-radius: 20px;
+    transition: width 1s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 1.1rem;
+}
+
+.health-meter-fill.excellent {
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+}
+
+.health-meter-fill.good {
+    background: linear-gradient(90deg, #17a2b8 0%, #3498db 100%);
+}
+
+.health-meter-fill.fair {
+    background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+}
+
+.health-meter-fill.poor {
+    background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+}
+
+.stat-card {
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin: 10px 0;
+}
+
+.stat-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chart-container {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.chart-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #495057;
+}
+
+.keyword-list {
+    background-color: white;
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.keyword-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+    transition: background-color 0.2s;
+}
+
+.keyword-item:hover {
+    background-color: #e9ecef;
+}
+
+.keyword-name {
+    font-weight: 600;
+    color: #495057;
+}
+
+.keyword-count {
+    background-color: #667eea;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.section-completeness-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.completeness-item {
+    background-color: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.completeness-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.completeness-bar {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.completeness-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    transition: width 0.8s ease-in-out;
+}
+
+.completeness-percentage {
+    font-weight: bold;
+    color: #495057;
+}
+
+.trend-indicator {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.trend-indicator.improving {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.trend-indicator.declining {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.trend-indicator.stable {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.empty-state-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.empty-state-text {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 20px;
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+    }
+    
+    .section-completeness-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <h2 class="mb-3">
+                <i class="bi bi-graph-up"></i> Analytics Dashboard
+            </h2>
+            <p class="mb-0 opacity-75">
+                Track your resume performance and get insights to improve your ATS score
+            </p>
+        </div>
+        
+        {% if not has_resumes %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <h3 class="empty-state-title">{{ message }}</h3>
+            <p class="empty-state-text">
+                Start by creating your first resume to see comprehensive analytics and insights.
+            </p>
+            <a href="{% url 'resume_create' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Create Resume
+            </a>
+        </div>
+        {% else %}
+        
+        <!-- Resume Health Meter -->
+        <div class="health-meter-container">
+            <h4 class="mb-3">
+                <i class="bi bi-heart-pulse"></i> Overall Resume Health
+            </h4>
+            <div class="health-meter">
+                <div class="health-meter-fill {{ health_color }}" style="width: {{ average_health }}%;">
+                    {{ average_health }}%
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <span class="badge bg-{{ health_color }} fs-6">{{ health_status|upper }}</span>
+                <p class="text-muted mt-2 mb-0">
+                    {% if health_status == 'excellent' %}
+                        <i class="bi bi-emoji-smile"></i> Your resumes are in excellent shape! Keep up the great work.
+                    {% elif health_status == 'good' %}
+                        <i class="bi bi-emoji-smile"></i> Your resumes are performing well. A few tweaks could make them even better.
+                    {% elif health_status == 'fair' %}
+                        <i class="bi bi-emoji-neutral"></i> Your resumes need some attention. Check the recommendations below.
+                    {% else %}
+                        <i class="bi bi-emoji-frown"></i> Your resumes need improvement. Focus on completing all sections.
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        
+        <!-- Quick Stats Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-primary">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div class="stat-value text-primary">{{ total_resumes }}</div>
+                    <div class="stat-label">Total Resumes</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-info">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div class="stat-value text-info">{{ total_versions }}</div>
+                    <div class="stat-label">Total Versions</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-success">
+                        <i class="bi bi-magic"></i>
+                    </div>
+                    <div class="stat-value text-success">{{ total_optimizations }}</div>
+                    <div class="stat-label">Optimizations</div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="stat-card text-center">
+                    <div class="stat-icon text-warning">
+                        <i class="bi bi-arrow-up-circle"></i>
+                    </div>
+                    <div class="stat-value text-warning">+{{ average_improvement }}</div>
+                    <div class="stat-label">Avg Improvement</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Score Trend Chart -->
+        <div class="chart-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="chart-title mb-0">
+                    <i class="bi bi-graph-up-arrow"></i> ATS Score Trend
+                </h5>
+                <span class="trend-indicator {{ trend_direction }}">
+                    <i class="bi bi-arrow-{% if trend_direction == 'improving' %}up{% elif trend_direction == 'declining' %}down{% else %}right{% endif %}"></i>
+                    {{ trend_direction|title }}
+                    {% if improvement_rate != 0 %}
+                        ({{ improvement_rate|floatformat:2 }} pts/analysis)
+                    {% endif %}
+                </span>
+            </div>
+            <canvas id="scoreTrendChart" height="80"></canvas>
+        </div>
+        
+        <!-- Two Column Layout -->
+        <div class="row">
+            <!-- Top Missing Keywords -->
+            <div class="col-lg-6">
+                <div class="keyword-list">
+                    <h5 class="chart-title">
+                        <i class="bi bi-key"></i> Top Missing Keywords
+                    </h5>
+                    {% if top_missing_keywords %}
+                        <p class="text-muted small mb-3">
+                            Keywords frequently missing from your resumes across all analyses
+                        </p>
+                        {% for keyword, count in top_missing_keywords %}
+                        <div class="keyword-item">
+                            <span class="keyword-name">{{ keyword }}</span>
+                            <span class="keyword-count">{{ count }} time{{ count|pluralize }}</span>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-info-circle"></i>
+                            <p class="mb-0">No keyword data available yet. Analyze your resume with a job description to see missing keywords.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Section Completeness -->
+            <div class="col-lg-6">
+                <div class="keyword-list">
+                    <h5 class="chart-title">
+                        <i class="bi bi-list-check"></i> Section Completeness
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        Percentage of your resumes with each section completed
+                    </p>
+                    <div class="section-completeness-grid">
+                        <div class="completeness-item">
+                            <div class="completeness-label">
+                                <i class="bi bi-person"></i> Personal Info
+                            </div>
+                            <div class="completeness-bar">
+                                <div class="completeness-bar-fill" style="width: {{ section_completeness.personal_info }}%;"></div>
+                            </div>
+                            <div class="completeness-percentage">{{ section_completeness.personal_info }}%</div>
+                        </div>
+                        <div class="completeness-item">
+                            <div class="completeness-label">
+                                <i class="bi bi-briefcase"></i> Experience
+                            </div>
+                            <div class="completeness-bar">
+                                <div class="completeness-bar-fill" style="width: {{ section_completeness.experiences }}%;"></div>
+                            </div>
+                            <div class="completeness-percentage">{{ section_completeness.experiences }}%</div>
+                        </div>
+                        <div class="completeness-item">
+                            <div class="completeness-label">
+                                <i class="bi bi-mortarboard"></i> Education
+                            </div>
+                            <div class="completeness-bar">
+                                <div class="completeness-bar-fill" style="width: {{ section_completeness.education }}%;"></div>
+                            </div>
+                            <div class="completeness-percentage">{{ section_completeness.education }}%</div>
+                        </div>
+                        <div class="completeness-item">
+                            <div class="completeness-label">
+                                <i class="bi bi-tools"></i> Skills
+                            </div>
+                            <div class="completeness-bar">
+                                <div class="completeness-bar-fill" style="width: {{ section_completeness.skills }}%;"></div>
+                            </div>
+                            <div class="completeness-percentage">{{ section_completeness.skills }}%</div>
+                        </div>
+                        <div class="completeness-item">
+                            <div class="completeness-label">
+                                <i class="bi bi-folder"></i> Projects
+                            </div>
+                            <div class="completeness-bar">
+                                <div class="completeness-bar-fill" style="width: {{ section_completeness.projects }}%;"></div>
+                            </div>
+                            <div class="completeness-percentage">{{ section_completeness.projects }}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Individual Resume Health Scores -->
+        {% if resume_health_scores %}
+        <div class="chart-container">
+            <h5 class="chart-title">
+                <i class="bi bi-bar-chart"></i> Health Score by Resume
+            </h5>
+            <canvas id="healthByResumeChart" height="80"></canvas>
+        </div>
+        {% endif %}
+        
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-md-4 mb-3">
+                <a href="{% url 'analytics_trends' %}" class="btn btn-outline-primary btn-lg w-100">
+                    <i class="bi bi-graph-up"></i> View Detailed Trends
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{% url 'improvement_report' %}" class="btn btn-outline-success btn-lg w-100">
+                    <i class="bi bi-file-earmark-text"></i> Improvement Report
+                </a>
+            </div>
+            <div class="col-md-4 mb-3">
+                <a href="{% url 'resume_list' %}" class="btn btn-outline-info btn-lg w-100">
+                    <i class="bi bi-list"></i> View All Resumes
+                </a>
+            </div>
+        </div>
+        
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if has_resumes %}
+    // Parse chart data from context
+    const chartData = {{ chart_data_json|safe }};
+    
+    // Score Trend Chart
+    if (chartData.score_trend && chartData.score_trend.labels.length > 0) {
+        const scoreTrendCtx = document.getElementById('scoreTrendChart').getContext('2d');
+        new Chart(scoreTrendCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.score_trend.labels,
+                datasets: [
+                    {
+                        label: 'ATS Score',
+                        data: chartData.score_trend.scores,
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    },
+                    {
+                        label: 'Moving Average',
+                        data: chartData.score_trend.moving_average,
+                        borderColor: 'rgb(118, 75, 162)',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 3,
+                        pointHoverRadius: 5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(1);
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'ATS Score'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Analysis Date'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Health by Resume Chart
+    if (chartData.health_by_resume && chartData.health_by_resume.labels.length > 0) {
+        const healthByResumeCtx = document.getElementById('healthByResumeChart').getContext('2d');
+        new Chart(healthByResumeCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.health_by_resume.labels,
+                datasets: [{
+                    label: 'Health Score',
+                    data: chartData.health_by_resume.data,
+                    backgroundColor: chartData.health_by_resume.data.map(score => {
+                        if (score >= 80) return 'rgba(40, 167, 69, 0.8)';
+                        if (score >= 60) return 'rgba(23, 162, 184, 0.8)';
+                        if (score >= 40) return 'rgba(255, 193, 7, 0.8)';
+                        return 'rgba(220, 53, 69, 0.8)';
+                    }),
+                    borderColor: chartData.health_by_resume.data.map(score => {
+                        if (score >= 80) return 'rgb(40, 167, 69)';
+                        if (score >= 60) return 'rgb(23, 162, 184)';
+                        if (score >= 40) return 'rgb(255, 193, 7)';
+                        return 'rgb(220, 53, 69)';
+                    }),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Health Score: ' + context.parsed.y.toFixed(1) + '%';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Health Score'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Resume'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+});
+</script>
+{% endblock %}

@@ -14,6 +14,10 @@ class AnalyticsServiceTest(TestCase):
     
     def setUp(self):
         """Set up test data"""
+        # Clear cache before each test
+        from django.core.cache import cache
+        cache.clear()
+        
         # Create test user
         self.user = User.objects.create_user(
             username='testuser',
@@ -123,7 +127,7 @@ class AnalyticsServiceTest(TestCase):
     
     def test_get_score_trends_with_data(self):
         """Test score trends with multiple analyses"""
-        # Create analyses with improving scores
+        # Create analyses with improving scores (in chronological order)
         scores = [60.0, 65.0, 70.0, 75.0, 80.0]
         for i, score in enumerate(scores):
             ResumeAnalysis.objects.create(
@@ -136,7 +140,7 @@ class AnalyticsServiceTest(TestCase):
                 quantification_score=score,
                 action_verb_score=score,
                 final_score=score,
-                analysis_timestamp=timezone.now() - timedelta(days=len(scores) - i)
+                analysis_timestamp=timezone.now() + timedelta(days=i)  # Changed to + for chronological order
             )
         
         trends = AnalyticsService.get_score_trends(self.user)
@@ -149,7 +153,7 @@ class AnalyticsServiceTest(TestCase):
     
     def test_get_score_trends_declining(self):
         """Test score trends with declining scores"""
-        # Create analyses with declining scores
+        # Create analyses with declining scores (in chronological order)
         scores = [80.0, 75.0, 70.0, 65.0, 60.0]
         for i, score in enumerate(scores):
             ResumeAnalysis.objects.create(
@@ -162,7 +166,7 @@ class AnalyticsServiceTest(TestCase):
                 quantification_score=score,
                 action_verb_score=score,
                 final_score=score,
-                analysis_timestamp=timezone.now() - timedelta(days=len(scores) - i)
+                analysis_timestamp=timezone.now() + timedelta(days=i)  # Changed to + for chronological order
             )
         
         trends = AnalyticsService.get_score_trends(self.user)
@@ -172,7 +176,7 @@ class AnalyticsServiceTest(TestCase):
     
     def test_get_score_trends_stable(self):
         """Test score trends with stable scores"""
-        # Create analyses with stable scores
+        # Create analyses with stable scores (in chronological order)
         scores = [70.0, 70.5, 70.2, 70.3, 70.1]
         for i, score in enumerate(scores):
             ResumeAnalysis.objects.create(
@@ -185,7 +189,7 @@ class AnalyticsServiceTest(TestCase):
                 quantification_score=score,
                 action_verb_score=score,
                 final_score=score,
-                analysis_timestamp=timezone.now() - timedelta(days=len(scores) - i)
+                analysis_timestamp=timezone.now() + timedelta(days=i)  # Changed to + for chronological order
             )
         
         trends = AnalyticsService.get_score_trends(self.user)

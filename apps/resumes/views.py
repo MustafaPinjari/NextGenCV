@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from django.contrib import messages
-from django.db import models
+from django.db import models, transaction
+from django.utils import timezone
 from .services import ResumeService
 from .models import Resume, UploadedResume
 from .services.pdf_parser import PDFParserService
@@ -392,6 +393,7 @@ def resume_export(request, pk):
     Export resume to PDF.
     Verify resume belongs to authenticated user.
     Calls PDFExportService to generate PDF and returns as downloadable file.
+    Supports optional version parameter to export specific version.
     """
     from .pdf_service import PDFExportService
     
@@ -402,18 +404,26 @@ def resume_export(request, pk):
         logger.warning(f'Unauthorized access attempt: User {request.user.username} tried to export resume {pk} owned by {resume.user.username}')
         return HttpResponseForbidden("You do not have permission to export this resume.")
     
+    # Get optional version parameter
+    version_id = request.GET.get('version')
+    
     try:
         # Generate PDF using the service
-        pdf_bytes, resume = PDFExportService.generate_pdf(pk)
+        pdf_bytes, resume = PDFExportService.generate_pdf(pk, version_id=version_id)
         
         # Create HTTP response with PDF content
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         
         # Set headers for download
-        filename = f"{resume.title.replace(' ', '_')}.pdf"
+        filename = f"{resume.title.replace(' ', '_')}"
+        if version_id:
+            filename += f"_v{version_id}"
+        filename += ".pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
-        logger.info(f'PDF generated successfully for resume {pk} by user {request.user.username}')
+        logger.info(f'PDF generated successfully for resume {pk}' + 
+                   (f' version {version_id}' if version_id else '') +
+                   f' by user {request.user.username}')
         return response
         
     except Exception as e:
@@ -421,6 +431,208 @@ def resume_export(request, pk):
         logger.error(f'PDF generation failed for resume {pk}: {str(e)}', exc_info=True)
         messages.error(request, f'Unable to generate PDF: {str(e)}')
         return redirect('resume_detail', pk=pk)
+
+
+@login_required
+def resume_export_docx(request, pk):
+    """
+    Export resume to DOCX (Word document).
+    Verify resume belongs to authenticated user.
+    Supports optional version parameter to export specific version.
+    
+    Requirements: 21.2, 21.5, 21.6
+    """
+    from .services.docx_export_service import DOCXExportService
+    
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(f'Unauthorized access attempt: User {request.user.username} tried to export resume {pk} owned by {resume.user.username}')
+        return HttpResponseForbidden("You do not have permission to export this resume.")
+    
+    # Get optional version parameter
+    version_id = request.GET.get('version')
+    
+    try:
+        # Generate DOCX using the service
+        docx_bytes, resume = DOCXExportService.generate_docx(pk, version_id=version_id)
+        
+        # Create HTTP response with DOCX content
+        response = HttpResponse(
+            docx_bytes,
+            content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        )
+        
+        # Set headers for download
+        filename = f"{resume.title.replace(' ', '_')}"
+        if version_id:
+            filename += f"_v{version_id}"
+        filename += ".docx"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        logger.info(f'DOCX generated successfully for resume {pk}' +
+                   (f' version {version_id}' if version_id else '') +
+                   f' by user {request.user.username}')
+        return response
+        
+    except Exception as e:
+        # Handle errors gracefully
+        logger.error(f'DOCX generation failed for resume {pk}: {str(e)}', exc_info=True)
+        messages.error(request, f'Unable to generate DOCX: {str(e)}')
+        return redirect('resume_detail', pk=pk)
+
+
+@login_required
+def resume_export_text(request, pk):
+    """
+    Export resume to plain text format.
+    Verify resume belongs to authenticated user.
+    Optimized for ATS parsing.
+    Supports optional version parameter to export specific version.
+    
+    Requirements: 21.3, 21.6
+    """
+    from .services.text_export_service import TextExportService
+    
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(f'Unauthorized access attempt: User {request.user.username} tried to export resume {pk} owned by {resume.user.username}')
+        return HttpResponseForbidden("You do not have permission to export this resume.")
+    
+    # Get optional version parameter
+    version_id = request.GET.get('version')
+    
+    try:
+        # Generate plain text using the service
+        text_content, resume = TextExportService.generate_text(pk, version_id=version_id)
+        
+        # Create HTTP response with plain text content
+        response = HttpResponse(text_content, content_type='text/plain; charset=utf-8')
+        
+        # Set headers for download
+        filename = f"{resume.title.replace(' ', '_')}"
+        if version_id:
+            filename += f"_v{version_id}"
+        filename += ".txt"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        logger.info(f'Plain text generated successfully for resume {pk}' +
+                   (f' version {version_id}' if version_id else '') +
+                   f' by user {request.user.username}')
+        return response
+        
+    except Exception as e:
+        # Handle errors gracefully
+        logger.error(f'Plain text generation failed for resume {pk}: {str(e)}', exc_info=True)
+        messages.error(request, f'Unable to generate plain text: {str(e)}')
+        return redirect('resume_detail', pk=pk)
+
+
+@login_required
+def batch_export(request):
+    """
+    Export multiple resumes in a single ZIP file.
+    Supports multiple formats (PDF, DOCX, TXT).
+    
+    POST parameters:
+    - resume_ids: List of resume IDs to export
+    - format: Export format ('pdf', 'docx', 'txt', or 'all')
+    
+    Requirements: 22.1, 22.4
+    """
+    import zipfile
+    import io
+    from .pdf_service import PDFExportService
+    from .services.docx_export_service import DOCXExportService
+    from .services.text_export_service import TextExportService
+    
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method.')
+        return redirect('resume_list')
+    
+    # Get resume IDs from POST data
+    resume_ids = request.POST.getlist('resume_ids')
+    export_format = request.POST.get('format', 'pdf')
+    
+    if not resume_ids:
+        messages.error(request, 'Please select at least one resume to export.')
+        return redirect('resume_list')
+    
+    # Validate that all resumes belong to the user
+    resumes = Resume.objects.filter(id__in=resume_ids, user=request.user)
+    
+    if resumes.count() != len(resume_ids):
+        messages.error(request, 'Some selected resumes do not exist or do not belong to you.')
+        return redirect('resume_list')
+    
+    try:
+        # Create ZIP file in memory
+        zip_buffer = io.BytesIO()
+        
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+            failed_exports = []
+            
+            for resume in resumes:
+                resume_filename_base = f"{resume.title.replace(' ', '_')}"
+                
+                try:
+                    # Export in requested format(s)
+                    if export_format in ['pdf', 'all']:
+                        pdf_bytes, _ = PDFExportService.generate_pdf(resume.id)
+                        zip_file.writestr(f"{resume_filename_base}.pdf", pdf_bytes)
+                    
+                    if export_format in ['docx', 'all']:
+                        docx_bytes, _ = DOCXExportService.generate_docx(resume.id)
+                        zip_file.writestr(f"{resume_filename_base}.docx", docx_bytes)
+                    
+                    if export_format in ['txt', 'all']:
+                        text_content, _ = TextExportService.generate_text(resume.id)
+                        zip_file.writestr(f"{resume_filename_base}.txt", text_content.encode('utf-8'))
+                    
+                    logger.info(f'Successfully exported resume {resume.id} in batch export')
+                    
+                except Exception as e:
+                    logger.error(f'Failed to export resume {resume.id} in batch: {str(e)}', exc_info=True)
+                    failed_exports.append(resume.title)
+        
+        # Prepare ZIP file for download
+        zip_buffer.seek(0)
+        
+        # Create HTTP response with ZIP content
+        response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+        
+        # Set headers for download
+        format_suffix = export_format if export_format != 'all' else 'all_formats'
+        filename = f"resumes_export_{format_suffix}.zip"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Show success message with any failures
+        if failed_exports:
+            messages.warning(
+                request,
+                f'Batch export completed with {len(failed_exports)} failures: {", ".join(failed_exports)}'
+            )
+        else:
+            messages.success(
+                request,
+                f'Successfully exported {resumes.count()} resume(s) in {export_format} format.'
+            )
+        
+        logger.info(
+            f'Batch export completed for user {request.user.username}: '
+            f'{resumes.count()} resumes, format: {export_format}, '
+            f'failures: {len(failed_exports)}'
+        )
+        
+        return response
+        
+    except Exception as e:
+        logger.error(f'Batch export failed for user {request.user.username}: {str(e)}', exc_info=True)
+        messages.error(request, f'Batch export failed: {str(e)}')
+        return redirect('resume_list')
 
 
 @login_required
@@ -1128,3 +1340,616 @@ def pdf_import_confirm(request, upload_id):
             f'Failed to create resume: {str(e)}. Please try creating a resume manually.'
         )
         return redirect('pdf_parse_review', upload_id=upload_id)
+
+
+# ============================================================================
+# Resume Optimization Module Views
+# ============================================================================
+
+@login_required
+def fix_resume(request, pk):
+    """
+    Display job description form for resume optimization.
+    
+    GET: Display form to enter job description
+    POST: Store job description in session and redirect to preview
+    
+    Requirements: 8.1
+    """
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to optimize resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to optimize this resume.")
+    
+    if request.method == 'POST':
+        # Get job description from form
+        job_description = request.POST.get('job_description', '').strip()
+        
+        # Validate job description
+        if not job_description:
+            messages.error(request, 'Please enter a job description.')
+            return render(request, 'resumes/fix_resume.html', {'resume': resume})
+        
+        if len(job_description) < 50:
+            messages.error(request, 'Job description is too short. Please enter at least 50 characters.')
+            return render(request, 'resumes/fix_resume.html', {
+                'resume': resume,
+                'job_description': job_description
+            })
+        
+        # Store job description in session
+        request.session[f'fix_resume_{pk}_job_description'] = job_description
+        request.session.modified = True
+        
+        logger.info(
+            f'Job description stored for resume {pk} optimization by user {request.user.username}'
+        )
+        
+        # Redirect to optimization preview
+        return redirect('fix_preview', pk=pk)
+    
+    # GET request - display form
+    context = {
+        'resume': resume,
+    }
+    return render(request, 'resumes/fix_resume.html', context)
+
+
+
+@login_required
+def fix_preview(request, pk):
+    """
+    Run optimization and display side-by-side comparison.
+    
+    Loads resume and job description, runs ResumeOptimizerService,
+    calculates new score, stores results in session, and displays comparison.
+    
+    Requirements: 9.1, 9.2, 9.3, 9.4
+    """
+    from .services.resume_optimizer import ResumeOptimizerService
+    
+    # Load resume with all related data
+    resume = get_object_or_404(
+        Resume.objects.prefetch_related(
+            'personal_info',
+            'experiences',
+            'education',
+            'skills',
+            'projects'
+        ),
+        id=pk
+    )
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view optimization preview for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view this optimization.")
+    
+    # Get job description from session
+    session_key = f'fix_resume_{pk}_job_description'
+    job_description = request.session.get(session_key)
+    
+    if not job_description:
+        messages.error(request, 'Job description not found. Please start the optimization process again.')
+        return redirect('fix_resume', pk=pk)
+    
+    # Check if optimization results are already in session
+    results_key = f'fix_resume_{pk}_results'
+    optimization_results = request.session.get(results_key)
+    
+    if not optimization_results:
+        # Run optimization
+        try:
+            logger.info(f'Running optimization for resume {pk} by user {request.user.username}')
+            
+            optimization_results = ResumeOptimizerService.optimize_resume(
+                resume=resume,
+                job_description=job_description
+            )
+            
+            # Store results in session
+            request.session[results_key] = optimization_results
+            request.session.modified = True
+            
+            logger.info(
+                f'Optimization completed for resume {pk}: '
+                f'Original score: {optimization_results["original_score"]}, '
+                f'Optimized score: {optimization_results["optimized_score"]}, '
+                f'Delta: {optimization_results["improvement_delta"]}'
+            )
+            
+        except Exception as e:
+            logger.error(f'Optimization failed for resume {pk}: {e}', exc_info=True)
+            messages.error(
+                request,
+                f'Resume optimization failed: {str(e)}. Please try again or contact support.'
+            )
+            return redirect('resume_detail', pk=pk)
+    
+    # Prepare context for template
+    context = {
+        'resume': resume,
+        'job_description': job_description,
+        'original_score': optimization_results['original_score'],
+        'optimized_score': optimization_results['optimized_score'],
+        'improvement_delta': optimization_results['improvement_delta'],
+        'changes_summary': optimization_results['changes_summary'],
+        'detailed_changes': optimization_results['detailed_changes'],
+        'optimized_data': optimization_results['optimized_data'],
+        'original_analysis': optimization_results.get('original_analysis', {}),
+        
+        # Group changes by type for easier display
+        'bullet_changes': [c for c in optimization_results['detailed_changes'] if c['type'] == 'bullet_rewrite'],
+        'keyword_changes': [c for c in optimization_results['detailed_changes'] if c['type'] == 'keyword_injection'],
+        'quantification_changes': [c for c in optimization_results['detailed_changes'] if c['type'] == 'quantification_suggestion'],
+        'formatting_changes': [c for c in optimization_results['detailed_changes'] if c['type'] == 'formatting_standardization'],
+    }
+    
+    return render(request, 'resumes/fix_comparison.html', context)
+
+
+
+@login_required
+def fix_accept(request, pk):
+    """
+    Accept optimization changes and create new resume version.
+    
+    POST only: Creates new ResumeVersion with optimized data,
+    creates OptimizationHistory record, clears session, and redirects.
+    
+    Requirements: 9.6, 10.1, 10.2, 10.3
+    """
+    from .services.version_service import VersionService
+    from .models import OptimizationHistory
+    from datetime import datetime
+    
+    if request.method != 'POST':
+        return redirect('fix_preview', pk=pk)
+    
+    # Load resume
+    resume = get_object_or_404(
+        Resume.objects.prefetch_related(
+            'personal_info',
+            'experiences',
+            'education',
+            'skills',
+            'projects'
+        ),
+        id=pk
+    )
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to accept optimization for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to accept this optimization.")
+    
+    # Get optimization results from session
+    results_key = f'fix_resume_{pk}_results'
+    job_desc_key = f'fix_resume_{pk}_job_description'
+    
+    optimization_results = request.session.get(results_key)
+    job_description = request.session.get(job_desc_key)
+    
+    if not optimization_results or not job_description:
+        messages.error(request, 'Optimization data not found. Please start the optimization process again.')
+        return redirect('fix_resume', pk=pk)
+    
+    try:
+        with transaction.atomic():
+            # Step 1: Create version of current state (before optimization)
+            original_version = VersionService.create_version(
+                resume=resume,
+                modification_type='manual',
+                user_notes='Version before AI optimization',
+                ats_score=optimization_results['original_score']
+            )
+            
+            logger.info(f'Created original version {original_version.version_number} for resume {pk}')
+            
+            # Step 2: Apply optimized changes to resume
+            optimized_data = optimization_results['optimized_data']
+            
+            # Update experiences with optimized descriptions
+            for exp in resume.experiences.all():
+                # Find matching optimized experience
+                for opt_exp in optimized_data.get('experiences', []):
+                    if (opt_exp.get('company') == exp.company and 
+                        opt_exp.get('role') == exp.role):
+                        # Update description if changed
+                        if opt_exp.get('description') and opt_exp['description'] != exp.description:
+                            exp.description = opt_exp['description']
+                            exp.save()
+                            logger.debug(f'Updated experience: {exp.company} - {exp.role}')
+                        break
+            
+            # Update projects with optimized descriptions
+            for proj in resume.projects.all():
+                # Find matching optimized project
+                for opt_proj in optimized_data.get('projects', []):
+                    if opt_proj.get('name') == proj.name:
+                        # Update description if changed
+                        if opt_proj.get('description') and opt_proj['description'] != proj.description:
+                            proj.description = opt_proj['description']
+                            proj.save()
+                            logger.debug(f'Updated project: {proj.name}')
+                        break
+            
+            # Add new skills from keyword injections
+            from .models import Skill
+            existing_skill_names = set(resume.skills.values_list('name', flat=True))
+            
+            for opt_skill in optimized_data.get('skills', []):
+                skill_name = opt_skill.get('name')
+                if skill_name and skill_name not in existing_skill_names:
+                    # This is a new skill from keyword injection
+                    Skill.objects.create(
+                        resume=resume,
+                        name=skill_name,
+                        category='General'  # Default category
+                    )
+                    logger.debug(f'Added new skill: {skill_name}')
+            
+            # Update resume timestamp
+            resume.last_optimized_at = timezone.now()
+            resume.save(update_fields=['last_optimized_at'])
+            
+            # Step 3: Create version of optimized state
+            optimized_version = VersionService.create_version(
+                resume=resume,
+                modification_type='optimized',
+                user_notes='AI-optimized version',
+                ats_score=optimization_results['optimized_score']
+            )
+            
+            logger.info(f'Created optimized version {optimized_version.version_number} for resume {pk}')
+            
+            # Step 4: Create OptimizationHistory record
+            optimization_history = OptimizationHistory.objects.create(
+                resume=resume,
+                original_version=original_version,
+                optimized_version=optimized_version,
+                job_description=job_description,
+                original_score=optimization_results['original_score'],
+                optimized_score=optimization_results['optimized_score'],
+                improvement_delta=optimization_results['improvement_delta'],
+                changes_summary=optimization_results['changes_summary'],
+                detailed_changes=optimization_results['detailed_changes'],
+                accepted_changes=optimization_results['detailed_changes'],  # All changes accepted
+                rejected_changes=[],
+                user_notes='All optimization suggestions accepted'
+            )
+            
+            logger.info(
+                f'Created optimization history record {optimization_history.id} for resume {pk}: '
+                f'Delta: {optimization_history.improvement_delta}'
+            )
+            
+            # Step 5: Clear session data
+            if results_key in request.session:
+                del request.session[results_key]
+            if job_desc_key in request.session:
+                del request.session[job_desc_key]
+            request.session.modified = True
+            
+            # Success message
+            messages.success(
+                request,
+                f'Resume optimized successfully! ATS score improved by {optimization_results["improvement_delta"]:.1f} points '
+                f'(from {optimization_results["original_score"]:.1f} to {optimization_results["optimized_score"]:.1f}).'
+            )
+            
+            logger.info(f'Optimization accepted for resume {pk} by user {request.user.username}')
+            
+            # Redirect to resume detail
+            return redirect('resume_detail', pk=pk)
+            
+    except Exception as e:
+        logger.error(f'Failed to accept optimization for resume {pk}: {e}', exc_info=True)
+        messages.error(
+            request,
+            f'Failed to apply optimization: {str(e)}. Please try again or contact support.'
+        )
+        return redirect('fix_preview', pk=pk)
+
+
+
+@login_required
+def fix_reject(request, pk):
+    """
+    Reject optimization changes and clear session.
+    
+    POST only: Clears session data and redirects to resume detail.
+    
+    Requirements: 9.5
+    """
+    if request.method != 'POST':
+        return redirect('fix_preview', pk=pk)
+    
+    # Load resume for authorization check
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to reject optimization for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to reject this optimization.")
+    
+    # Clear session data
+    results_key = f'fix_resume_{pk}_results'
+    job_desc_key = f'fix_resume_{pk}_job_description'
+    
+    if results_key in request.session:
+        del request.session[results_key]
+    if job_desc_key in request.session:
+        del request.session[job_desc_key]
+    request.session.modified = True
+    
+    logger.info(f'Optimization rejected for resume {pk} by user {request.user.username}')
+    
+    messages.info(request, 'Optimization changes have been discarded.')
+    
+    # Redirect to resume detail
+    return redirect('resume_detail', pk=pk)
+
+
+# ============================================================================
+# Version Management Module Views
+# ============================================================================
+
+@login_required
+def version_list(request, pk):
+    """
+    Display all versions for a resume in reverse chronological order.
+    
+    Shows version history with metadata including:
+    - Version numbers
+    - Creation dates
+    - ATS scores
+    - Modification types
+    
+    Requirements: 1.3, 1.6
+    """
+    from .services.version_service import VersionService
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view versions for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view these versions.")
+    
+    # Get all versions for this resume
+    versions = VersionService.get_version_history(resume)
+    
+    logger.info(
+        f'Version history loaded for resume {pk} by user {request.user.username}: '
+        f'{len(versions)} versions found'
+    )
+    
+    context = {
+        'resume': resume,
+        'versions': versions,
+        'current_version_number': resume.current_version_number,
+    }
+    
+    return render(request, 'resumes/version_list.html', context)
+
+
+@login_required
+def version_detail(request, pk, version_id):
+    """
+    Display a specific version in read-only mode.
+    
+    Shows:
+    - Complete historical state of the resume
+    - Version metadata (number, date, type, score)
+    - Read-only view of all sections
+    
+    Requirements: 1.4
+    """
+    from .models import ResumeVersion
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view version for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view this version.")
+    
+    # Load specific version
+    version = get_object_or_404(ResumeVersion, id=version_id, resume=resume)
+    
+    # Get snapshot data
+    snapshot = version.snapshot_data
+    
+    logger.info(
+        f'Version {version.version_number} loaded for resume {pk} '
+        f'by user {request.user.username}'
+    )
+    
+    context = {
+        'resume': resume,
+        'version': version,
+        'snapshot': snapshot,
+        'personal_info': snapshot.get('personal_info', {}),
+        'experiences': snapshot.get('experiences', []),
+        'education': snapshot.get('education', []),
+        'skills': snapshot.get('skills', []),
+        'projects': snapshot.get('projects', []),
+        'is_current_version': version.version_number == resume.current_version_number,
+    }
+    
+    return render(request, 'resumes/version_detail.html', context)
+
+
+@login_required
+def version_compare(request, pk):
+    """
+    Compare two versions side-by-side with diff highlighting.
+    
+    GET parameters:
+    - version1: ID of first version (typically older)
+    - version2: ID of second version (typically newer)
+    
+    Shows:
+    - Side-by-side comparison
+    - Highlighted differences (additions in green, deletions in red, modifications in yellow)
+    - Section-by-section changes
+    
+    Requirements: 2.1, 2.2, 2.3, 2.4, 2.5
+    """
+    from .services.version_service import VersionService
+    from .models import ResumeVersion
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to compare versions for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to compare these versions.")
+    
+    # Get version IDs from query parameters
+    version1_id = request.GET.get('version1')
+    version2_id = request.GET.get('version2')
+    
+    if not version1_id or not version2_id:
+        messages.error(request, 'Please select two versions to compare.')
+        return redirect('version_list', pk=pk)
+    
+    # Load versions
+    try:
+        version1 = ResumeVersion.objects.get(id=version1_id, resume=resume)
+        version2 = ResumeVersion.objects.get(id=version2_id, resume=resume)
+    except ResumeVersion.DoesNotExist:
+        messages.error(request, 'One or both versions not found.')
+        return redirect('version_list', pk=pk)
+    
+    # Ensure version1 is older than version2 for consistent display
+    if version1.version_number > version2.version_number:
+        version1, version2 = version2, version1
+    
+    # Generate diff using VersionService
+    diff = VersionService.compare_versions(version1, version2)
+    
+    logger.info(
+        f'Comparing versions {version1.version_number} and {version2.version_number} '
+        f'for resume {pk} by user {request.user.username}: '
+        f'{len(diff["changes"])} changes found'
+    )
+    
+    # Organize changes by section for easier display
+    changes_by_section = {}
+    for change in diff['changes']:
+        section = change['section']
+        if section not in changes_by_section:
+            changes_by_section[section] = []
+        changes_by_section[section].append(change)
+    
+    context = {
+        'resume': resume,
+        'version1': version1,
+        'version2': version2,
+        'diff': diff,
+        'changes_by_section': changes_by_section,
+        'snapshot1': version1.snapshot_data,
+        'snapshot2': version2.snapshot_data,
+        'total_changes': len(diff['changes']),
+    }
+    
+    return render(request, 'resumes/version_compare.html', context)
+
+
+@login_required
+def version_restore(request, pk, version_id):
+    """
+    Restore a resume to a specific historical version.
+    
+    POST only: Creates a new version based on the selected historical version.
+    This is non-destructive - it creates a new version rather than overwriting.
+    
+    Requirements: 1.5
+    """
+    from .services.version_service import VersionService
+    from .models import ResumeVersion
+    
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method.')
+        return redirect('version_list', pk=pk)
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to restore version for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to restore this version.")
+    
+    # Load version to restore
+    try:
+        version = ResumeVersion.objects.get(id=version_id, resume=resume)
+    except ResumeVersion.DoesNotExist:
+        messages.error(request, 'Version not found.')
+        return redirect('version_list', pk=pk)
+    
+    # Check if trying to restore current version
+    if version.version_number == resume.current_version_number:
+        messages.info(request, 'This is already the current version.')
+        return redirect('version_detail', pk=pk, version_id=version_id)
+    
+    try:
+        # Restore the version (creates a new version)
+        restored_resume = VersionService.restore_version(version)
+        
+        logger.info(
+            f'Version {version.version_number} restored for resume {pk} '
+            f'by user {request.user.username}. New version: {restored_resume.current_version_number}'
+        )
+        
+        messages.success(
+            request,
+            f'Resume restored to version {version.version_number}. '
+            f'A new version ({restored_resume.current_version_number}) has been created.'
+        )
+        
+        # Redirect to resume edit page
+        return redirect('resume_update', pk=pk)
+        
+    except Exception as e:
+        logger.error(
+            f'Failed to restore version {version.version_number} for resume {pk}: {e}',
+            exc_info=True
+        )
+        messages.error(
+            request,
+            f'Failed to restore version: {str(e)}. Please try again or contact support.'
+        )
+        return redirect('version_detail', pk=pk, version_id=version_id)

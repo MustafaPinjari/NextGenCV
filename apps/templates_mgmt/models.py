@@ -2,6 +2,45 @@ from django.db import models
 from apps.resumes.models import Resume
 
 
+# Default color schemes
+DEFAULT_COLOR_SCHEMES = {
+    'professional': {
+        'primary': '#2c3e50',
+        'secondary': '#34495e',
+        'accent': '#3498db',
+        'text': '#000000'
+    },
+    'modern': {
+        'primary': '#1a1a1a',
+        'secondary': '#4a4a4a',
+        'accent': '#0066cc',
+        'text': '#000000'
+    },
+    'creative': {
+        'primary': '#2c3e50',
+        'secondary': '#7f8c8d',
+        'accent': '#3498db',
+        'text': '#2c3e50'
+    },
+    'minimal': {
+        'primary': '#000000',
+        'secondary': '#333333',
+        'accent': '#000000',
+        'text': '#000000'
+    }
+}
+
+# ATS-safe fonts
+ATS_SAFE_FONTS = [
+    'Arial',
+    'Helvetica',
+    'Calibri',
+    'Times New Roman',
+    'Georgia',
+    'Verdana'
+]
+
+
 class ResumeTemplate(models.Model):
     """
     Stores resume template metadata and configuration.

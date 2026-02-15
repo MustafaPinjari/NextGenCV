@@ -1,0 +1,511 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Help & Documentation - NextGenCV{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tutorials.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Sidebar Navigation -->
+        <div class="col-lg-3 mb-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Documentation</h5>
+                    <nav class="nav flex-column">
+                        <a class="nav-link" href="#getting-started">Getting Started</a>
+                        <a class="nav-link" href="#pdf-upload">PDF Upload</a>
+                        <a class="nav-link" href="#resume-optimization">Resume Optimization</a>
+                        <a class="nav-link" href="#version-control">Version Control</a>
+                        <a class="nav-link" href="#analytics">Analytics Dashboard</a>
+                        <a class="nav-link" href="#templates">Templates</a>
+                        <a class="nav-link" href="#export">Export Options</a>
+                        <a class="nav-link" href="#faq">FAQ</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <!-- Header -->
+            <div class="mb-5">
+                <h1 class="display-5 mb-3">Help & Documentation</h1>
+                <p class="lead text-muted">
+                    Everything you need to know about using NextGenCV to create ATS-optimized resumes.
+                </p>
+            </div>
+
+            <!-- Getting Started -->
+            <section id="getting-started" class="mb-5">
+                <h2 class="mb-4">Getting Started</h2>
+                
+                <div class="feature-highlight">
+                    <h6><i class="bi bi-lightbulb me-2"></i>New to NextGenCV?</h6>
+                    <p>Start with our interactive tutorials to learn the basics.</p>
+                    <button class="btn btn-link p-0" data-tutorial="pdf-upload">
+                        Start PDF Upload Tutorial <i class="bi bi-arrow-right"></i>
+                    </button>
+                </div>
+
+                <h4 class="mt-4 mb-3">Quick Start Guide</h4>
+                <ol class="mb-4">
+                    <li class="mb-2"><strong>Create an Account:</strong> Sign up with your email to get started.</li>
+                    <li class="mb-2"><strong>Upload or Create:</strong> Upload an existing resume PDF or create a new one from scratch.</li>
+                    <li class="mb-2"><strong>Optimize:</strong> Use our AI-powered optimization to improve your resume for ATS systems.</li>
+                    <li class="mb-2"><strong>Track Progress:</strong> Monitor your ATS score and improvements over time.</li>
+                    <li class="mb-2"><strong>Export:</strong> Download your optimized resume in PDF, DOCX, or text format.</li>
+                </ol>
+
+                <div class="quick-tip">
+                    <i class="bi bi-check-circle"></i>
+                    <div class="tip-content">
+                        <h6>Pro Tip</h6>
+                        <p>Start by uploading your existing resume to get an instant ATS score and see where you can improve.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PDF Upload -->
+            <section id="pdf-upload" class="mb-5">
+                <h2 class="mb-4">PDF Upload & Parsing</h2>
+                
+                <h4 class="mb-3">How It Works</h4>
+                <p>Our PDF parser automatically extracts information from your resume and structures it for easy editing and optimization.</p>
+
+                <h4 class="mt-4 mb-3">Best Practices</h4>
+                <ul class="mb-4">
+                    <li class="mb-2"><strong>Use text-based PDFs:</strong> Avoid scanned images or photos of resumes</li>
+                    <li class="mb-2"><strong>Standard formatting:</strong> Use common section headings like "Experience", "Education", "Skills"</li>
+                    <li class="mb-2"><strong>Simple layouts:</strong> Avoid complex multi-column layouts or tables</li>
+                    <li class="mb-2"><strong>Clear structure:</strong> Use consistent formatting for dates, companies, and roles</li>
+                    <li class="mb-2"><strong>File size:</strong> Keep files under 10MB</li>
+                </ul>
+
+                <h4 class="mb-3">Parsing Confidence Scores</h4>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Score Range</th>
+                                <th>Meaning</th>
+                                <th>Action Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge bg-success">90-100%</span></td>
+                                <td>Excellent - Data extracted accurately</td>
+                                <td>Quick review recommended</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-warning">70-89%</span></td>
+                                <td>Good - Minor issues detected</td>
+                                <td>Review and correct any errors</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge bg-danger">Below 70%</span></td>
+                                <td>Poor - Significant parsing issues</td>
+                                <td>Careful review and manual corrections needed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="warning-tip">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div class="tip-content">
+                        <h6>Important</h6>
+                        <p>Always review the extracted data before confirming, especially if the confidence score is below 90%.</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" data-help="pdf-parsing">
+                    <i class="bi bi-question-circle me-2"></i>Learn More About PDF Parsing
+                </button>
+            </section>
+
+            <!-- Resume Optimization -->
+            <section id="resume-optimization" class="mb-5">
+                <h2 class="mb-4">AI-Powered Resume Optimization</h2>
+                
+                <h4 class="mb-3">What Gets Optimized</h4>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-key text-primary me-2"></i>Keywords</h5>
+                                <p class="card-text">Missing keywords from the job description are naturally inserted into your resume.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-lightning text-warning me-2"></i>Action Verbs</h5>
+                                <p class="card-text">Weak verbs are replaced with strong action verbs like "achieved", "led", "implemented".</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-graph-up text-success me-2"></i>Quantification</h5>
+                                <p class="card-text">Suggestions for adding metrics and numbers to make achievements more impactful.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title"><i class="bi bi-layout-text-window text-info me-2"></i>Formatting</h5>
+                                <p class="card-text">Section headings and dates are standardized to be ATS-friendly.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mb-3">How to Use</h4>
+                <ol class="mb-4">
+                    <li class="mb-2">Navigate to your resume and click "Fix My Resume"</li>
+                    <li class="mb-2">Paste the job description you're applying for</li>
+                    <li class="mb-2">Review the side-by-side comparison of original vs. optimized</li>
+                    <li class="mb-2">Accept or reject individual changes</li>
+                    <li class="mb-2">Save the optimized version</li>
+                </ol>
+
+                <div class="info-tip">
+                    <i class="bi bi-info-circle"></i>
+                    <div class="tip-content">
+                        <h6>Your Original is Safe</h6>
+                        <p>Optimization creates a new version. Your original resume is never modified.</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" data-help="optimization-process">
+                    <i class="bi bi-question-circle me-2"></i>Learn More About Optimization
+                </button>
+            </section>
+
+            <!-- Version Control -->
+            <section id="version-control" class="mb-5">
+                <h2 class="mb-4">Version Control</h2>
+                
+                <h4 class="mb-3">Automatic Versioning</h4>
+                <p>Every time you make changes to your resume, we automatically create a new version. This means:</p>
+                <ul class="mb-4">
+                    <li class="mb-2">You never lose your work</li>
+                    <li class="mb-2">You can track how your resume evolves</li>
+                    <li class="mb-2">You can restore any previous version</li>
+                    <li class="mb-2">You can compare different versions</li>
+                </ul>
+
+                <h4 class="mb-3">Version Comparison</h4>
+                <p>When comparing versions, you'll see:</p>
+                <ul class="mb-4">
+                    <li class="mb-2"><span class="badge bg-success">Green</span> - Content that was added</li>
+                    <li class="mb-2"><span class="badge bg-danger">Red</span> - Content that was removed</li>
+                    <li class="mb-2"><span class="badge bg-warning">Yellow</span> - Content that was modified</li>
+                </ul>
+
+                <div class="quick-tip">
+                    <i class="bi bi-check-circle"></i>
+                    <div class="tip-content">
+                        <h6>Pro Tip</h6>
+                        <p>Use version comparison to understand which changes improved your ATS score the most.</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" data-help="version-comparison">
+                    <i class="bi bi-question-circle me-2"></i>Learn More About Version Control
+                </button>
+            </section>
+
+            <!-- Analytics -->
+            <section id="analytics" class="mb-5">
+                <h2 class="mb-4">Analytics Dashboard</h2>
+                
+                <h4 class="mb-3">Understanding Your ATS Score</h4>
+                <p>Your ATS score is calculated based on six components:</p>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Weight</th>
+                                <th>What It Measures</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Keyword Match</td>
+                                <td>30%</td>
+                                <td>How many job description keywords appear in your resume</td>
+                            </tr>
+                            <tr>
+                                <td>Skill Relevance</td>
+                                <td>20%</td>
+                                <td>How relevant your skills are to the position</td>
+                            </tr>
+                            <tr>
+                                <td>Section Completeness</td>
+                                <td>15%</td>
+                                <td>Whether all standard sections are present</td>
+                            </tr>
+                            <tr>
+                                <td>Experience Impact</td>
+                                <td>15%</td>
+                                <td>Quality of your experience descriptions</td>
+                            </tr>
+                            <tr>
+                                <td>Quantification</td>
+                                <td>10%</td>
+                                <td>Use of numbers and metrics</td>
+                            </tr>
+                            <tr>
+                                <td>Action Verbs</td>
+                                <td>10%</td>
+                                <td>Use of strong action verbs</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4 class="mb-3">Resume Health Score</h4>
+                <p>Your resume health score (0-100) is based on:</p>
+                <ul class="mb-4">
+                    <li class="mb-2"><strong>Section Completeness (40 points):</strong> All essential sections present</li>
+                    <li class="mb-2"><strong>Contact Information (15 points):</strong> Complete contact details</li>
+                    <li class="mb-2"><strong>Quantified Achievements (20 points):</strong> Use of metrics in bullet points</li>
+                    <li class="mb-2"><strong>Action Verb Usage (15 points):</strong> Strong verbs at start of bullets</li>
+                    <li class="mb-2"><strong>ATS-Friendly Formatting (10 points):</strong> Compatible formatting</li>
+                </ul>
+
+                <button class="btn btn-primary mt-3" data-help="resume-health">
+                    <i class="bi bi-question-circle me-2"></i>Learn More About Resume Health
+                </button>
+            </section>
+
+            <!-- Templates -->
+            <section id="templates" class="mb-5">
+                <h2 class="mb-4">Resume Templates</h2>
+                
+                <h4 class="mb-3">Available Templates</h4>
+                <p>Choose from multiple professional templates:</p>
+                <ul class="mb-4">
+                    <li class="mb-2"><strong>Professional:</strong> Clean and traditional design</li>
+                    <li class="mb-2"><strong>Modern:</strong> Contemporary with subtle accents</li>
+                    <li class="mb-2"><strong>Classic:</strong> Timeless and elegant</li>
+                    <li class="mb-2"><strong>Creative:</strong> Bold and eye-catching</li>
+                    <li class="mb-2"><strong>Minimal:</strong> Simple and focused</li>
+                </ul>
+
+                <h4 class="mb-3">Customization Options</h4>
+                <ul class="mb-4">
+                    <li class="mb-2"><strong>Color Schemes:</strong> Choose from pre-defined colors or create custom</li>
+                    <li class="mb-2"><strong>Fonts:</strong> Select from ATS-safe professional fonts</li>
+                    <li class="mb-2"><strong>Custom CSS:</strong> Advanced styling for power users</li>
+                </ul>
+
+                <div class="warning-tip">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <div class="tip-content">
+                        <h6>ATS Compatibility</h6>
+                        <p>All templates and customizations maintain ATS compatibility. Avoid overly complex designs.</p>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary mt-3" data-help="template-customization">
+                    <i class="bi bi-question-circle me-2"></i>Learn More About Templates
+                </button>
+            </section>
+
+            <!-- Export -->
+            <section id="export" class="mb-5">
+                <h2 class="mb-4">Export Options</h2>
+                
+                <h4 class="mb-3">Available Formats</h4>
+                <div class="row mb-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-pdf text-danger" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">PDF</h5>
+                                <p class="card-text">Best for job applications and printing</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-word text-primary" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">DOCX</h5>
+                                <p class="card-text">Editable format for further customization</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-text text-secondary" style="font-size: 3rem;"></i>
+                                <h5 class="card-title mt-3">Text</h5>
+                                <p class="card-text">Plain text for ATS systems</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mb-3">Version-Specific Export</h4>
+                <p>You can export any version of your resume, not just the current one. This is useful for:</p>
+                <ul class="mb-4">
+                    <li class="mb-2">Applying to different positions with tailored versions</li>
+                    <li class="mb-2">Comparing how different versions look when printed</li>
+                    <li class="mb-2">Keeping backups of important versions</li>
+                </ul>
+            </section>
+
+            <!-- FAQ -->
+            <section id="faq" class="mb-5">
+                <h2 class="mb-4">Frequently Asked Questions</h2>
+                
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                What is an ATS and why does it matter?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                An ATS (Applicant Tracking System) is software used by companies to filter and rank resumes before they reach human recruiters. Over 90% of large companies use ATS systems. If your resume isn't ATS-friendly, it may never be seen by a human, regardless of your qualifications.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                How accurate is the PDF parsing?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Our PDF parser achieves 80%+ accuracy on standard resume formats. Accuracy depends on your resume's formatting - simple, well-structured resumes parse better than complex multi-column layouts. Always review the extracted data before confirming.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Will optimization change the meaning of my content?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                No. Our optimization engine preserves the core meaning of your content while improving how it's expressed. You have full control to review and reject any changes you don't like. The original resume is never modified.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                                How many versions can I create?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                There's no limit! Create as many versions as you need. Each modification automatically creates a new version, and you can manually create versions for different job applications.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5">
+                                Is my data secure?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes. All data is encrypted in transit and at rest. Your resumes are private and only accessible to you. We never share your data with third parties. You can delete your account and all data at any time.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq6">
+                                What file formats can I upload?
+                            </button>
+                        </h2>
+                        <div id="faq6" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Currently, we support PDF files only. The PDF must be text-based (not a scanned image) and under 10MB. We're working on adding support for DOCX files in the future.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Support -->
+            <section class="mb-5">
+                <div class="card bg-light">
+                    <div class="card-body text-center py-5">
+                        <h3 class="mb-3">Still Have Questions?</h3>
+                        <p class="text-muted mb-4">Our support team is here to help you succeed.</p>
+                        <a href="mailto:support@nextgencv.com" class="btn btn-primary btn-lg">
+                            <i class="bi bi-envelope me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tutorials.js' %}"></script>
+<script>
+    // Smooth scroll for navigation links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+
+    // Highlight active section in sidebar
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('section[id]');
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (pageYOffset >= sectionTop - 100) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+</script>
+{% endblock %}

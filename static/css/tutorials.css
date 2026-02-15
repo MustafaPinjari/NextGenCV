@@ -1,0 +1,545 @@
+/**
+ * Tutorial System Styles
+ * Styles for guided tutorials, tooltips, and help system
+ */
+
+/* Tutorial Overlay */
+.tutorial-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+/* Tutorial Box */
+.tutorial-box {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 9999;
+    animation: slideIn 0.3s ease-out;
+}
+
+.tutorial-header h4 {
+    color: #0d6efd;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.tutorial-content h5 {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 1rem;
+}
+
+.tutorial-content p {
+    color: #495057;
+    line-height: 1.6;
+}
+
+.tutorial-content img {
+    border: 1px solid #dee2e6;
+}
+
+.tutorial-progress .progress {
+    height: 4px;
+    background-color: #e9ecef;
+}
+
+.tutorial-progress .progress-bar {
+    background-color: #0d6efd;
+    transition: width 0.3s ease;
+}
+
+.tutorial-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Tutorial Highlight */
+.tutorial-highlight {
+    position: relative;
+    z-index: 10000 !important;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.5) !important;
+    border-radius: 4px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 0 12px rgba(13, 110, 253, 0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Tutorial Prompt */
+.tutorial-prompt {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    max-width: 350px;
+    z-index: 9997;
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(100px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.tutorial-prompt h6 {
+    font-weight: 600;
+    color: #212529;
+}
+
+.tutorial-prompt .btn-close {
+    padding: 0.25rem;
+    font-size: 0.75rem;
+}
+
+/* Help Button Styles */
+.help-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    color: white;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    padding: 0;
+    margin-left: 0.5rem;
+}
+
+.help-button:hover {
+    background-color: #0b5ed7;
+    transform: scale(1.1);
+}
+
+.help-button i {
+    font-size: 0.875rem;
+}
+
+/* Contextual Help Tooltip */
+.contextual-help {
+    position: relative;
+    display: inline-block;
+}
+
+.contextual-help .help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #6c757d;
+    color: white;
+    font-size: 0.75rem;
+    cursor: help;
+    margin-left: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.contextual-help .help-icon:hover {
+    background-color: #0d6efd;
+    transform: scale(1.15);
+}
+
+/* Enhanced Tooltips */
+.tooltip-custom {
+    position: absolute;
+    background: #212529;
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    max-width: 300px;
+    z-index: 10001;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    animation: fadeIn 0.2s ease;
+}
+
+.tooltip-custom::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+}
+
+.tooltip-custom.top::before {
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px 6px 0 6px;
+    border-color: #212529 transparent transparent transparent;
+}
+
+.tooltip-custom.bottom::before {
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 6px 6px 6px;
+    border-color: transparent transparent #212529 transparent;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Help Modal Enhancements */
+.modal-header .bi-question-circle {
+    font-size: 1.5rem;
+}
+
+.modal-body ul {
+    padding-left: 1.5rem;
+}
+
+.modal-body ul li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+}
+
+.modal-body strong {
+    color: #0d6efd;
+}
+
+/* Tutorial Badge */
+.tutorial-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background-color: #fff3cd;
+    color: #664d03;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-left: 0.5rem;
+}
+
+.tutorial-badge i {
+    margin-right: 0.25rem;
+}
+
+/* Feature Highlight */
+.feature-highlight {
+    position: relative;
+    padding: 1rem;
+    background: linear-gradient(135deg, #e7f3ff 0%, #f8f9fa 100%);
+    border-left: 4px solid #0d6efd;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.feature-highlight h6 {
+    color: #0d6efd;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.feature-highlight p {
+    color: #495057;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+.feature-highlight .btn-link {
+    padding: 0;
+    font-size: 0.875rem;
+    text-decoration: none;
+}
+
+.feature-highlight .btn-link:hover {
+    text-decoration: underline;
+}
+
+/* Quick Tips */
+.quick-tip {
+    display: flex;
+    align-items: start;
+    padding: 1rem;
+    background-color: #d1e7dd;
+    border-left: 4px solid #198754;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.quick-tip i {
+    font-size: 1.5rem;
+    color: #198754;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.quick-tip .tip-content h6 {
+    color: #0f5132;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.quick-tip .tip-content p {
+    color: #0f5132;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* Warning Tips */
+.warning-tip {
+    display: flex;
+    align-items: start;
+    padding: 1rem;
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.warning-tip i {
+    font-size: 1.5rem;
+    color: #ffc107;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.warning-tip .tip-content h6 {
+    color: #664d03;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.warning-tip .tip-content p {
+    color: #664d03;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* Info Tips */
+.info-tip {
+    display: flex;
+    align-items: start;
+    padding: 1rem;
+    background-color: #cff4fc;
+    border-left: 4px solid #0dcaf0;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.info-tip i {
+    font-size: 1.5rem;
+    color: #0dcaf0;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.info-tip .tip-content h6 {
+    color: #055160;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.info-tip .tip-content p {
+    color: #055160;
+    margin-bottom: 0;
+    font-size: 0.9rem;
+}
+
+/* Help Center Link */
+.help-center-link {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    background-color: #0d6efd;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 9996;
+}
+
+.help-center-link:hover {
+    background-color: #0b5ed7;
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(13, 110, 253, 0.5);
+}
+
+.help-center-link i {
+    font-size: 1.75rem;
+}
+
+/* Help Menu */
+.help-menu {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    min-width: 250px;
+    z-index: 9995;
+    animation: slideInUp 0.3s ease-out;
+    display: none;
+}
+
+.help-menu.show {
+    display: block;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.help-menu h6 {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.help-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: #495057;
+}
+
+.help-menu-item:hover {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+
+.help-menu-item i {
+    font-size: 1.25rem;
+    margin-right: 0.75rem;
+    width: 24px;
+    text-align: center;
+}
+
+.help-menu-item span {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tutorial-box {
+        padding: 1.5rem;
+        max-width: 95%;
+    }
+
+    .tutorial-prompt {
+        max-width: 90%;
+        bottom: 10px;
+        right: 10px;
+    }
+
+    .help-center-link {
+        width: 48px;
+        height: 48px;
+        bottom: 15px;
+        right: 15px;
+    }
+
+    .help-center-link i {
+        font-size: 1.5rem;
+    }
+
+    .help-menu {
+        bottom: 75px;
+        right: 15px;
+        min-width: 200px;
+    }
+
+    .tutorial-actions {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .tutorial-actions > div {
+        width: 100%;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .tutorial-actions button {
+        flex: 1;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .tutorial-overlay,
+    .tutorial-prompt,
+    .help-center-link,
+    .help-menu,
+    .help-button,
+    .tutorial-badge {
+        display: none !important;
+    }
+}

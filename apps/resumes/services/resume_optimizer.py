@@ -298,8 +298,7 @@ class ResumeOptimizerService:
                 'role': exp.role,
                 'start_date': str(exp.start_date) if exp.start_date else None,
                 'end_date': str(exp.end_date) if exp.end_date else None,
-                'description': exp.description,
-                'location': exp.location
+                'description': exp.description
             }
             
             # Apply changes for this experience
@@ -327,16 +326,15 @@ class ResumeOptimizerService:
                 'institution': edu.institution,
                 'degree': edu.degree,
                 'field': edu.field,
-                'start_date': str(edu.start_date) if edu.start_date else None,
-                'end_date': str(edu.end_date) if edu.end_date else None,
-                'gpa': edu.gpa
+                'start_year': edu.start_year,
+                'end_year': edu.end_year
             })
         
         # Copy and potentially add skills
         for skill in resume.skills.all():
             optimized['skills'].append({
                 'name': skill.name,
-                'proficiency': skill.proficiency
+                'category': skill.category
             })
         
         # Add injected keywords as new skills
@@ -344,7 +342,7 @@ class ResumeOptimizerService:
             if change['type'] == 'keyword_injection' and change.get('location') == 'skills':
                 optimized['skills'].append({
                     'name': change['keyword'],
-                    'proficiency': 'Intermediate'  # Default proficiency
+                    'category': 'Technical'  # Default category
                 })
         
         # Copy and apply changes to projects

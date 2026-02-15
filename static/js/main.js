@@ -381,3 +381,274 @@ window.ATSResumeBuilder = {
     scrollToTop: scrollToTop,
     addFormEntry: addFormEntry
 };
+
+
+/**
+ * Responsive Design Utilities
+ */
+
+// Detect device type
+function getDeviceType() {
+    const width = window.innerWidth;
+    if (width < 576) return 'mobile';
+    if (width < 768) return 'mobile-large';
+    if (width < 992) return 'tablet';
+    if (width < 1200) return 'desktop';
+    return 'desktop-large';
+}
+
+// Detect touch device
+function isTouchDevice() {
+    return (('ontouchstart' in window) ||
+            (navigator.maxTouchPoints > 0) ||
+            (navigator.msMaxTouchPoints > 0));
+}
+
+// Add device class to body
+function updateDeviceClass() {
+    const deviceType = getDeviceType();
+    const isTouch = isTouchDevice();
+    
+    document.body.className = document.body.className.replace(/device-\w+/g, '');
+    document.body.classList.add(`device-${deviceType}`);
+    
+    if (isTouch) {
+        document.body.classList.add('touch-device');
+    } else {
+        document.body.classList.add('no-touch');
+    }
+}
+
+// Initialize responsive features
+function initResponsiveFeatures() {
+    updateDeviceClass();
+    
+    // Update on resize (debounced)
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            updateDeviceClass();
+        }, 250);
+    });
+    
+    // Handle orientation change
+    window.addEventListener('orientationchange', function() {
+        setTimeout(updateDeviceClass, 100);
+    });
+    
+    // Mobile menu enhancements
+    if (getDeviceType().includes('mobile')) {
+        enhanceMobileMenu();
+    }
+    
+    // Touch-friendly tables
+    makeTablesResponsive();
+    
+    // Responsive images
+    handleResponsiveImages();
+}
+
+/**
+ * Enhance mobile menu
+ */
+function enhanceMobileMenu() {
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    const navbarCollapse = document.querySelector('.navbar-collapse');
+    
+    if (!navbarToggler || !navbarCollapse) return;
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!navbarToggler.contains(e.target) && 
+            !navbarCollapse.contains(e.target) &&
+            navbarCollapse.classList.contains('show')) {
+            navbarToggler.click();
+        }
+    });
+    
+    // Close menu when clicking a link
+    const navLinks = navbarCollapse.querySelectorAll('.nav-link');
+    navLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (navbarCollapse.classList.contains('show')) {
+                navbarToggler.click();
+            }
+        });
+    });
+}
+
+/**
+ * Make tables responsive with horizontal scroll
+ */
+function makeTablesResponsive() {
+    const tables = document.querySelectorAll('table:not(.table-responsive table)');
+    tables.forEach(function(table) {
+        if (!table.parentElement.classList.contains('table-responsive')) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'table-responsive';
+            table.parentNode.insertBefore(wrapper, table);
+            wrapper.appendChild(table);
+        }
+    });
+}
+
+/**
+ * Handle responsive images
+ */
+function handleResponsiveImages() {
+    const images = document.querySelectorAll('img:not([loading])');
+    images.forEach(function(img) {
+        // Add lazy loading
+        img.setAttribute('loading', 'lazy');
+        
+        // Add responsive class if not present
+        if (!img.classList.contains('img-fluid')) {
+            img.classList.add('img-fluid');
+        }
+    });
+}
+
+/**
+ * Viewport height fix for mobile browsers
+ */
+function setViewportHeight() {
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+/**
+ * Prevent zoom on input focus (iOS)
+ */
+function preventInputZoom() {
+    if (isTouchDevice()) {
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(function(input) {
+            // Ensure font size is at least 16px to prevent zoom
+            const fontSize = window.getComputedStyle(input).fontSize;
+            if (parseFloat(fontSize) < 16) {
+                input.style.fontSize = '16px';
+            }
+        });
+    }
+}
+
+/**
+ * Smooth scroll polyfill for older browsers
+ */
+function initSmoothScroll() {
+    const links = document.querySelectorAll('a[href^="#"]');
+    links.forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            const href = this.getAttribute('href');
+            if (href === '#') return;
+            
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+}
+
+/**
+ * Handle swipe gestures on mobile
+ */
+function initSwipeGestures() {
+    if (!isTouchDevice()) return;
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    document.addEventListener('touchstart', function(e) {
+        touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    document.addEventListener('touchend', function(e) {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+    }, { passive: true });
+    
+    function handleSwipe() {
+        const swipeThreshold = 50;
+        const diff = touchStartX - touchEndX;
+        
+        if (Math.abs(diff) > swipeThreshold) {
+            if (diff > 0) {
+                // Swipe left
+                document.dispatchEvent(new CustomEvent('swipeleft'));
+            } else {
+                // Swipe right
+                document.dispatchEvent(new CustomEvent('swiperight'));
+            }
+        }
+    }
+}
+
+/**
+ * Responsive font size adjustment
+ */
+function adjustFontSize() {
+    const deviceType = getDeviceType();
+    const root = document.documentElement;
+    
+    switch(deviceType) {
+        case 'mobile':
+            root.style.fontSize = '14px';
+            break;
+        case 'mobile-large':
+            root.style.fontSize = '15px';
+            break;
+        case 'tablet':
+            root.style.fontSize = '16px';
+            break;
+        default:
+            root.style.fontSize = '16px';
+    }
+}
+
+/**
+ * Handle responsive modals
+ */
+function handleResponsiveModals() {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(function(modal) {
+        modal.addEventListener('show.bs.modal', function() {
+            if (getDeviceType().includes('mobile')) {
+                // Full screen on mobile
+                const dialog = modal.querySelector('.modal-dialog');
+                if (dialog && !dialog.classList.contains('modal-fullscreen-sm-down')) {
+                    dialog.classList.add('modal-fullscreen-sm-down');
+                }
+            }
+        });
+    });
+}
+
+/**
+ * Initialize all responsive features on page load
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    initResponsiveFeatures();
+    setViewportHeight();
+    preventInputZoom();
+    initSmoothScroll();
+    initSwipeGestures();
+    adjustFontSize();
+    handleResponsiveModals();
+    
+    // Update viewport height on resize
+    window.addEventListener('resize', setViewportHeight);
+    window.addEventListener('orientationchange', setViewportHeight);
+});
+
+// Export responsive utilities
+window.ResponsiveUtils = {
+    getDeviceType: getDeviceType,
+    isTouchDevice: isTouchDevice,
+    updateDeviceClass: updateDeviceClass
+};

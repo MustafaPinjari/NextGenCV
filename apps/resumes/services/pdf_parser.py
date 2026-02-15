@@ -11,9 +11,9 @@ This service handles:
 import re
 import logging
 import pdfplumber
-import bleach
 from typing import Dict, Optional
 from io import BytesIO
+from ..utils.text_sanitization import sanitize_extracted_pdf_text
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ class PDFParserService:
         Clean and normalize extracted text with sanitization.
         
         This method:
-        - Removes XSS vectors using bleach
+        - Removes XSS vectors using comprehensive sanitization
         - Removes control characters
         - Normalizes whitespace
         - Fixes common PDF extraction artifacts
@@ -99,14 +99,8 @@ class PDFParserService:
         if not text:
             return ""
         
-        # Remove potential XSS vectors (strip all HTML tags)
-        text = bleach.clean(text, tags=[], strip=True)
-        
-        # Remove control characters except newlines and tabs
-        text = ''.join(
-            char for char in text 
-            if char.isprintable() or char in ['\n', '\t']
-        )
+        # Use comprehensive sanitization utility
+        text = sanitize_extracted_pdf_text(text)
         
         # Fix common PDF extraction artifacts
         # Remove excessive whitespace but preserve paragraph breaks
@@ -116,12 +110,6 @@ class PDFParserService:
         
         # Remove page numbers (common pattern: standalone numbers)
         text = re.sub(r'\n\d+\n', '\n', text)
-        
-        # Remove common PDF artifacts
-        text = re.sub(r'[\x00-\x08\x0b-\x0c\x0e-\x1f\x7f-\x9f]', '', text)
-        
-        # Normalize line endings
-        text = text.replace('\r\n', '\n').replace('\r', '\n')
         
         # Remove leading/trailing whitespace from each line
         lines = [line.strip() for line in text.split('\n')]

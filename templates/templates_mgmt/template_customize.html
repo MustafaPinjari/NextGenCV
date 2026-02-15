@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customize Template - {{ resume.title }} - NextGenCV{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2>Customize Template</h2>
+                    <p class="text-muted mb-0">{{ resume.title }} - {{ template.name }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'resume_detail' resume.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Resume
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Customization Controls -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-palette"></i> Customization Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="customizationForm">
+                        {% csrf_token %}
+                        
+                        <!-- Color Scheme Selector -->
+                        <div class="mb-4">
+                            <label for="color_scheme" class="form-label fw-bold">
+                                <i class="fas fa-paint-brush"></i> Color Scheme
+                            </label>
+                            <select class="form-select" id="color_scheme" name="color_scheme">
+                                <option value="">Default</option>
+                                {% for scheme in color_schemes %}
+                                <option value="{{ scheme }}" {% if customization.color_scheme == scheme %}selected{% endif %}>
+                                    {{ scheme|title }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                Choose a color scheme for your resume
+                            </small>
+                        </div>
+                        
+                        <!-- Font Family Selector -->
+                        <div class="mb-4">
+                            <label for="font_family" class="form-label fw-bold">
+                                <i class="fas fa-font"></i> Font Family
+                            </label>
+                            <select class="form-select" id="font_family" name="font_family">
+                                <option value="">Default</option>
+                                {% for font in fonts %}
+                                <option value="{{ font }}" {% if customization.font_family == font %}selected{% endif %}>
+                                    {{ font }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">
+                                All fonts are ATS-safe
+                            </small>
+                        </div>
+                        
+                        <!-- Custom CSS -->
+                        <div class="mb-4">
+                            <label for="custom_css" class="form-label fw-bold">
+                                <i class="fas fa-code"></i> Custom CSS
+                            </label>
+                            <textarea class="form-control font-monospace" 
+                                      id="custom_css" 
+                                      name="custom_css" 
+                                      rows="8"
+                                      placeholder="/* Add your custom CSS here */&#10;.resume-header h1 {&#10;    font-size: 26pt;&#10;}">{{ customization.custom_css }}</textarea>
+                            <small class="form-text text-muted">
+                                Advanced: Add custom CSS for fine-tuning
+                            </small>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-primary" id="previewBtn">
+                                <i class="fas fa-eye"></i> Preview Changes
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Save Customization
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- Template Info -->
+                    <div>
+                        <h6 class="fw-bold">Current Template:</h6>
+                        <p class="mb-2">{{ template.name }}</p>
+                        <a href="{% url 'template_gallery' %}" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-exchange-alt"></i> Change Template
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Preview -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-eye"></i> Live Preview
+                    </h5>
+                    <div id="previewLoading" class="spinner-border spinner-border-sm text-primary d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="preview-container" style="max-height: 800px; overflow-y: auto; background: #f8f9fa;">
+                        <div id="previewContent" style="background: white; margin: 20px auto; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                            {{ preview_html|safe }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.sticky-top {
+    position: sticky;
+}
+
+.preview-container {
+    padding: 20px;
+}
+
+.font-monospace {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const previewBtn = document.getElementById('previewBtn');
+    const previewLoading = document.getElementById('previewLoading');
+    const previewContent = document.getElementById('previewContent');
+    const form = document.getElementById('customizationForm');
+    
+    // Live preview on button click
+    previewBtn.addEventListener('click', function() {
+        updatePreview();
+    });
+    
+    // Auto-preview on select changes
+    document.getElementById('color_scheme').addEventListener('change', updatePreview);
+    document.getElementById('font_family').addEventListener('change', updatePreview);
+    
+    function updatePreview() {
+        // Show loading spinner
+        previewLoading.classList.remove('d-none');
+        
+        // Get form data
+        const formData = new FormData(form);
+        
+        // Make AJAX request
+        fetch('{% url "template_customize_preview" resume.id %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.preview_html) {
+                previewContent.innerHTML = data.preview_html;
+            } else if (data.error) {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update preview. Please try again.');
+        })
+        .finally(() => {
+            // Hide loading spinner
+            previewLoading.classList.add('d-none');
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,218 +1,375 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}Upload Resume PDF{% endblock %}
+{% block title %}Upload Resume PDF - ATS Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-area {
+        border: 3px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 60px 20px;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .upload-area:hover,
+    .upload-area.dragover {
+        border-color: #0d6efd;
+        background-color: #e7f1ff;
+    }
+    
+    .upload-area.dragover {
+        transform: scale(1.02);
+    }
+    
+    .upload-icon {
+        font-size: 4rem;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+    
+    .upload-area:hover .upload-icon,
+    .upload-area.dragover .upload-icon {
+        color: #0d6efd;
+    }
+    
+    .file-input {
+        display: none;
+    }
+    
+    .file-info {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #e7f1ff;
+        border-radius: 5px;
+        display: none;
+    }
+    
+    .file-info.show {
+        display: block;
+    }
+    
+    .progress-container {
+        margin-top: 20px;
+        display: none;
+    }
+    
+    .progress-container.show {
+        display: block;
+    }
+    
+    .validation-message {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 5px;
+    }
+    
+    .validation-message.error {
+        background-color: #f8d7da;
+        color: #842029;
+        border: 1px solid #f5c2c7;
+    }
+    
+    .validation-message.success {
+        background-color: #d1e7dd;
+        color: #0f5132;
+        border: 1px solid #badbcc;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h3 class="mb-0">
-                        <i class="fas fa-file-upload"></i> Upload Resume PDF
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted mb-4">
-                        Upload your existing resume in PDF format. We'll automatically extract and parse the content
-                        so you can review and import it into your account.
-                    </p>
-
-                    <!-- Upload Instructions -->
-                    <div class="alert alert-info">
-                        <h5><i class="fas fa-info-circle"></i> Requirements:</h5>
-                        <ul class="mb-0">
-                            <li>File must be in PDF format</li>
-                            <li>Maximum file size: 10MB</li>
-                            <li>PDF must be text-based (not a scanned image)</li>
-                            <li>File should not contain embedded scripts</li>
-                        </ul>
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Upload Resume PDF</h2>
+            <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+        
+        <!-- Instructions Card -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-info-circle text-primary"></i> Instructions
+                </h5>
+                <ul class="mb-0">
+                    <li>Upload your existing resume in PDF format</li>
+                    <li>Maximum file size: <strong>10 MB</strong></li>
+                    <li>Ensure your PDF is text-based (not a scanned image)</li>
+                    <li>The system will automatically extract and parse your resume content</li>
+                    <li>You'll be able to review and edit the extracted information before saving</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Upload Form -->
+        <div class="card shadow">
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="uploadForm">
+                    {% csrf_token %}
+                    
+                    <!-- Drag and Drop Area -->
+                    <div class="upload-area" id="uploadArea">
+                        <i class="bi bi-cloud-upload upload-icon"></i>
+                        <h4>Drag & Drop your PDF here</h4>
+                        <p class="text-muted mb-3">or</p>
+                        <button type="button" class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                            <i class="bi bi-folder2-open"></i> Browse Files
+                        </button>
+                        <input type="file" 
+                               name="resume_file" 
+                               id="fileInput" 
+                               class="file-input" 
+                               accept=".pdf,application/pdf"
+                               required>
                     </div>
-
-                    <!-- Upload Form -->
-                    <form method="post" enctype="multipart/form-data" id="uploadForm">
-                        {% csrf_token %}
-                        
-                        <div class="mb-4">
-                            <label for="resume_file" class="form-label">
-                                <strong>Select PDF File:</strong>
-                            </label>
-                            <div class="custom-file-upload">
-                                <input 
-                                    type="file" 
-                                    class="form-control" 
-                                    id="resume_file" 
-                                    name="resume_file" 
-                                    accept=".pdf,application/pdf"
-                                    required
-                                >
-                                <div class="file-info mt-2 text-muted" id="fileInfo"></div>
+                    
+                    <!-- File Information Display -->
+                    <div class="file-info" id="fileInfo">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="bi bi-file-earmark-pdf text-danger fs-4 me-2"></i>
+                                <strong id="fileName"></strong>
+                                <span class="text-muted ms-2" id="fileSize"></span>
                             </div>
-                        </div>
-
-                        <!-- Drag and Drop Area -->
-                        <div class="drop-zone mb-4" id="dropZone">
-                            <div class="drop-zone-content">
-                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                                <p class="mb-2"><strong>Drag and drop your PDF here</strong></p>
-                                <p class="text-muted">or click to browse</p>
-                            </div>
-                        </div>
-
-                        <!-- Progress Bar (hidden initially) -->
-                        <div class="progress mb-3" id="uploadProgress" style="display: none;">
-                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" 
-                                 style="width: 0%"
-                                 id="progressBar">
-                                0%
-                            </div>
-                        </div>
-
-                        <!-- Action Buttons -->
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'resume_list' %}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary" id="uploadBtn">
-                                <i class="fas fa-upload"></i> Upload and Parse
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearFile()">
+                                <i class="bi bi-x-circle"></i> Remove
                             </button>
                         </div>
-                    </form>
-                </div>
+                    </div>
+                    
+                    <!-- Validation Messages -->
+                    <div id="validationMessage"></div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="progress-container" id="progressContainer">
+                        <label class="form-label">Uploading and processing...</label>
+                        <div class="progress" style="height: 25px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                 role="progressbar" 
+                                 id="progressBar"
+                                 style="width: 0%"
+                                 aria-valuenow="0" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                <span id="progressText">0%</span>
+                            </div>
+                        </div>
+                        <small class="text-muted mt-2 d-block">This may take a few moments depending on file size...</small>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="mt-4 text-center">
+                        <button type="submit" class="btn btn-success btn-lg" id="submitBtn" disabled>
+                            <i class="bi bi-upload"></i> Upload and Parse Resume
+                        </button>
+                    </div>
+                </form>
             </div>
-
-            <!-- Tips Section -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-lightbulb"></i> Tips for Best Results</h5>
-                </div>
-                <div class="card-body">
-                    <ul>
-                        <li>Use a well-formatted resume with clear section headings (Experience, Education, Skills, etc.)</li>
-                        <li>Avoid complex layouts with multiple columns or text boxes</li>
-                        <li>Ensure your PDF is text-based, not a scanned image</li>
-                        <li>Include standard information: name, email, phone, work experience, education</li>
-                        <li>After upload, you'll be able to review and edit the extracted data before importing</li>
-                    </ul>
-                </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-body">
+                <h6 class="card-title text-info">
+                    <i class="bi bi-lightbulb"></i> Tips for Best Results
+                </h6>
+                <ul class="mb-0 small">
+                    <li>Use a standard resume format with clear section headings (Experience, Education, Skills, etc.)</li>
+                    <li>Avoid complex layouts with multiple columns or text boxes</li>
+                    <li>Ensure your PDF has selectable text (not a scanned image)</li>
+                    <li>Remove headers, footers, and page numbers if possible</li>
+                    <li>Use standard fonts and avoid decorative elements</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-.drop-zone {
-    border: 2px dashed #007bff;
-    border-radius: 8px;
-    padding: 40px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    background-color: #f8f9fa;
-}
-
-.drop-zone:hover {
-    background-color: #e9ecef;
-    border-color: #0056b3;
-}
-
-.drop-zone.dragover {
-    background-color: #cfe2ff;
-    border-color: #0056b3;
-    border-style: solid;
-}
-
-.custom-file-upload {
-    position: relative;
-}
-
-.file-info {
-    font-size: 0.9rem;
-}
-</style>
-
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const fileInput = document.getElementById('resume_file');
-    const dropZone = document.getElementById('dropZone');
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
     const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const submitBtn = document.getElementById('submitBtn');
+    const validationMessage = document.getElementById('validationMessage');
     const uploadForm = document.getElementById('uploadForm');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const uploadProgress = document.getElementById('uploadProgress');
+    const progressContainer = document.getElementById('progressContainer');
     const progressBar = document.getElementById('progressBar');
-
-    // File input change handler
-    fileInput.addEventListener('change', function(e) {
-        if (this.files.length > 0) {
-            displayFileInfo(this.files[0]);
-        }
-    });
-
-    // Drop zone click handler
-    dropZone.addEventListener('click', function() {
-        fileInput.click();
-    });
-
+    const progressText = document.getElementById('progressText');
+    
+    // Maximum file size in bytes (10 MB)
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    
     // Drag and drop handlers
-    dropZone.addEventListener('dragover', function(e) {
+    uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
-        e.stopPropagation();
-        this.classList.add('dragover');
+        uploadArea.classList.add('dragover');
     });
-
-    dropZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.classList.remove('dragover');
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
     });
-
-    dropZone.addEventListener('drop', function(e) {
+    
+    uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
-        e.stopPropagation();
-        this.classList.remove('dragover');
-
+        uploadArea.classList.remove('dragover');
+        
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             fileInput.files = files;
-            displayFileInfo(files[0]);
+            handleFileSelect(files[0]);
         }
     });
-
-    // Form submit handler
-    uploadForm.addEventListener('submit', function(e) {
-        if (fileInput.files.length === 0) {
-            e.preventDefault();
-            alert('Please select a PDF file to upload.');
+    
+    // File input change handler
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleFileSelect(e.target.files[0]);
+        }
+    });
+    
+    // Handle file selection
+    function handleFileSelect(file) {
+        // Clear previous validation messages
+        validationMessage.innerHTML = '';
+        
+        // Validate file type
+        if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
+            showValidationError('Please upload a PDF file. Other file types are not supported.');
+            clearFile();
             return;
         }
-
-        // Show progress bar
-        uploadProgress.style.display = 'block';
-        uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-
-        // Simulate progress (actual upload happens server-side)
-        let progress = 0;
-        const interval = setInterval(function() {
-            progress += 10;
-            if (progress <= 90) {
-                progressBar.style.width = progress + '%';
-                progressBar.textContent = progress + '%';
-            } else {
-                clearInterval(interval);
-            }
-        }, 200);
-    });
-
-    function displayFileInfo(file) {
-        const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-        fileInfo.innerHTML = `
-            <i class="fas fa-file-pdf text-danger"></i> 
-            <strong>${file.name}</strong> (${sizeMB} MB)
+        
+        // Validate file size
+        if (file.size > MAX_FILE_SIZE) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+            showValidationError(`File size (${sizeMB} MB) exceeds the maximum limit of 10 MB. Please upload a smaller file.`);
+            clearFile();
+            return;
+        }
+        
+        // Display file information
+        fileName.textContent = file.name;
+        fileSize.textContent = formatFileSize(file.size);
+        fileInfo.classList.add('show');
+        submitBtn.disabled = false;
+        
+        showValidationSuccess('File validated successfully! Ready to upload.');
+    }
+    
+    // Clear file selection
+    function clearFile() {
+        fileInput.value = '';
+        fileInfo.classList.remove('show');
+        submitBtn.disabled = true;
+        validationMessage.innerHTML = '';
+    }
+    
+    // Format file size
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    }
+    
+    // Show validation error
+    function showValidationError(message) {
+        validationMessage.innerHTML = `
+            <div class="validation-message error">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message}
+            </div>
         `;
     }
-});
+    
+    // Show validation success
+    function showValidationSuccess(message) {
+        validationMessage.innerHTML = `
+            <div class="validation-message success">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                ${message}
+            </div>
+        `;
+    }
+    
+    // Form submission handler
+    uploadForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
+        
+        // Show progress bar
+        progressContainer.classList.add('show');
+        
+        // Simulate progress (since we can't track actual upload progress easily in Django)
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += 5;
+            if (progress <= 90) {
+                updateProgress(progress);
+            }
+        }, 200);
+        
+        // Create FormData and submit
+        const formData = new FormData(uploadForm);
+        
+        fetch(uploadForm.action || window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => {
+            clearInterval(progressInterval);
+            updateProgress(100);
+            
+            if (response.ok) {
+                return response.text();
+            } else {
+                throw new Error('Upload failed');
+            }
+        })
+        .then(html => {
+            // Parse response to check if it's a redirect
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            // Check if response contains redirect or success
+            if (response.redirected || html.includes('parse_review')) {
+                window.location.href = response.url || window.location.href;
+            } else {
+                // If not redirected, reload to show any error messages
+                window.location.reload();
+            }
+        })
+        .catch(error => {
+            clearInterval(progressInterval);
+            progressContainer.classList.remove('show');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-upload"></i> Upload and Parse Resume';
+            showValidationError('An error occurred while uploading. Please try again.');
+            console.error('Upload error:', error);
+        });
+    });
+    
+    // Update progress bar
+    function updateProgress(percent) {
+        progressBar.style.width = percent + '%';
+        progressBar.setAttribute('aria-valuenow', percent);
+        progressText.textContent = percent + '%';
+    }
 </script>
 {% endblock %}

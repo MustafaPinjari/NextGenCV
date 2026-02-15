@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -56,9 +57,12 @@ MIDDLEWARE = [
     # Custom middleware
     'config.middleware.StaticFilesCacheMiddleware',
     'config.middleware.SecurityHeadersMiddleware',
+    # Performance monitoring middleware (Requirements: 18.4)
+    'config.middleware.PerformanceMonitoringMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
+
 
 TEMPLATES = [
     {
@@ -88,6 +92,35 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+# Cache Configuration
+# https://docs.djangoproject.com/en/4.2/ref/settings/#caches
+# Using local-memory caching for development
+# For production, consider Redis or Memcached
+# Requirements: 18.3
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'nextgencv-cache',
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
+
+# Cache timeout settings (in seconds)
+CACHE_TIMEOUT_RESUME_HEALTH = 300  # 5 minutes
+CACHE_TIMEOUT_ANALYTICS = 300  # 5 minutes
+CACHE_TIMEOUT_SCORE_TRENDS = 600  # 10 minutes
+
+# Performance Monitoring Settings (Requirements: 18.4)
+PERFORMANCE_MONITORING_ENABLED = DEBUG  # Only enable in development
+PERFORMANCE_LOG_SLOW_QUERIES = True  # Log queries slower than threshold
+PERFORMANCE_SLOW_QUERY_THRESHOLD = 0.5  # seconds
+PERFORMANCE_LOG_SLOW_REQUESTS = True  # Log requests slower than threshold
+PERFORMANCE_SLOW_REQUEST_THRESHOLD = 2.0  # seconds
 
 
 # Password validation
@@ -138,8 +171,18 @@ STATICFILES_FINDERS = [
 ]
 
 # Media files
+# For development: store in project directory
+# For production: should be outside web root (e.g., /var/www/media/)
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.environ.get('MEDIA_ROOT', str(BASE_DIR / 'media'))
+
+# File upload settings
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+# Security: Disable direct media file serving in production
+# Files should be served through views with access control
+# See apps/resumes/views_file_access.py for secure file serving
 
 # Login URLs
 LOGIN_URL = 'login'
@@ -211,6 +254,14 @@ LOGGING = {
             'backupCount': 3,
             'formatter': 'verbose',
         },
+        'performance_file': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': BASE_DIR / 'logs' / 'performance.log',
+            'maxBytes': 1024 * 1024 * 10,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
@@ -236,6 +287,11 @@ LOGGING = {
         'apps.analyzer': {
             'handlers': ['console', 'analyzer_file'],
             'level': 'ERROR',
+            'propagate': False,
+        },
+        'performance': {
+            'handlers': ['console', 'performance_file'],
+            'level': 'DEBUG',
             'propagate': False,
         },
     },

@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Fix My Resume - {{ resume.title }} - ATS Resume Builder{% endblock %}
+
+{% block extra_css %}
+<style>
+.instruction-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.instruction-card h3 {
+    color: white;
+    margin-bottom: 20px;
+}
+
+.tip-box {
+    background-color: #f8f9fa;
+    border-left: 4px solid #667eea;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.tip-box i {
+    color: #667eea;
+    margin-right: 10px;
+}
+
+.feature-badge {
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    margin: 5px;
+    font-size: 0.9rem;
+}
+
+.char-counter {
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-align: right;
+    margin-top: 5px;
+}
+
+.char-counter.warning {
+    color: #ffc107;
+}
+
+.char-counter.error {
+    color: #dc3545;
+}
+
+.char-counter.success {
+    color: #28a745;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">
+                <i class="bi bi-magic"></i> Fix My Resume
+            </h2>
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Resume
+            </a>
+        </div>
+        
+        <!-- Instruction Card -->
+        <div class="instruction-card">
+            <h3><i class="bi bi-lightbulb"></i> How AI Resume Optimization Works</h3>
+            <p class="mb-3">
+                Our AI-powered optimization engine will analyze your resume against the job description and automatically improve it by:
+            </p>
+            <div class="row">
+                <div class="col-md-6">
+                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Rewriting weak bullet points</span>
+                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Inserting missing keywords</span>
+                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Adding quantification</span>
+                </div>
+                <div class="col-md-6">
+                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Standardizing formatting</span>
+                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Strengthening action verbs</span>
+                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Improving ATS compatibility</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Resume Info -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-file-earmark-text"></i> Resume: {{ resume.title }}
+                </h5>
+                <p class="text-muted mb-0">
+                    <small>
+                        Last updated: {{ resume.updated_at|date:"F d, Y g:i A" }}
+                        {% if resume.current_version_number %}
+                        | Current version: {{ resume.current_version_number }}
+                        {% endif %}
+                    </small>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Job Description Form -->
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Enter Job Description</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="fixResumeForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="job_description" class="form-label">
+                            <strong>Paste the complete job description below:</strong>
+                        </label>
+                        <textarea 
+                            class="form-control" 
+                            id="job_description" 
+                            name="job_description" 
+                            rows="15" 
+                            placeholder="Paste the full job description here, including responsibilities, requirements, and qualifications..."
+                            required>{{ job_description|default:"" }}</textarea>
+                        <div class="char-counter" id="charCounter">
+                            <span id="charCount">0</span> characters (minimum 50 required)
+                        </div>
+                    </div>
+                    
+                    <!-- Tips Section -->
+                    <div class="mb-4">
+                        <h6><i class="bi bi-info-circle"></i> Tips for Best Results:</h6>
+                        
+                        <div class="tip-box">
+                            <i class="bi bi-1-circle-fill"></i>
+                            <strong>Include the complete job posting:</strong> Copy the entire job description, including title, responsibilities, requirements, and qualifications.
+                        </div>
+                        
+                        <div class="tip-box">
+                            <i class="bi bi-2-circle-fill"></i>
+                            <strong>Don't edit or summarize:</strong> Paste the original text as-is for the most accurate keyword matching.
+                        </div>
+                        
+                        <div class="tip-box">
+                            <i class="bi bi-3-circle-fill"></i>
+                            <strong>Focus on relevant positions:</strong> The AI will prioritize optimizing experiences that match the job description.
+                        </div>
+                        
+                        <div class="tip-box">
+                            <i class="bi bi-4-circle-fill"></i>
+                            <strong>Review before accepting:</strong> You'll see all changes before they're applied, and you can accept or reject them.
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
+                            <i class="bi bi-magic"></i> Optimize My Resume
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Additional Info -->
+        <div class="alert alert-info mt-4">
+            <i class="bi bi-shield-check"></i>
+            <strong>Privacy Note:</strong> Your job description is only used for this optimization session and is not stored permanently. 
+            Your original resume is never modified - all changes create a new version that you can review before accepting.
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const textarea = document.getElementById('job_description');
+    const charCounter = document.getElementById('charCounter');
+    const charCount = document.getElementById('charCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const form = document.getElementById('fixResumeForm');
+    
+    // Update character count and button state
+    function updateCharCount() {
+        const length = textarea.value.trim().length;
+        charCount.textContent = length;
+        
+        // Update styling based on length
+        charCounter.classList.remove('error', 'warning', 'success');
+        
+        if (length < 50) {
+            charCounter.classList.add('error');
+            submitBtn.disabled = true;
+        } else if (length < 100) {
+            charCounter.classList.add('warning');
+            submitBtn.disabled = false;
+        } else {
+            charCounter.classList.add('success');
+            submitBtn.disabled = false;
+        }
+    }
+    
+    // Initialize on page load
+    updateCharCount();
+    
+    // Update on input
+    textarea.addEventListener('input', updateCharCount);
+    
+    // Show loading state on submit
+    form.addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
+    });
+});
+</script>
+{% endblock %}

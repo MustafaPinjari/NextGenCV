@@ -4,12 +4,20 @@ Business logic services for resume management.
 from django.db import transaction
 from django.shortcuts import get_object_or_404
 from apps.resumes.models import Resume, PersonalInfo, Experience, Education, Skill, Project
+from apps.resumes.utils.query_optimization import (
+    get_resume_with_relations,
+    get_user_resumes_optimized,
+    bulk_prefetch_resume_relations
+)
 
 
 class ResumeService:
     """
     Service class containing business logic for resume operations.
     Handles CRUD operations and ensures data integrity.
+    
+    Uses query optimization utilities to reduce database hits.
+    Requirements: 18.2
     """
 
     @staticmethod
@@ -90,13 +98,17 @@ class ResumeService:
         """
         Retrieve all resumes for a user, ordered by updated_at descending.
         
+        Uses optimized query with select_related to reduce database hits.
+        
         Args:
             user: User object
         
         Returns:
-            QuerySet: Resumes belonging to the user
+            QuerySet: Resumes belonging to the user with personal_info prefetched
+            
+        Requirements: 18.2
         """
-        return Resume.objects.filter(user=user).order_by('-updated_at')
+        return get_user_resumes_optimized(user)
 
     @staticmethod
     def update_resume(resume_id, data):
@@ -196,24 +208,19 @@ class ResumeService:
         """
         Create a copy of an existing resume with all sections.
         
+        Uses optimized query with prefetch_related to load all relations in one query.
+        
         Args:
             resume_id: ID of the resume to duplicate
         
         Returns:
             Resume: The newly created duplicate resume
+            
+        Requirements: 18.2
         """
         with transaction.atomic():
-            # Get the original resume
-            original = get_object_or_404(
-                Resume.objects.prefetch_related(
-                    'personal_info',
-                    'experiences',
-                    'education',
-                    'skills',
-                    'projects'
-                ),
-                id=resume_id
-            )
+            # Get the original resume with all relations prefetched
+            original = get_resume_with_relations(resume_id)
             
             # Create new resume with same data
             duplicate = Resume.objects.create(

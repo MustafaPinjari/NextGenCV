@@ -19,19 +19,27 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
+from config.help_views import documentation
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='landing.html'), name='landing'),
+    path('help/', documentation, name='help_documentation'),
     path('auth/', include('apps.authentication.urls')),
     path('resumes/', include('apps.resumes.urls')),
     path('analyzer/', include('apps.analyzer.urls')),
+    path('analytics/', include('apps.analytics.urls')),
+    path('templates/', include('apps.templates_mgmt.urls')),
 ]
 
 # Serve static and media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    
+    # Add performance monitoring dashboard in development (Requirements: 18.4)
+    from config.performance_views import performance_dashboard
+    urlpatterns += [path('performance/', performance_dashboard, name='performance_dashboard')]
 
 # Custom error handlers
 handler404 = 'config.views.custom_404'
