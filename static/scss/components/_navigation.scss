@@ -1,0 +1,541 @@
+// ============================================
+// Navigation Components
+// ============================================
+// Implements sidebar and top navigation
+// Requirements: 6.3
+
+// ============================================
+// Sidebar Navigation
+// ============================================
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 100vh;
+  background: $color-surface;
+  border-right: 1px solid $color-border;
+  display: flex;
+  flex-direction: column;
+  transition: all $duration-slow $easing-default;
+  z-index: 1000;
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  // Collapsed state
+  &.sidebar-collapsed {
+    width: 80px;
+    
+    .sidebar-item-text {
+      opacity: 0;
+      width: 0;
+    }
+    
+    .sidebar-logo-text {
+      opacity: 0;
+      width: 0;
+    }
+  }
+  
+  // Mobile drawer (overlay)
+  @media (max-width: 1024px) {
+    transform: translateX(-100%);
+    box-shadow: none;
+    
+    &.sidebar-open {
+      transform: translateX(0);
+      box-shadow: $shadow-lg;
+    }
+  }
+}
+
+// Sidebar header with logo
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-4;
+  border-bottom: 1px solid $color-border;
+  min-height: 64px;
+}
+
+.sidebar-logo {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-text {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  white-space: nowrap;
+  transition: all $duration-normal $easing-default;
+}
+
+// Sidebar navigation items
+.sidebar-nav {
+  flex: 1;
+  padding: $spacing-4 $spacing-2;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-2 $spacing-3;
+  margin-bottom: $spacing-1;
+  border-radius: $radius-md;
+  color: $color-text-secondary;
+  text-decoration: none;
+  transition: all $duration-normal $easing-default;
+  cursor: pointer;
+  position: relative;
+  
+  &:hover {
+    background: $color-surface-elevated;
+    color: $color-text-primary;
+  }
+  
+  // Active state
+  &.sidebar-item-active {
+    background: $color-surface-elevated;
+    color: $color-text-primary;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: $color-primary-solid;
+      border-radius: 0 $radius-sm $radius-sm 0;
+    }
+  }
+}
+
+.sidebar-item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-item-text {
+  font-size: $font-size-base;
+  white-space: nowrap;
+  transition: all $duration-normal $easing-default;
+}
+
+// Sidebar section
+.sidebar-section {
+  margin-top: $spacing-4;
+  
+  &:first-child {
+    margin-top: 0;
+  }
+}
+
+.sidebar-section-title {
+  padding: $spacing-2 $spacing-3;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-tertiary;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-wide;
+}
+
+// Sidebar footer
+.sidebar-footer {
+  padding: $spacing-4;
+  border-top: 1px solid $color-border;
+}
+
+// Sidebar toggle button
+.sidebar-toggle {
+  position: absolute;
+  top: $spacing-4;
+  right: -16px;
+  width: 32px;
+  height: 32px;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all $duration-normal $easing-default;
+  z-index: 1001;
+  
+  &:hover {
+    background: $color-surface-elevated;
+    box-shadow: $shadow-sm;
+  }
+  
+  @media (max-width: 1024px) {
+    display: none;
+  }
+}
+
+// ============================================
+// Top Navigation Bar
+// ============================================
+.topbar {
+  position: fixed;
+  top: 0;
+  left: 280px;
+  right: 0;
+  height: 64px;
+  background: $color-surface;
+  border-bottom: 1px solid $color-border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $spacing-6;
+  transition: left $duration-slow $easing-default;
+  z-index: 999;
+  
+  // When sidebar is collapsed
+  .sidebar-collapsed ~ & {
+    left: 80px;
+  }
+  
+  @media (max-width: 1024px) {
+    left: 0;
+  }
+}
+
+// Topbar left section
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+}
+
+// Hamburger menu for mobile
+.topbar-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  color: $color-text-primary;
+  cursor: pointer;
+  
+  @media (max-width: 1024px) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// Topbar search
+.topbar-search {
+  position: relative;
+  width: 400px;
+  
+  @media (max-width: 768px) {
+    width: 200px;
+  }
+  
+  input {
+    width: 100%;
+    padding: $spacing-2 $spacing-3 $spacing-2 $spacing-8;
+    background: $color-surface-elevated;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    color: $color-text-primary;
+    font-size: $font-size-sm;
+    transition: all $duration-normal $easing-default;
+    
+    &:focus {
+      outline: none;
+      border-color: $color-border-focus;
+      box-shadow: $glow-primary;
+    }
+    
+    &::placeholder {
+      color: $color-text-tertiary;
+    }
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: $spacing-3;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $color-text-tertiary;
+    pointer-events: none;
+  }
+}
+
+// Topbar right section
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+}
+
+// Topbar icon button
+.topbar-icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  border-radius: $radius-md;
+  color: $color-text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover {
+    background: $color-surface-elevated;
+    color: $color-text-primary;
+  }
+  
+  // Notification badge
+  .badge {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 8px;
+    height: 8px;
+    background: $color-error;
+    border-radius: $radius-full;
+    border: 2px solid $color-surface;
+  }
+}
+
+// Profile dropdown
+.topbar-profile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-1 $spacing-2;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover {
+    background: $color-surface-elevated;
+  }
+}
+
+.topbar-profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  object-fit: cover;
+  border: 2px solid $color-border;
+}
+
+.topbar-profile-name {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  
+  @media (max-width: 768px) {
+    display: none;
+  }
+}
+
+// Dropdown menu
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + $spacing-2);
+  right: 0;
+  min-width: 200px;
+  background: $color-surface-elevated;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  padding: $spacing-2;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all $duration-normal $easing-default;
+  z-index: 1002;
+  
+  &.dropdown-menu-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-2 $spacing-3;
+  border-radius: $radius-md;
+  color: $color-text-primary;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  transition: all $duration-normal $easing-default;
+  cursor: pointer;
+  
+  &:hover {
+    background: $color-surface;
+  }
+  
+  &.dropdown-item-danger {
+    color: $color-error;
+  }
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: $color-border;
+  margin: $spacing-2 0;
+}
+
+// ============================================
+// Breadcrumb Navigation
+// ============================================
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-3 0;
+  list-style: none;
+  margin: 0;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  
+  a {
+    color: $color-text-secondary;
+    text-decoration: none;
+    transition: color $duration-normal $easing-default;
+    
+    &:hover {
+      color: $color-text-primary;
+    }
+  }
+  
+  &.breadcrumb-item-active {
+    color: $color-text-primary;
+  }
+  
+  &:not(:last-child)::after {
+    content: '/';
+    margin-left: $spacing-2;
+    color: $color-text-tertiary;
+  }
+}
+
+// ============================================
+// Tabs Navigation
+// ============================================
+.tabs {
+  display: flex;
+  gap: $spacing-4;
+  border-bottom: 1px solid $color-border;
+  margin-bottom: $spacing-4;
+}
+
+.tab-item {
+  position: relative;
+  padding: $spacing-3 $spacing-2;
+  color: $color-text-secondary;
+  text-decoration: none;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $duration-normal $easing-default;
+  border-bottom: 2px solid transparent;
+  
+  &:hover {
+    color: $color-text-primary;
+  }
+  
+  &.tab-item-active {
+    color: $color-text-primary;
+    border-bottom-color: $color-primary-solid;
+    box-shadow: 0 2px 8px rgba(0, 102, 255, 0.3);
+  }
+}
+
+// ============================================
+// Pagination
+// ============================================
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  justify-content: center;
+  margin: $spacing-6 0;
+}
+
+.pagination-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 $spacing-2;
+  background: transparent;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $color-text-primary;
+  text-decoration: none;
+  font-size: $font-size-sm;
+  cursor: pointer;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover:not(.pagination-item-active):not(:disabled) {
+    background: $color-surface-elevated;
+    border-color: $color-border-hover;
+  }
+  
+  &.pagination-item-active {
+    background: $color-primary-solid;
+    border-color: $color-primary-solid;
+    color: #ffffff;
+    cursor: default;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================
+// Mobile Overlay (for sidebar drawer)
+// ============================================
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all $duration-normal $easing-default;
+  z-index: 999;
+  
+  &.sidebar-overlay-open {
+    opacity: 1;
+    visibility: visible;
+  }
+  
+  @media (min-width: 1025px) {
+    display: none;
+  }
+}

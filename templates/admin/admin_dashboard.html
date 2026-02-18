@@ -1,0 +1,654 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-header {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-5);
+        margin-bottom: var(--spacing-6);
+    }
+    
+    .admin-header h1 {
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .admin-header p {
+        color: var(--color-text-secondary);
+    }
+    
+    .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-4);
+        margin-bottom: var(--spacing-6);
+    }
+    
+    .admin-stat-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-4);
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .admin-stat-card:hover {
+        border-color: var(--color-border-hover);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .admin-stat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .admin-stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--font-size-xl);
+    }
+    
+    .admin-stat-value {
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .admin-stat-label {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+    
+    .admin-stat-change {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-1);
+    }
+    
+    .admin-stat-change.positive {
+        color: var(--color-success);
+    }
+    
+    .admin-stat-change.negative {
+        color: var(--color-error);
+    }
+    
+    .admin-section {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-5);
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .admin-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-4);
+        padding-bottom: var(--spacing-3);
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .admin-section-title {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+    }
+    
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    
+    .admin-table thead {
+        background: var(--color-surface-elevated);
+    }
+    
+    .admin-table th {
+        padding: var(--spacing-3);
+        text-align: left;
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        font-size: var(--font-size-sm);
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .admin-table tbody tr {
+        border-bottom: 1px solid var(--color-border);
+        transition: background var(--duration-fast) var(--easing-default);
+    }
+    
+    .admin-table tbody tr:hover {
+        background: var(--color-surface-elevated);
+    }
+    
+    .admin-table td {
+        padding: var(--spacing-3);
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+    }
+    
+    .admin-table-actions {
+        display: flex;
+        gap: var(--spacing-2);
+    }
+    
+    .admin-table-checkbox {
+        width: 18px;
+        height: 18px;
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .admin-table-checkbox:checked {
+        background: var(--color-primary-solid);
+        border-color: var(--color-primary-solid);
+    }
+    
+    .admin-bulk-actions {
+        display: none;
+        align-items: center;
+        gap: var(--spacing-2);
+        padding: var(--spacing-3);
+        background: rgba(0, 102, 255, 0.1);
+        border: 1px solid var(--color-primary-solid);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .admin-bulk-actions.active {
+        display: flex;
+    }
+    
+    .admin-filters {
+        display: flex;
+        gap: var(--spacing-2);
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .admin-filter-input {
+        flex: 1;
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-2) var(--spacing-3);
+        color: var(--color-text-primary);
+        font-size: var(--font-size-sm);
+    }
+    
+    .admin-filter-input:focus {
+        outline: none;
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    .admin-pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: var(--spacing-2);
+        margin-top: var(--spacing-4);
+    }
+    
+    .admin-page-btn {
+        padding: var(--spacing-2) var(--spacing-3);
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        color: var(--color-text-primary);
+        cursor: pointer;
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .admin-page-btn:hover {
+        border-color: var(--color-primary-solid);
+        color: var(--color-primary-solid);
+    }
+    
+    .admin-page-btn.active {
+        background: var(--color-primary-solid);
+        border-color: var(--color-primary-solid);
+        color: white;
+    }
+    
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--color-surface-elevated);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-tertiary);
+        font-size: var(--font-size-sm);
+    }
+    
+    .status-badge {
+        padding: var(--spacing-1) var(--spacing-2);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+    }
+    
+    .status-badge.active {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--color-success);
+    }
+    
+    .status-badge.inactive {
+        background: rgba(107, 114, 128, 0.1);
+        color: var(--color-text-tertiary);
+    }
+    
+    .status-badge.pending {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--color-warning);
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<!-- Admin Header -->
+<div class="admin-header">
+    <h1><i class="bi bi-shield-check"></i> Admin Dashboard</h1>
+    <p>Manage users, resumes, and system settings</p>
+</div>
+
+<!-- Stats Overview -->
+<div class="admin-stats">
+    <div class="admin-stat-card">
+        <div class="admin-stat-header">
+            <div class="admin-stat-icon" style="background: rgba(0, 102, 255, 0.1); color: var(--color-primary-solid);">
+                <i class="bi bi-people"></i>
+            </div>
+        </div>
+        <div class="admin-stat-value">{{ total_users|default:0 }}</div>
+        <div class="admin-stat-label">Total Users</div>
+        <div class="admin-stat-change positive">
+            <i class="bi bi-arrow-up"></i> +12% this month
+        </div>
+    </div>
+    
+    <div class="admin-stat-card">
+        <div class="admin-stat-header">
+            <div class="admin-stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                <i class="bi bi-file-text"></i>
+            </div>
+        </div>
+        <div class="admin-stat-value">{{ total_resumes|default:0 }}</div>
+        <div class="admin-stat-label">Total Resumes</div>
+        <div class="admin-stat-change positive">
+            <i class="bi bi-arrow-up"></i> +8% this month
+        </div>
+    </div>
+    
+    <div class="admin-stat-card">
+        <div class="admin-stat-header">
+            <div class="admin-stat-icon" style="background: rgba(99, 102, 241, 0.1); color: var(--color-secondary);">
+                <i class="bi bi-graph-up"></i>
+            </div>
+        </div>
+        <div class="admin-stat-value">{{ active_users|default:0 }}</div>
+        <div class="admin-stat-label">Active Users (30d)</div>
+        <div class="admin-stat-change positive">
+            <i class="bi bi-arrow-up"></i> +5% this month
+        </div>
+    </div>
+    
+    <div class="admin-stat-card">
+        <div class="admin-stat-header">
+            <div class="admin-stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+        <div class="admin-stat-value">{{ avg_score|default:0|floatformat:0 }}%</div>
+        <div class="admin-stat-label">Avg ATS Score</div>
+        <div class="admin-stat-change positive">
+            <i class="bi bi-arrow-up"></i> +3% this month
+        </div>
+    </div>
+</div>
+
+
+<!-- User Management Section -->
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">User Management</h2>
+        <div style="display: flex; gap: var(--spacing-2);">
+            <button class="btn btn-outline">
+                <i class="bi bi-download"></i> Export
+            </button>
+            <button class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add User
+            </button>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="admin-filters">
+        <input type="text" class="admin-filter-input" placeholder="Search users..." id="userSearch">
+        <select class="admin-filter-input" style="flex: 0 0 200px;">
+            <option value="">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="pending">Pending</option>
+        </select>
+        <select class="admin-filter-input" style="flex: 0 0 200px;">
+            <option value="">All Roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
+        </select>
+    </div>
+    
+    <!-- Bulk Actions -->
+    <div class="admin-bulk-actions" id="bulkActions">
+        <span style="color: var(--color-text-primary); font-weight: var(--font-weight-medium);">
+            <span id="selectedCount">0</span> selected
+        </span>
+        <button class="btn btn-outline btn-sm">
+            <i class="bi bi-envelope"></i> Send Email
+        </button>
+        <button class="btn btn-outline btn-sm">
+            <i class="bi bi-ban"></i> Deactivate
+        </button>
+        <button class="btn btn-outline btn-sm" style="color: var(--color-error);">
+            <i class="bi bi-trash"></i> Delete
+        </button>
+    </div>
+    
+    <!-- User Table -->
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width: 40px;">
+                    <input type="checkbox" class="admin-table-checkbox" id="selectAll">
+                </th>
+                <th>User</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Resumes</th>
+                <th>Joined</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in users %}
+            <tr>
+                <td>
+                    <input type="checkbox" class="admin-table-checkbox user-checkbox">
+                </td>
+                <td>
+                    <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                        <div class="user-avatar">
+                            {% if user.profile_photo %}
+                            <img src="{{ user.profile_photo.url }}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+                            {% else %}
+                            {{ user.first_name.0|default:"U" }}
+                            {% endif %}
+                        </div>
+                        <span style="color: var(--color-text-primary); font-weight: var(--font-weight-medium);">
+                            {{ user.get_full_name|default:user.username }}
+                        </span>
+                    </div>
+                </td>
+                <td>{{ user.email }}</td>
+                <td>
+                    <span class="status-badge {% if user.is_active %}active{% else %}inactive{% endif %}">
+                        {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </td>
+                <td>{{ user.resume_count|default:0 }}</td>
+                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                <td>
+                    <div class="admin-table-actions">
+                        <button class="btn btn-ghost btn-sm" title="View">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" title="Delete" style="color: var(--color-error);">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: var(--spacing-6); color: var(--color-text-tertiary);">
+                    No users found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <div class="admin-pagination">
+        <button class="admin-page-btn">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="admin-page-btn active">1</button>
+        <button class="admin-page-btn">2</button>
+        <button class="admin-page-btn">3</button>
+        <span style="color: var(--color-text-tertiary);">...</span>
+        <button class="admin-page-btn">10</button>
+        <button class="admin-page-btn">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+
+<!-- Resume Management Section -->
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2 class="admin-section-title">Resume Management</h2>
+        <div style="display: flex; gap: var(--spacing-2);">
+            <button class="btn btn-outline">
+                <i class="bi bi-download"></i> Export
+            </button>
+        </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="admin-filters">
+        <input type="text" class="admin-filter-input" placeholder="Search resumes..." id="resumeSearch">
+        <select class="admin-filter-input" style="flex: 0 0 200px;">
+            <option value="">All Templates</option>
+            <option value="professional">Professional</option>
+            <option value="modern">Modern</option>
+            <option value="creative">Creative</option>
+            <option value="minimal">Minimal</option>
+        </select>
+        <select class="admin-filter-input" style="flex: 0 0 200px;">
+            <option value="">All Scores</option>
+            <option value="high">High (80-100)</option>
+            <option value="medium">Medium (60-79)</option>
+            <option value="low">Low (0-59)</option>
+        </select>
+    </div>
+    
+    <!-- Resume Table -->
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th style="width: 40px;">
+                    <input type="checkbox" class="admin-table-checkbox" id="selectAllResumes">
+                </th>
+                <th>Title</th>
+                <th>Owner</th>
+                <th>Template</th>
+                <th>ATS Score</th>
+                <th>Updated</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resume in resumes %}
+            <tr>
+                <td>
+                    <input type="checkbox" class="admin-table-checkbox resume-checkbox">
+                </td>
+                <td>
+                    <span style="color: var(--color-text-primary); font-weight: var(--font-weight-medium);">
+                        {{ resume.title }}
+                    </span>
+                </td>
+                <td>{{ resume.user.get_full_name|default:resume.user.username }}</td>
+                <td>
+                    <span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--color-secondary);">
+                        {{ resume.template|title }}
+                    </span>
+                </td>
+                <td>
+                    {% if resume.ats_score %}
+                    <span style="color: {% if resume.ats_score >= 80 %}var(--color-success){% elif resume.ats_score >= 60 %}var(--color-warning){% else %}var(--color-error){% endif %}; font-weight: var(--font-weight-semibold);">
+                        {{ resume.ats_score|floatformat:0 }}%
+                    </span>
+                    {% else %}
+                    <span style="color: var(--color-text-tertiary);">N/A</span>
+                    {% endif %}
+                </td>
+                <td>{{ resume.updated_at|timesince }} ago</td>
+                <td>
+                    <div class="admin-table-actions">
+                        <button class="btn btn-ghost btn-sm" title="View">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" title="Download">
+                            <i class="bi bi-download"></i>
+                        </button>
+                        <button class="btn btn-ghost btn-sm" title="Delete" style="color: var(--color-error);">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: var(--spacing-6); color: var(--color-text-tertiary);">
+                    No resumes found
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <!-- Pagination -->
+    <div class="admin-pagination">
+        <button class="admin-page-btn">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+        <button class="admin-page-btn active">1</button>
+        <button class="admin-page-btn">2</button>
+        <button class="admin-page-btn">3</button>
+        <span style="color: var(--color-text-tertiary);">...</span>
+        <button class="admin-page-btn">10</button>
+        <button class="admin-page-btn">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    // Select All functionality
+    const selectAll = document.getElementById('selectAll');
+    const userCheckboxes = document.querySelectorAll('.user-checkbox');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    selectAll.addEventListener('change', function() {
+        userCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateBulkActions();
+    });
+    
+    userCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateBulkActions);
+    });
+    
+    function updateBulkActions() {
+        const checkedCount = document.querySelectorAll('.user-checkbox:checked').length;
+        selectedCount.textContent = checkedCount;
+        
+        if (checkedCount > 0) {
+            bulkActions.classList.add('active');
+        } else {
+            bulkActions.classList.remove('active');
+        }
+    }
+    
+    // Resume checkboxes
+    const selectAllResumes = document.getElementById('selectAllResumes');
+    const resumeCheckboxes = document.querySelectorAll('.resume-checkbox');
+    
+    if (selectAllResumes) {
+        selectAllResumes.addEventListener('change', function() {
+            resumeCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+    }
+    
+    // Search functionality
+    const userSearch = document.getElementById('userSearch');
+    if (userSearch) {
+        userSearch.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.admin-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    const resumeSearch = document.getElementById('resumeSearch');
+    if (resumeSearch) {
+        resumeSearch.addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.admin-table tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+</script>
+{% endblock %}

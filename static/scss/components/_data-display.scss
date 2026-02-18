@@ -1,0 +1,621 @@
+// ============================================
+// Data Display Components
+// ============================================
+// Implements tables, empty states, loading states, and tooltips
+// Requirements: 6.3
+
+// ============================================
+// Data Table Component
+// ============================================
+.table-container {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  overflow: hidden;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  thead {
+    background: $color-surface-elevated;
+    
+    th {
+      padding: $spacing-3 $spacing-4;
+      text-align: left;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+      border-bottom: 1px solid $color-border;
+      white-space: nowrap;
+    }
+  }
+  
+  tbody {
+    tr {
+      transition: background $duration-normal $easing-default;
+      
+      &:nth-child(even) {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      
+      &:hover {
+        background: $color-surface-elevated;
+      }
+      
+      &:not(:last-child) td {
+        border-bottom: 1px solid $color-border;
+      }
+    }
+    
+    td {
+      padding: $spacing-3 $spacing-4;
+      font-size: $font-size-sm;
+      color: $color-text-secondary;
+    }
+  }
+}
+
+// Sortable column header
+.table-sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+  padding-right: $spacing-6;
+  
+  &::after {
+    content: '↕';
+    position: absolute;
+    right: $spacing-3;
+    opacity: 0.5;
+    transition: opacity $duration-normal $easing-default;
+  }
+  
+  &:hover::after {
+    opacity: 1;
+  }
+  
+  &.table-sort-asc::after {
+    content: '↑';
+    opacity: 1;
+    color: $color-primary-solid;
+  }
+  
+  &.table-sort-desc::after {
+    content: '↓';
+    opacity: 1;
+    color: $color-primary-solid;
+  }
+}
+
+// Table actions column
+.table-actions {
+  display: flex;
+  gap: $spacing-2;
+  justify-content: flex-end;
+}
+
+.table-action-btn {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: $radius-md;
+  color: $color-text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover {
+    background: $color-surface;
+    color: $color-text-primary;
+  }
+}
+
+// Table with selection
+.table-checkbox {
+  width: 40px;
+  text-align: center;
+  
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+}
+
+// Responsive table (horizontal scroll on mobile)
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  
+  @media (max-width: 768px) {
+    .table {
+      min-width: 600px;
+    }
+  }
+}
+
+// Table pagination
+.table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-4;
+  border-top: 1px solid $color-border;
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: $spacing-3;
+  }
+}
+
+.table-pagination-info {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+// ============================================
+// Empty State Component
+// ============================================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-10 $spacing-6;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: $spacing-4;
+  color: $color-text-tertiary;
+  opacity: 0.5;
+  
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.empty-state-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-2;
+}
+
+.empty-state-description {
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-5;
+  max-width: 400px;
+  line-height: $line-height-relaxed;
+}
+
+.empty-state-action {
+  // Uses button component classes
+}
+
+// Empty state variants
+.empty-state-sm {
+  padding: $spacing-6 $spacing-4;
+  
+  .empty-state-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .empty-state-title {
+    font-size: $font-size-lg;
+  }
+  
+  .empty-state-description {
+    font-size: $font-size-sm;
+  }
+}
+
+// ============================================
+// Loading State Components
+// ============================================
+
+// Spin animation (used by multiple loading components)
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Page loading overlay
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(10, 10, 10, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fade-in $duration-normal $easing-default;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid $color-surface-elevated;
+  border-top-color: $color-primary-solid;
+  border-radius: $radius-full;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: $spacing-4;
+}
+
+.loading-text {
+  font-size: $font-size-base;
+  color: $color-text-secondary;
+}
+
+// Inline loading
+.loading-inline {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+}
+
+// Section loading
+.loading-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-8;
+}
+
+// ============================================
+// Skeleton Loading Components
+// ============================================
+
+// Skeleton card
+.skeleton-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  padding: $spacing-4;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  margin-bottom: $spacing-4;
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-full;
+  background: linear-gradient(
+    90deg,
+    $color-surface-elevated 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    $color-surface-elevated 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-text {
+  flex: 1;
+}
+
+.skeleton-line {
+  height: 12px;
+  background: linear-gradient(
+    90deg,
+    $color-surface-elevated 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    $color-surface-elevated 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: $radius-sm;
+  margin-bottom: $spacing-2;
+  
+  &:last-child {
+    width: 80%;
+    margin-bottom: 0;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 60%;
+  margin-bottom: $spacing-3;
+  background: linear-gradient(
+    90deg,
+    $color-surface-elevated 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    $color-surface-elevated 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: $radius-sm;
+}
+
+.skeleton-paragraph {
+  .skeleton-line {
+    &:nth-child(1) { width: 100%; }
+    &:nth-child(2) { width: 95%; }
+    &:nth-child(3) { width: 85%; }
+  }
+}
+
+// Skeleton table
+.skeleton-table {
+  .skeleton-row {
+    display: flex;
+    gap: $spacing-4;
+    padding: $spacing-3 $spacing-4;
+    border-bottom: 1px solid $color-border;
+    
+    .skeleton-cell {
+      height: 16px;
+      background: linear-gradient(
+        90deg,
+        $color-surface-elevated 0%,
+        rgba(255, 255, 255, 0.05) 50%,
+        $color-surface-elevated 100%
+      );
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s ease-in-out infinite;
+      border-radius: $radius-sm;
+      
+      &:nth-child(1) { flex: 2; }
+      &:nth-child(2) { flex: 1; }
+      &:nth-child(3) { flex: 1; }
+    }
+  }
+}
+
+// ============================================
+// Accordion Component
+// ============================================
+.accordion {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.accordion-item {
+  border-bottom: 1px solid $color-border;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-4;
+  background: $color-surface;
+  cursor: pointer;
+  transition: background $duration-normal $easing-default;
+  
+  &:hover {
+    background: $color-surface-elevated;
+  }
+}
+
+.accordion-title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin: 0;
+}
+
+.accordion-icon {
+  width: 20px;
+  height: 20px;
+  color: $color-text-secondary;
+  transition: transform $duration-normal $easing-default;
+  
+  .accordion-item-open & {
+    transform: rotate(180deg);
+  }
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height $duration-slow $easing-default;
+  
+  .accordion-item-open & {
+    max-height: 1000px; // Adjust based on content
+  }
+}
+
+.accordion-body {
+  padding: $spacing-4;
+  color: $color-text-secondary;
+  line-height: $line-height-relaxed;
+}
+
+// ============================================
+// List Component
+// ============================================
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.list-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  padding: $spacing-3;
+  border-bottom: 1px solid $color-border;
+  transition: background $duration-normal $easing-default;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background: $color-surface-elevated;
+  }
+}
+
+.list-item-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: $color-text-secondary;
+}
+
+.list-item-content {
+  flex: 1;
+}
+
+.list-item-title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: $spacing-1;
+}
+
+.list-item-description {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.list-item-action {
+  flex-shrink: 0;
+}
+
+// ============================================
+// Stats Card Component
+// ============================================
+.stats-card {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  padding: $spacing-5;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+}
+
+.stats-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-3;
+}
+
+.stats-card-title {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-transform: uppercase;
+  letter-spacing: $letter-spacing-wide;
+}
+
+.stats-card-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $color-surface-elevated;
+  border-radius: $radius-md;
+  color: $color-primary-solid;
+}
+
+.stats-card-value {
+  font-size: $font-size-4xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-2;
+}
+
+.stats-card-change {
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  font-size: $font-size-sm;
+  
+  &.stats-card-change-positive {
+    color: $color-success;
+  }
+  
+  &.stats-card-change-negative {
+    color: $color-error;
+  }
+}
+
+// ============================================
+// Divider Component
+// ============================================
+.divider {
+  height: 1px;
+  background: $color-border;
+  margin: $spacing-4 0;
+  
+  &.divider-vertical {
+    width: 1px;
+    height: auto;
+    margin: 0 $spacing-4;
+  }
+}
+
+.divider-text {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  margin: $spacing-4 0;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: $color-border;
+  }
+  
+  span {
+    font-size: $font-size-sm;
+    color: $color-text-tertiary;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-wide;
+  }
+}

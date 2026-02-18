@@ -1,0 +1,28 @@
+// Spacing Tokens (8px Grid System)
+
+$spacing-0: 0;
+$spacing-1: 0.5rem;   // 8px
+$spacing-2: 1rem;     // 16px
+$spacing-3: 1.5rem;   // 24px
+$spacing-4: 2rem;     // 32px
+$spacing-5: 2.5rem;   // 40px
+$spacing-6: 3rem;     // 48px
+$spacing-8: 4rem;     // 64px
+$spacing-10: 5rem;    // 80px
+$spacing-12: 6rem;    // 96px
+$spacing-16: 8rem;    // 128px
+
+// CSS Custom Properties for runtime theming
+:root {
+  --spacing-0: #{$spacing-0};
+  --spacing-1: #{$spacing-1};
+  --spacing-2: #{$spacing-2};
+  --spacing-3: #{$spacing-3};
+  --spacing-4: #{$spacing-4};
+  --spacing-5: #{$spacing-5};
+  --spacing-6: #{$spacing-6};
+  --spacing-8: #{$spacing-8};
+  --spacing-10: #{$spacing-10};
+  --spacing-12: #{$spacing-12};
+  --spacing-16: #{$spacing-16};
+}

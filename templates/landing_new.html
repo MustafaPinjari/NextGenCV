@@ -1,0 +1,594 @@
+{% extends 'layouts/public.html' %}
+{% load static %}
+
+{% block title %}NextGenCV | AI-Powered Resume Builder for Tech Professionals{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ===== Design Tokens ===== */
+:root {
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Roboto Mono', monospace;
+  
+  /* Spacing Scale (8px base) */
+  --space-1: 0.5rem;   /* 8px */
+  --space-2: 1rem;     /* 16px */
+  --space-3: 1.5rem;   /* 24px */
+  --space-4: 2rem;     /* 32px */
+  --space-5: 3rem;     /* 48px */
+  --space-6: 4rem;     /* 64px */
+  --space-8: 6rem;     /* 96px */
+  --space-10: 8rem;    /* 128px */
+
+  /* Colors - Dark Theme */
+  --color-bg: #000000;
+  --color-surface: #000000;
+  --color-border: #334155;
+  --color-primary: #ffd2d2;
+  --color-primary-dark: #000000;
+  --color-text: #F1F5F9;
+  --color-text-muted: #94A3B8;
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-error: #F87171;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+  
+  /* Transitions */
+  --transition: all 0.2s ease;
+}
+
+/* ===== Base Styles ===== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+}
+
+/* ===== Typography ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+}
+
+h1 {
+  font-size: 3.5rem; /* 56px */
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: 2.5rem; /* 40px */
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-size: 1.5rem; /* 24px */
+}
+
+p {
+  margin-bottom: var(--space-3);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+.text-lg {
+  font-size: 1.25rem; /* 20px */
+}
+
+.text-muted {
+  color: var(--color-text-muted);
+}
+
+/* ===== Layout ===== */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.section {
+  padding: var(--space-10) 0;
+}
+
+.section-title {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto var(--space-6);
+}
+
+.section-title p {
+  font-size: 1.25rem;
+  margin-top: var(--space-3);
+}
+
+/* ===== Buttons ===== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.5;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* ===== Navigation ===== */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background-color: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(8px);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.nav-links a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.95rem;
+  transition: var(--transition);
+}
+
+.nav-links a:hover {
+  color: var(--color-primary);
+}
+
+/* ===== Hero Section ===== */
+.hero {
+  padding-top: 8rem;
+  padding-bottom: 6rem;
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.hero-content {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--color-primary);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: var(--space-4);
+}
+
+.hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: var(--space-4);
+  background: linear-gradient(to right, #3B82F6, #6366F1);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  color: var(--color-text-muted);
+  max-width: 640px;
+  margin: 0 auto var(--space-6);
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  margin-bottom: var(--space-8);
+}
+
+/* ===== Features Section ===== */
+.features {
+  padding: var(--space-10) 0;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+.feature-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  transition: var(--transition);
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-primary);
+}
+
+.feature-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  background: rgba(59, 130, 246, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-4);
+  color: var(--color-primary);
+  font-size: 1.5rem;
+}
+
+.feature-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: var(--space-2);
+  color: var(--color-text);
+}
+
+/* ===== CTA Section ===== */
+.cta {
+  background: linear-gradient(135deg, #000000 0%, #000000 100%);
+  color: white;
+  padding: var(--space-10) 0;
+  border-radius: var(--radius-lg);
+  margin: var(--space-10) 0;
+  text-align: center;
+}
+
+.cta-title {
+  color: white;
+  margin-bottom: var(--space-3);
+}
+
+.cta-description {
+  color: rgba(255, 255, 255, 0.9);
+  max-width: 600px;
+  margin: 0 auto var(--space-6);
+  font-size: 1.25rem;
+}
+
+.cta-button {
+  background: white;
+  color: var(--color-primary);
+  font-weight: 600;
+  padding: 1rem 2rem;
+  border-radius: var(--radius);
+  text-decoration: none;
+  display: inline-block;
+  transition: var(--transition);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== Footer ===== */
+.footer {
+  padding: var(--space-8) 0;
+  border-top: 1px solid var(--color-border);
+  margin-top: var(--space-10);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-8);
+  margin-bottom: var(--space-8);
+}
+
+.footer-logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  margin-bottom: var(--space-3);
+  display: inline-block;
+}
+
+.footer-description {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-4);
+}
+
+.footer-links h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: var(--space-3);
+  color: var(--color-text);
+}
+
+.footer-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: var(--space-2);
+}
+
+.footer-links a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.footer-links a:hover {
+  color: var(--color-primary);
+}
+
+.copyright {
+  padding-top: var(--space-6);
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 1024px) {
+  .hero-title {
+    font-size: 3rem;
+  }
+  
+  .section {
+    padding: var(--space-8) 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero {
+    padding-top: 7rem;
+    padding-bottom: 4rem;
+  }
+  
+  .hero-title {
+    font-size: 2.5rem;
+  }
+  
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .btn {
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .nav-links {
+    display: none; /* Mobile menu would be implemented with JavaScript */
+  }
+  
+  .mobile-menu-button {
+    display: block;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+  
+  .hero-description {
+    font-size: 1.125rem;
+  }
+  
+  .section-title h2 {
+    font-size: 2rem;
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-content">
+      <span class="hero-badge">
+        <i class="bi bi-stars"></i>
+        Trusted by 10,000+ professionals
+      </span>
+      <h1 class="hero-title">Build Resumes That Get You Hired</h1>
+      <p class="hero-description">
+        Create professional, ATS-optimized resumes in minutes with our AI-powered builder. 
+        Designed for tech professionals who want to stand out.
+      </p>
+      <div class="hero-actions">
+        <a href="{% url 'register' %}" class="btn btn-primary btn-lg">
+          <i class="bi bi-lightning-charge-fill"></i> Get Started Free
+        </a>
+        <a href="#how-it-works" class="btn btn-outline btn-lg">
+          <i class="bi bi-play-circle"></i> Watch Demo
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="section">
+  <div class="container">
+    <div class="section-title">
+      <h2>Everything You Need to Succeed</h2>
+      <p>Designed to help you create the perfect resume that gets noticed by recruiters and hiring managers.</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-magic"></i>
+        </div>
+        <h3 class="feature-title">AI-Powered Builder</h3>
+        <p>Create professional resumes in minutes with our intuitive, AI-powered builder that guides you through the process.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-shield-check"></i>
+        </div>
+        <h3 class="feature-title">ATS Optimization</h3>
+        <p>Our resumes are designed to pass through Applicant Tracking Systems and get you noticed by recruiters.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="bi bi-file-earmark-pdf"></i>
+        </div>
+        <h3 class="feature-title">Professional Templates</h3>
+        <p>Choose from multiple ATS-friendly templates that make your resume stand out for all the right reasons.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How It Works Section -->
+<section id="how-it-works" class="section" style="background-color: var(--color-surface);">
+  <div class="container">
+    <div class="section-title">
+      <h2>How It Works</h2>
+      <p>Get started in minutes with our simple 3-step process</p>
+    </div>
+    
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <span>1</span>
+        </div>
+        <h3 class="feature-title">Create Your Account</h3>
+        <p>Sign up for free and get instant access to our resume builder. No credit card required.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <span>2</span>
+        </div>
+        <h3 class="feature-title">Build Your Resume</h3>
+        <p>Fill in your details and let our AI suggest improvements to make your resume stand out.</p>
+      </div>
+      
+      <div class="feature-card">
+        <div class="feature-icon">
+          <span>3</span>
+        </div>
+        <h3 class="feature-title">Download & Apply</h3>
+        <p>Download your professional resume and start applying to jobs with confidence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+  <div class="container">
+    <h2 class="cta-title">Ready to Land Your Dream Job?</h2>
+    <p class="cta-description">Join thousands of professionals who got hired with NextGenCV</p>
+    <a href="{% url 'register' %}" class="cta-button">
+      Create Your Resume Now - It's Free
+    </a>
+  </div>
+</section>
+{% endblock %}

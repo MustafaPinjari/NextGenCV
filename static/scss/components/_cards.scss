@@ -1,0 +1,235 @@
+// ============================================
+// Card Components
+// ============================================
+// Implements all card variants with hover effects
+// Requirements: 6.2
+
+// Base card styles
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  transition: all $duration-normal $easing-default;
+  
+  // Card header
+  &-header {
+    padding: $spacing-4;
+    border-bottom: 1px solid $color-border;
+    
+    h1, h2, h3, h4, h5, h6 {
+      margin: 0;
+      color: $color-text-primary;
+    }
+  }
+  
+  // Card body
+  &-body {
+    padding: $spacing-4;
+    flex: 1;
+  }
+  
+  // Card footer
+  &-footer {
+    padding: $spacing-4;
+    border-top: 1px solid $color-border;
+  }
+  
+  // Card title
+  &-title {
+    margin: 0 0 $spacing-2 0;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+  
+  // Card subtitle
+  &-subtitle {
+    margin: 0 0 $spacing-2 0;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+  }
+  
+  // Card text
+  &-text {
+    margin: 0;
+    color: $color-text-secondary;
+    line-height: $line-height-relaxed;
+  }
+}
+
+// ============================================
+// Default Card Variant
+// ============================================
+.card-default {
+  background: $color-surface;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+}
+
+// ============================================
+// Elevated Card Variant
+// ============================================
+.card-elevated {
+  background: $color-surface-elevated;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-md;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-lg;
+  }
+}
+
+// ============================================
+// Glass Card Variant
+// ============================================
+.card-glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: $shadow-sm;
+  
+  // Fallback for browsers that don't support backdrop-filter
+  @supports not (backdrop-filter: blur(10px)) {
+    background: rgba(20, 20, 20, 0.9);
+  }
+}
+
+// ============================================
+// Highlighted Card Variant
+// ============================================
+.card-highlighted {
+  background: $color-surface;
+  border: 2px solid $color-primary-solid;
+  box-shadow: $glow-primary, $shadow-sm;
+}
+
+// ============================================
+// Interactive Card (adds hover effect to any card)
+// ============================================
+.card-interactive {
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $shadow-md;
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  // Enhanced hover for elevated cards
+  &.card-elevated:hover {
+    transform: translateY(-6px);
+    box-shadow: $shadow-lg;
+  }
+  
+  // Enhanced hover for glass cards
+  &.card-glass:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  // Enhanced hover for highlighted cards
+  &.card-highlighted:hover {
+    box-shadow: 0 0 30px rgba(0, 102, 255, 0.4), $shadow-md;
+  }
+}
+
+// ============================================
+// Card with Image
+// ============================================
+.card-img-top {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.card-img-overlay {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: $spacing-4;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+// ============================================
+// Card Grid Layout
+// ============================================
+.card-grid {
+  display: grid;
+  gap: $spacing-4;
+  
+  // Responsive grid
+  @media (min-width: 640px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+// ============================================
+// Card with Badge
+// ============================================
+.card-badge {
+  position: absolute;
+  top: $spacing-3;
+  right: $spacing-3;
+  padding: $spacing-1 $spacing-2;
+  background: $color-primary-solid;
+  color: #ffffff;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-sm;
+  box-shadow: $shadow-sm;
+}
+
+// ============================================
+// Horizontal Card Layout
+// ============================================
+.card-horizontal {
+  flex-direction: row;
+  
+  .card-img-top {
+    width: 200px;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  @media (max-width: 768px) {
+    flex-direction: column;
+    
+    .card-img-top {
+      width: 100%;
+      height: auto;
+    }
+  }
+}
+
+// ============================================
+// Card Actions
+// ============================================
+.card-actions {
+  display: flex;
+  gap: $spacing-2;
+  padding: $spacing-3;
+  border-top: 1px solid $color-border;
+  
+  &.card-actions-center {
+    justify-content: center;
+  }
+  
+  &.card-actions-end {
+    justify-content: flex-end;
+  }
+}

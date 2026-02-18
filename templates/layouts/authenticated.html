@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NextGenCV{% endblock %}</title>
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/layouts/authenticated.css' %}">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="authenticated-layout">
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+        <div class="sidebar__header">
+            <a href="{% url 'dashboard' %}" class="sidebar__logo">
+                <span class="sidebar__logo-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </span>
+                <span class="sidebar__logo-text">NextGenCV</span>
+            </a>
+            <button class="sidebar__toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar__nav">
+            <ul class="sidebar__menu">
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'dashboard' %}" class="sidebar__link {% if request.resolver_match.url_name == 'dashboard' %}sidebar__link--active{% endif %}" aria-current="{% if request.resolver_match.url_name == 'dashboard' %}page{% endif %}">
+                        <i class="bi bi-speedometer2"></i>
+                        <span class="sidebar__link-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'resume_list' %}" class="sidebar__link {% if 'resume' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-file-earmark-text"></i>
+                        <span class="sidebar__link-text">My Resumes</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'pdf_upload' %}" class="sidebar__link {% if 'upload' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-upload"></i>
+                        <span class="sidebar__link-text">Upload PDF</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="#" class="sidebar__link {% if 'analyze' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-search"></i>
+                        <span class="sidebar__link-text">ATS Analyzer</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'analytics_dashboard' %}" class="sidebar__link {% if 'analytics' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-graph-up"></i>
+                        <span class="sidebar__link-text">Analytics</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'template_gallery' %}" class="sidebar__link {% if 'template' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-palette"></i>
+                        <span class="sidebar__link-text">Templates</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar__divider"></div>
+
+            <ul class="sidebar__menu sidebar__menu--bottom">
+                <li class="sidebar__menu-item">
+                    <a href="/help/" class="sidebar__link">
+                        <i class="bi bi-question-circle"></i>
+                        <span class="sidebar__link-text">Help</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="#" class="sidebar__link">
+                        <i class="bi bi-gear"></i>
+                        <span class="sidebar__link-text">Settings</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Layout Container -->
+    <div class="main-layout">
+        <!-- Top Navigation Bar -->
+        <header class="topbar" role="banner">
+            <div class="topbar__content">
+                <!-- Mobile menu toggle -->
+                <button class="topbar__mobile-toggle" id="mobileMenuToggle" aria-label="Toggle mobile menu">
+                    <i class="bi bi-list"></i>
+                </button>
+
+                <!-- Search -->
+                <div class="topbar__search">
+                    <div class="search-input">
+                        <i class="bi bi-search search-input__icon"></i>
+                        <input type="text" class="search-input__field" placeholder="Search resumes..." aria-label="Search">
+                    </div>
+                </div>
+
+                <!-- Right side actions -->
+                <div class="topbar__actions">
+                    <!-- Notifications -->
+                    <button class="topbar__action-btn" aria-label="Notifications">
+                        <i class="bi bi-bell"></i>
+                        <span class="topbar__badge">3</span>
+                    </button>
+
+                    <!-- Profile dropdown -->
+                    <div class="topbar__profile" id="profileDropdown">
+                        <button class="topbar__profile-btn" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
+                            <div class="topbar__avatar">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                            <span class="topbar__username">{{ user.username|default:"User" }}</span>
+                            <i class="bi bi-chevron-down topbar__dropdown-icon"></i>
+                        </button>
+                        
+                        <div class="topbar__dropdown" role="menu" aria-label="User menu">
+                            <a href="#" class="topbar__dropdown-item" role="menuitem">
+                                <i class="bi bi-person"></i>
+                                <span>Profile</span>
+                            </a>
+                            <a href="#" class="topbar__dropdown-item" role="menuitem">
+                                <i class="bi bi-gear"></i>
+                                <span>Settings</span>
+                            </a>
+                            <div class="topbar__dropdown-divider"></div>
+                            <a href="{% url 'logout' %}" class="topbar__dropdown-item" role="menuitem">
+                                <i class="bi bi-box-arrow-right"></i>
+                                <span>Logout</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content" id="main-content" role="main">
+            <!-- Messages/Alerts -->
+            {% if messages %}
+                <div class="alerts-container">
+                    {% for message in messages %}
+                        <div class="alert alert--{{ message.tags }}" role="alert">
+                            <div class="alert__icon">
+                                {% if message.tags == 'success' %}
+                                    <i class="bi bi-check-circle"></i>
+                                {% elif message.tags == 'error' %}
+                                    <i class="bi bi-x-circle"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="alert__content">{{ message }}</div>
+                            <button class="alert__close" aria-label="Close alert">
+                                <i class="bi bi-x"></i>
+                            </button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Page Content -->
+            <div class="content-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Scripts -->
+    <!-- Accessibility Enhancements -->
+    <script src="{% static 'js/accessibility.js' %}"></script>
+    
+    <script>
+        // Sidebar toggle functionality
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const body = document.body;
+
+        // Desktop sidebar collapse
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('sidebar--collapsed');
+            const isCollapsed = sidebar.classList.contains('sidebar--collapsed');
+            sidebarToggle.setAttribute('aria-expanded', !isCollapsed);
+            
+            // Rotate icon
+            const icon = sidebarToggle.querySelector('i');
+            icon.className = isCollapsed ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
+            
+            // Save state to localStorage
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        });
+
+        // Restore sidebar state from localStorage
+        const savedState = localStorage.getItem('sidebarCollapsed');
+        if (savedState === 'true') {
+            sidebar.classList.add('sidebar--collapsed');
+            sidebarToggle.setAttribute('aria-expanded', 'false');
+            sidebarToggle.querySelector('i').className = 'bi bi-chevron-right';
+        }
+
+        // Mobile menu toggle
+        mobileMenuToggle.addEventListener('click', () => {
+            body.classList.toggle('mobile-menu-open');
+            const isOpen = body.classList.contains('mobile-menu-open');
+            mobileMenuToggle.setAttribute('aria-expanded', isOpen);
+        });
+
+        // Close mobile menu when clicking overlay
+        mobileOverlay.addEventListener('click', () => {
+            body.classList.remove('mobile-menu-open');
+            mobileMenuToggle.setAttribute('aria-expanded', 'false');
+        });
+
+        // Profile dropdown toggle
+        const profileDropdown = document.getElementById('profileDropdown');
+        const profileBtn = profileDropdown.querySelector('.topbar__profile-btn');
+        const dropdown = profileDropdown.querySelector('.topbar__dropdown');
+
+        profileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('topbar__profile--open');
+            const isOpen = profileDropdown.classList.contains('topbar__profile--open');
+            profileBtn.setAttribute('aria-expanded', isOpen);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!profileDropdown.contains(e.target)) {
+                profileDropdown.classList.remove('topbar__profile--open');
+                profileBtn.setAttribute('aria-expanded', 'false');
+            }
+        });
+
+        // Close alerts
+        document.querySelectorAll('.alert__close').forEach(btn => {
+            btn.addEventListener('click', () => {
+                btn.closest('.alert').style.animation = 'slideOut 250ms ease-out forwards';
+                setTimeout(() => {
+                    btn.closest('.alert').remove();
+                }, 250);
+            });
+        });
+
+        // Auto-dismiss alerts after 5 seconds
+        document.querySelectorAll('.alert').forEach(alert => {
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.style.animation = 'slideOut 250ms ease-out forwards';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 250);
+                }
+            }, 5000);
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

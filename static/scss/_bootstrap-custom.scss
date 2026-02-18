@@ -1,0 +1,54 @@
+// Bootstrap Custom Configuration
+// Only import the Bootstrap components we actually use
+// This significantly reduces the CSS bundle size
+
+// Configuration
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/mixins";
+
+// Layout & components we use
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+
+// Forms (used in authentication and resume builder)
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/button-group";
+
+// Components we use
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/modal";
+@import "bootstrap/scss/alert";
+@import "bootstrap/scss/badge";
+@import "bootstrap/scss/pagination";
+@import "bootstrap/scss/tables";
+
+// Utilities (minimal set)
+@import "bootstrap/scss/utilities";
+@import "bootstrap/scss/utilities/api";
+
+// Helpers
+@import "bootstrap/scss/helpers";
+
+// REMOVED COMPONENTS (not used in our app):
+// - Accordion (we have custom implementation)
+// - Breadcrumb (not used)
+// - Carousel (not used)
+// - Close button (custom implementation)
+// - Collapse (custom implementation)
+// - List group (not used)
+// - Offcanvas (not used)
+// - Placeholders (not used)
+// - Popovers (not used)
+// - Progress (custom implementation)
+// - Scrollspy (not used)
+// - Spinners (custom implementation)
+// - Toasts (custom implementation)
+// - Tooltips (custom implementation)

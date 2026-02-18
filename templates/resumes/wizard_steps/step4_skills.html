@@ -1,0 +1,220 @@
+{% extends 'resumes/resume_wizard.html' %}
+
+{% block wizard_step %}
+<div class="form-step">
+    <h2 class="form-step__title">Skills</h2>
+    <p class="form-step__description">Add your technical and soft skills. These help ATS systems match your resume to job requirements.</p>
+
+    <!-- Added Skills -->
+    {% if skills %}
+        <div class="skills-grid" id="skillsList">
+            {% for skill in skills %}
+                <div class="skill-tag" data-index="{{ forloop.counter0 }}">
+                    <span class="skill-tag__name">{{ skill.name }}</span>
+                    <span class="skill-tag__category">{{ skill.category }}</span>
+                    <button type="button" class="skill-tag__remove" onclick="removeSkill({{ forloop.counter0 }})" title="Remove">
+                        <i class="bi bi-x"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Add Skill Form -->
+    <div class="skill-input-section">
+        <form method="post" id="addSkillForm" class="skill-input-form">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                    <label for="{{ form.name.id_for_label }}" class="form-label">Skill Name *</label>
+                    <div class="form-input-wrapper">
+                        <i class="bi bi-star form-input-icon"></i>
+                        {{ form.name }}
+                    </div>
+                    {% if form.name.errors %}
+                        <div class="form-error">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group" style="flex: 1;">
+                    <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
+                    <div class="form-input-wrapper">
+                        {{ form.category }}
+                    </div>
+                    {% if form.category.errors %}
+                        <div class="form-error">{{ form.category.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div style="display: flex; align-items: flex-end;">
+                    <button type="submit" name="action" value="add_skill" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i>
+                        <span>Add</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Suggested Skills -->
+        <div class="suggested-skills">
+            <p class="suggested-skills__title">
+                <i class="bi bi-lightbulb"></i>
+                Suggested Skills
+            </p>
+            <div class="suggested-skills__list">
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('Python', 'Technical')">Python</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('JavaScript', 'Technical')">JavaScript</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('React', 'Technical')">React</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('SQL', 'Technical')">SQL</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('Communication', 'Soft Skills')">Communication</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('Leadership', 'Soft Skills')">Leadership</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('Problem Solving', 'Soft Skills')">Problem Solving</button>
+                <button type="button" class="suggested-skill" onclick="addSuggestedSkill('Project Management', 'Soft Skills')">Project Management</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Continue Form -->
+    <form method="post" id="wizardForm" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="next">
+    </form>
+</div>
+
+<style>
+    .skills-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+        margin-bottom: var(--spacing-5);
+        padding: var(--spacing-4);
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        min-height: 100px;
+    }
+
+    .skill-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-2) var(--spacing-3);
+        transition: all 250ms var(--easing-default);
+    }
+
+    .skill-tag:hover {
+        border-color: var(--color-primary-solid);
+        box-shadow: 0 0 20px rgba(0, 102, 255, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .skill-tag__name {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+    }
+
+    .skill-tag__category {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-tertiary);
+        padding: 2px 8px;
+        background: var(--color-base-bg);
+        border-radius: var(--radius-sm);
+    }
+
+    .skill-tag__remove {
+        background: transparent;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 250ms var(--easing-default);
+    }
+
+    .skill-tag__remove:hover {
+        background: var(--color-error);
+        color: white;
+    }
+
+    .skill-input-section {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-4);
+    }
+
+    .skill-input-form {
+        margin-bottom: var(--spacing-4);
+    }
+
+    .suggested-skills {
+        padding-top: var(--spacing-4);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .suggested-skills__title {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-2);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-1);
+    }
+
+    .suggested-skills__list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+    }
+
+    .suggested-skill {
+        background: transparent;
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-1) var(--spacing-3);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        transition: all 250ms var(--easing-default);
+    }
+
+    .suggested-skill:hover {
+        background: var(--color-surface-elevated);
+        border-color: var(--color-primary-solid);
+        color: var(--color-primary-solid);
+    }
+</style>
+
+<script>
+    function removeSkill(index) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.innerHTML = `
+            {% csrf_token %}
+            <input type="hidden" name="action" value="remove_skill">
+            <input type="hidden" name="index" value="${index}">
+        `;
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    function addSuggestedSkill(name, category) {
+        // Fill in the form with suggested values
+        document.getElementById('{{ form.name.id_for_label }}').value = name;
+        document.getElementById('{{ form.category.id_for_label }}').value = category;
+        
+        // Submit the form
+        document.getElementById('addSkillForm').submit();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,702 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Analytics Dashboard - NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Analytics Dashboard Specific Styles */
+
+/* Page Header */
+.analytics-header {
+    margin-bottom: var(--spacing-6, 3rem);
+}
+
+.analytics-header__title {
+    font-size: var(--font-size-3xl, 1.875rem);
+    font-weight: var(--font-weight-bold, 700);
+    color: var(--color-text-primary, #f5f5f5);
+    margin-bottom: var(--spacing-2, 1rem);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3, 1.5rem);
+}
+
+.analytics-header__subtitle {
+    font-size: var(--font-size-base, 1rem);
+    color: var(--color-text-secondary, #a3a3a3);
+}
+
+/* Date Range Filter */
+.date-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3, 1.5rem);
+    margin-bottom: var(--spacing-6, 3rem);
+    padding: var(--spacing-4, 2rem);
+    background: var(--color-surface, #141414);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-lg, 1rem);
+}
+
+.date-filter__label {
+    font-size: var(--font-size-sm, 0.875rem);
+    color: var(--color-text-secondary, #a3a3a3);
+    font-weight: var(--font-weight-medium, 500);
+}
+
+.date-filter__select {
+    padding: var(--spacing-2, 1rem) var(--spacing-3, 1.5rem);
+    background: var(--color-surface-elevated, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-md, 0.875rem);
+    color: var(--color-text-primary, #f5f5f5);
+    font-size: var(--font-size-sm, 0.875rem);
+    cursor: pointer;
+    transition: all var(--duration-normal, 250ms) var(--easing-default, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.date-filter__select:hover {
+    border-color: var(--color-border-hover, rgba(255, 255, 255, 0.15));
+}
+
+.date-filter__select:focus {
+    outline: none;
+    border-color: var(--color-primary-solid, #0066ff);
+    box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+}
+
+/* Stats Cards Row */
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-4, 2rem);
+    margin-bottom: var(--spacing-6, 3rem);
+}
+
+/* Chart Container */
+.chart-card {
+    background: var(--color-surface, #141414);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-xl, 1.25rem);
+    padding: var(--spacing-5, 2.5rem);
+    margin-bottom: var(--spacing-6, 3rem);
+    transition: all var(--duration-normal, 250ms) var(--easing-default, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.chart-card:hover {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.chart-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-5, 2.5rem);
+}
+
+.chart-card__title {
+    font-size: var(--font-size-xl, 1.25rem);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-primary, #f5f5f5);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2, 1rem);
+}
+
+.chart-card__icon {
+    color: var(--color-primary-solid, #0066ff);
+}
+
+.chart-card__canvas {
+    position: relative;
+    height: 300px;
+}
+
+/* Two Column Layout for Charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: var(--spacing-6, 3rem);
+    margin-bottom: var(--spacing-6, 3rem);
+}
+
+@media (max-width: 1200px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Empty State */
+.analytics-empty {
+    text-align: center;
+    padding: var(--spacing-10, 5rem) var(--spacing-6, 3rem);
+    background: var(--color-surface, #141414);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-xl, 1.25rem);
+}
+
+.analytics-empty__icon {
+    font-size: 4rem;
+    color: var(--color-text-tertiary, #737373);
+    opacity: 0.5;
+    margin-bottom: var(--spacing-4, 2rem);
+}
+
+.analytics-empty__title {
+    font-size: var(--font-size-2xl, 1.5rem);
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-primary, #f5f5f5);
+    margin-bottom: var(--spacing-2, 1rem);
+}
+
+.analytics-empty__description {
+    font-size: var(--font-size-base, 1rem);
+    color: var(--color-text-secondary, #a3a3a3);
+    margin-bottom: var(--spacing-5, 2.5rem);
+    line-height: var(--line-height-relaxed, 1.75);
+}
+
+/* Chart.js Dark Theme Overrides */
+canvas {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .date-filter {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .chart-card__canvas {
+        height: 250px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Analytics Header -->
+<div class="analytics-header">
+    <h1 class="analytics-header__title">
+        <i class="bi bi-graph-up"></i>
+        Analytics Dashboard
+    </h1>
+    <p class="analytics-header__subtitle">
+        Track your resume performance and get insights to improve your ATS score
+    </p>
+</div>
+
+{% if not has_resumes %}
+<!-- Empty State -->
+<div class="analytics-empty">
+    <div class="analytics-empty__icon">
+        <i class="bi bi-file-earmark-text"></i>
+    </div>
+    <h2 class="analytics-empty__title">{{ message }}</h2>
+    <p class="analytics-empty__description">
+        Start by creating your first resume to see comprehensive analytics and insights.
+    </p>
+    <a href="{% url 'resume_create' %}" class="btn btn-primary btn-lg">
+        <i class="bi bi-plus-circle"></i> Create Resume
+    </a>
+</div>
+{% else %}
+
+<!-- Date Range Filter -->
+<div class="date-filter">
+    <label class="date-filter__label" for="dateRange">
+        <i class="bi bi-calendar3"></i> Time Period:
+    </label>
+    <select class="date-filter__select" id="dateRange" aria-label="Select time period">
+        <option value="7">Last 7 Days</option>
+        <option value="30" selected>Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
+        <option value="365">Last Year</option>
+        <option value="all">All Time</option>
+    </select>
+</div>
+
+<!-- Stats Cards Row -->
+<div class="stats-row">
+    <div class="stats-card">
+        <div class="stats-card-header">
+            <span class="stats-card-title">Total Resumes</span>
+            <div class="stats-card-icon">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+        </div>
+        <div class="stats-card-value">{{ total_resumes }}</div>
+        <div class="stats-card-change stats-card-change-positive">
+            <i class="bi bi-arrow-up"></i>
+            <span>Active resumes</span>
+        </div>
+    </div>
+
+    <div class="stats-card">
+        <div class="stats-card-header">
+            <span class="stats-card-title">Total Versions</span>
+            <div class="stats-card-icon">
+                <i class="bi bi-clock-history"></i>
+            </div>
+        </div>
+        <div class="stats-card-value">{{ total_versions }}</div>
+        <div class="stats-card-change">
+            <i class="bi bi-info-circle"></i>
+            <span>All versions</span>
+        </div>
+    </div>
+
+    <div class="stats-card">
+        <div class="stats-card-header">
+            <span class="stats-card-title">Optimizations</span>
+            <div class="stats-card-icon">
+                <i class="bi bi-magic"></i>
+            </div>
+        </div>
+        <div class="stats-card-value">{{ total_optimizations }}</div>
+        <div class="stats-card-change stats-card-change-positive">
+            <i class="bi bi-arrow-up"></i>
+            <span>Improvements made</span>
+        </div>
+    </div>
+
+    <div class="stats-card">
+        <div class="stats-card-header">
+            <span class="stats-card-title">Avg Improvement</span>
+            <div class="stats-card-icon">
+                <i class="bi bi-arrow-up-circle"></i>
+            </div>
+        </div>
+        <div class="stats-card-value">+{{ average_improvement }}</div>
+        <div class="stats-card-change stats-card-change-positive">
+            <i class="bi bi-arrow-up"></i>
+            <span>Score increase</span>
+        </div>
+    </div>
+</div>
+
+<!-- Score Trend Line Chart -->
+<div class="chart-card">
+    <div class="chart-card__header">
+        <h2 class="chart-card__title">
+            <i class="bi bi-graph-up-arrow chart-card__icon"></i>
+            ATS Score Trend
+        </h2>
+    </div>
+    <div class="chart-card__canvas">
+        <canvas id="scoreTrendChart"></canvas>
+    </div>
+</div>
+
+<!-- Two Column Charts -->
+<div class="charts-grid">
+    <!-- Keyword Coverage Radar Chart -->
+    <div class="chart-card">
+        <div class="chart-card__header">
+            <h2 class="chart-card__title">
+                <i class="bi bi-radar chart-card__icon"></i>
+                Keyword Coverage
+            </h2>
+        </div>
+        <div class="chart-card__canvas">
+            <canvas id="keywordRadarChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Version Comparison Bar Chart -->
+    <div class="chart-card">
+        <div class="chart-card__header">
+            <h2 class="chart-card__title">
+                <i class="bi bi-bar-chart chart-card__icon"></i>
+                Version Comparison
+            </h2>
+        </div>
+        <div class="chart-card__canvas">
+            <canvas id="versionComparisonChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Improvement Areas Donut Chart -->
+<div class="chart-card">
+    <div class="chart-card__header">
+        <h2 class="chart-card__title">
+            <i class="bi bi-pie-chart chart-card__icon"></i>
+            Improvement Areas
+        </h2>
+    </div>
+    <div class="chart-card__canvas">
+        <canvas id="improvementDonutChart"></canvas>
+    </div>
+</div>
+
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    {% if has_resumes %}
+    // Parse chart data from context
+    const chartData = {{ chart_data_json|safe }};
+    
+    // Dark theme configuration for Chart.js
+    const darkThemeDefaults = {
+        color: '#a3a3a3', // text-secondary
+        borderColor: 'rgba(255, 255, 255, 0.08)',
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        plugins: {
+            legend: {
+                labels: {
+                    color: '#a3a3a3',
+                    font: {
+                        size: 12,
+                        family: "'Inter', sans-serif"
+                    },
+                    padding: 15
+                }
+            },
+            tooltip: {
+                backgroundColor: '#1a1a1a',
+                titleColor: '#f5f5f5',
+                bodyColor: '#a3a3a3',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 8,
+                titleFont: {
+                    size: 14,
+                    weight: 'bold'
+                },
+                bodyFont: {
+                    size: 13
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.08)',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#a3a3a3',
+                    font: {
+                        size: 11
+                    }
+                }
+            },
+            y: {
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.08)',
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#a3a3a3',
+                    font: {
+                        size: 11
+                    }
+                }
+            }
+        }
+    };
+    
+    // Score Trend Line Chart
+    if (chartData.score_trend && chartData.score_trend.labels.length > 0) {
+        const scoreTrendCtx = document.getElementById('scoreTrendChart').getContext('2d');
+        new Chart(scoreTrendCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.score_trend.labels,
+                datasets: [
+                    {
+                        label: 'ATS Score',
+                        data: chartData.score_trend.scores,
+                        borderColor: '#0066ff',
+                        backgroundColor: 'rgba(0, 102, 255, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: '#0066ff',
+                        pointBorderColor: '#0a0a0a',
+                        pointBorderWidth: 2
+                    },
+                    {
+                        label: 'Moving Average',
+                        data: chartData.score_trend.moving_average,
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        pointBackgroundColor: '#6366f1'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                },
+                ...darkThemeDefaults,
+                scales: {
+                    ...darkThemeDefaults.scales,
+                    y: {
+                        ...darkThemeDefaults.scales.y,
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            ...darkThemeDefaults.scales.y.ticks,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'ATS Score',
+                            color: '#a3a3a3',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        ...darkThemeDefaults.scales.x,
+                        title: {
+                            display: true,
+                            text: 'Analysis Date',
+                            color: '#a3a3a3',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Keyword Coverage Radar Chart
+    const keywordRadarCtx = document.getElementById('keywordRadarChart').getContext('2d');
+    new Chart(keywordRadarCtx, {
+        type: 'radar',
+        data: {
+            labels: ['Technical Skills', 'Soft Skills', 'Industry Terms', 'Action Verbs', 'Certifications'],
+            datasets: [{
+                label: 'Coverage %',
+                data: [85, 72, 68, 90, 55],
+                borderColor: '#0066ff',
+                backgroundColor: 'rgba(0, 102, 255, 0.2)',
+                borderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#0066ff',
+                pointBorderColor: '#0a0a0a',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
+            ...darkThemeDefaults,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        color: '#a3a3a3',
+                        backdropColor: 'transparent',
+                        font: {
+                            size: 10
+                        },
+                        callback: function(value) {
+                            return value + '%';
+                        }
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.08)'
+                    },
+                    angleLines: {
+                        color: 'rgba(255, 255, 255, 0.08)'
+                    },
+                    pointLabels: {
+                        color: '#a3a3a3',
+                        font: {
+                            size: 11
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Version Comparison Bar Chart
+    if (chartData.health_by_resume && chartData.health_by_resume.labels.length > 0) {
+        const versionComparisonCtx = document.getElementById('versionComparisonChart').getContext('2d');
+        new Chart(versionComparisonCtx, {
+            type: 'bar',
+            data: {
+                labels: chartData.health_by_resume.labels,
+                datasets: [{
+                    label: 'Health Score',
+                    data: chartData.health_by_resume.data,
+                    backgroundColor: chartData.health_by_resume.data.map(score => {
+                        if (score >= 80) return 'rgba(16, 185, 129, 0.8)';
+                        if (score >= 60) return 'rgba(0, 102, 255, 0.8)';
+                        if (score >= 40) return 'rgba(245, 158, 11, 0.8)';
+                        return 'rgba(239, 68, 68, 0.8)';
+                    }),
+                    borderColor: chartData.health_by_resume.data.map(score => {
+                        if (score >= 80) return '#10b981';
+                        if (score >= 60) return '#0066ff';
+                        if (score >= 40) return '#f59e0b';
+                        return '#ef4444';
+                    }),
+                    borderWidth: 2,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                },
+                ...darkThemeDefaults,
+                scales: {
+                    ...darkThemeDefaults.scales,
+                    y: {
+                        ...darkThemeDefaults.scales.y,
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            ...darkThemeDefaults.scales.y.ticks,
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Health Score',
+                            color: '#a3a3a3',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    x: {
+                        ...darkThemeDefaults.scales.x,
+                        title: {
+                            display: true,
+                            text: 'Resume Version',
+                            color: '#a3a3a3',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Improvement Areas Donut Chart
+    const improvementDonutCtx = document.getElementById('improvementDonutChart').getContext('2d');
+    new Chart(improvementDonutCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Keywords', 'Formatting', 'Action Verbs', 'Quantification', 'Section Completeness'],
+            datasets: [{
+                data: [30, 20, 25, 15, 10],
+                backgroundColor: [
+                    'rgba(0, 102, 255, 0.8)',
+                    'rgba(99, 102, 241, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(239, 68, 68, 0.8)'
+                ],
+                borderColor: [
+                    '#0066ff',
+                    '#6366f1',
+                    '#10b981',
+                    '#f59e0b',
+                    '#ef4444'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: {
+                duration: 1000,
+                easing: 'easeInOutQuart'
+            },
+            ...darkThemeDefaults,
+            plugins: {
+                ...darkThemeDefaults.plugins,
+                legend: {
+                    ...darkThemeDefaults.plugins.legend,
+                    position: 'right'
+                },
+                tooltip: {
+                    ...darkThemeDefaults.plugins.tooltip,
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return label + ': ' + percentage + '%';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Date range filter functionality
+    const dateRangeSelect = document.getElementById('dateRange');
+    dateRangeSelect.addEventListener('change', function() {
+        // In a real implementation, this would reload the page with the new date range
+        console.log('Date range changed to:', this.value);
+        // window.location.href = '?range=' + this.value;
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

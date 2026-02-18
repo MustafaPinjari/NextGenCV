@@ -1,0 +1,621 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Version History - {{ resume.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .version-history-header {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-5);
+        margin-bottom: var(--spacing-6);
+    }
+    
+    .version-history-layout {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: var(--spacing-4);
+        min-height: calc(100vh - 300px);
+    }
+    
+    /* Timeline View */
+    .timeline-container {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-4);
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: var(--spacing-4);
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--color-border);
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: var(--spacing-5);
+        margin-bottom: var(--spacing-4);
+        cursor: pointer;
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .timeline-item:hover {
+        transform: translateX(4px);
+    }
+    
+    .timeline-item.active {
+        transform: translateX(4px);
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 4px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--color-surface-elevated);
+        border: 3px solid var(--color-border);
+        z-index: 1;
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .timeline-item.active .timeline-marker {
+        background: var(--color-primary-solid);
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    .timeline-item.current .timeline-marker {
+        background: var(--color-success);
+        border-color: var(--color-success);
+        box-shadow: var(--glow-success);
+    }
+    
+    .timeline-item.optimized .timeline-marker {
+        border-color: var(--color-success);
+    }
+    
+    .timeline-card {
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-3);
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .timeline-item:hover .timeline-card {
+        border-color: var(--color-border-hover);
+        box-shadow: var(--shadow-md);
+    }
+    
+    .timeline-item.active .timeline-card {
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    .timeline-version {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .timeline-date {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-2);
+    }
+    
+    .timeline-score {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-1);
+        padding: var(--spacing-1) var(--spacing-2);
+        background: rgba(0, 102, 255, 0.1);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-primary-solid);
+    }
+    
+    .timeline-score.high {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--color-success);
+    }
+    
+    .timeline-score.medium {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--color-warning);
+    }
+    
+    .timeline-score.low {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--color-error);
+    }
+    
+    .timeline-thumbnail {
+        width: 100%;
+        height: 80px;
+        background: var(--color-base-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        margin-top: var(--spacing-2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-text-tertiary);
+        font-size: var(--font-size-xs);
+    }
+    
+    /* Preview Panel */
+    .preview-panel {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-5);
+        position: sticky;
+        top: 80px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+    
+    .preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: var(--spacing-4);
+        padding-bottom: var(--spacing-3);
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .preview-title {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .preview-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-2);
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .preview-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--spacing-1);
+        padding: var(--spacing-1) var(--spacing-2);
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+    
+    .preview-badge.current {
+        background: rgba(16, 185, 129, 0.1);
+        border-color: var(--color-success);
+        color: var(--color-success);
+    }
+    
+    .preview-badge.optimized {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: var(--color-secondary);
+        color: var(--color-secondary);
+    }
+    
+    .preview-actions {
+        display: flex;
+        gap: var(--spacing-2);
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .preview-content {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-5);
+        color: #000;
+        min-height: 400px;
+    }
+    
+    .preview-content h3 {
+        color: #000;
+        margin-bottom: var(--spacing-2);
+    }
+    
+    .preview-content h4 {
+        color: #333;
+        margin-top: var(--spacing-3);
+        margin-bottom: var(--spacing-2);
+        padding-bottom: var(--spacing-1);
+        border-bottom: 2px solid #0066ff;
+    }
+    
+    .preview-empty {
+        text-align: center;
+        padding: var(--spacing-8) var(--spacing-4);
+        color: var(--color-text-tertiary);
+    }
+    
+    .preview-empty i {
+        font-size: 4rem;
+        margin-bottom: var(--spacing-3);
+        opacity: 0.5;
+    }
+    
+    /* Comparison View */
+    .comparison-toggle {
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-3);
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .comparison-selectors {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        gap: var(--spacing-3);
+        align-items: center;
+        margin-top: var(--spacing-3);
+    }
+    
+    .comparison-select {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-2) var(--spacing-3);
+        color: var(--color-text-primary);
+        font-size: var(--font-size-sm);
+    }
+    
+    .comparison-select:focus {
+        outline: none;
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    @media (max-width: 1024px) {
+        .version-history-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .timeline-container {
+            max-height: 400px;
+        }
+        
+        .preview-panel {
+            position: static;
+            max-height: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="version-history-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin-bottom: var(--spacing-1);">
+                <i class="bi bi-clock-history"></i> Version History
+            </h2>
+            <p style="color: var(--color-text-secondary); margin: 0;">
+                {{ resume.title }}
+            </p>
+        </div>
+        <a href="{% url 'resume_detail' resume.id %}" class="btn btn-ghost">
+            <i class="bi bi-arrow-left"></i> Back to Resume
+        </a>
+    </div>
+</div>
+
+<!-- Comparison Toggle -->
+<div class="comparison-toggle">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h5 style="margin-bottom: var(--spacing-1); color: var(--color-text-primary);">
+                Compare Versions
+            </h5>
+            <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin: 0;">
+                Select two versions to see what changed
+            </p>
+        </div>
+        <button class="btn btn-outline" id="toggleCompareBtn">
+            <i class="bi bi-arrow-left-right"></i> Enable Compare
+        </button>
+    </div>
+    
+    <div class="comparison-selectors" id="comparisonSelectors" style="display: none;">
+        <select class="comparison-select" id="compareVersion1">
+            <option value="">Select older version...</option>
+            {% for version in versions %}
+            <option value="{{ version.id }}">
+                v{{ version.version_number }} - {{ version.created_at|date:"M d, Y" }}
+                {% if version.ats_score %}({{ version.ats_score|floatformat:1 }}%){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+        
+        <i class="bi bi-arrow-right" style="color: var(--color-text-secondary); font-size: var(--font-size-xl);"></i>
+        
+        <select class="comparison-select" id="compareVersion2">
+            <option value="">Select newer version...</option>
+            {% for version in versions %}
+            <option value="{{ version.id }}">
+                v{{ version.version_number }} - {{ version.created_at|date:"M d, Y" }}
+                {% if version.ats_score %}({{ version.ats_score|floatformat:1 }}%){% endif %}
+            </option>
+            {% endfor %}
+        </select>
+        
+        <button class="btn btn-primary" id="compareBtn" style="grid-column: 2;">
+            <i class="bi bi-arrow-left-right"></i> Compare
+        </button>
+    </div>
+</div>
+
+<!-- Main Layout -->
+<div class="version-history-layout">
+    <!-- Timeline View -->
+    <div class="timeline-container">
+        <h5 style="color: var(--color-text-primary); margin-bottom: var(--spacing-3);">
+            Timeline
+        </h5>
+        
+        {% if versions %}
+        <div class="timeline">
+            {% for version in versions %}
+            <div class="timeline-item {% if forloop.first %}active current{% endif %} {% if version.modification_type == 'optimized' %}optimized{% endif %}" 
+                 data-version-id="{{ version.id }}"
+                 data-version-number="{{ version.version_number }}"
+                 data-created="{{ version.created_at|date:'F d, Y g:i A' }}"
+                 data-type="{{ version.modification_type }}"
+                 data-score="{{ version.ats_score|default:'' }}"
+                 data-notes="{{ version.user_notes|default:'' }}"
+                 data-is-current="{% if forloop.first %}true{% else %}false{% endif %}">
+                <div class="timeline-marker"></div>
+                <div class="timeline-card">
+                    <div class="timeline-version">
+                        Version {{ version.version_number }}
+                        {% if forloop.first %}
+                        <span style="color: var(--color-success); margin-left: var(--spacing-1);">
+                            <i class="bi bi-check-circle-fill"></i> Current
+                        </span>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-date">
+                        <i class="bi bi-clock"></i> {{ version.created_at|date:"M d, Y g:i A" }}
+                    </div>
+                    {% if version.ats_score %}
+                    <div class="timeline-score {% if version.ats_score >= 80 %}high{% elif version.ats_score >= 60 %}medium{% else %}low{% endif %}">
+                        <i class="bi bi-graph-up"></i>
+                        {{ version.ats_score|floatformat:1 }}%
+                    </div>
+                    {% endif %}
+                    <div class="timeline-thumbnail">
+                        <i class="bi bi-file-text"></i> Preview
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="preview-empty">
+            <i class="bi bi-clock-history"></i>
+            <p>No version history available</p>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Preview Panel -->
+    <div class="preview-panel">
+        <div id="versionPreview">
+            {% if versions %}
+            <div class="preview-header">
+                <div>
+                    <div class="preview-title" id="previewTitle">
+                        Version {{ versions.0.version_number }}
+                    </div>
+                    <div class="preview-meta" id="previewMeta">
+                        <span class="preview-badge current">
+                            <i class="bi bi-check-circle-fill"></i> Current Version
+                        </span>
+                        <span class="preview-badge">
+                            <i class="bi bi-calendar"></i> {{ versions.0.created_at|date:"M d, Y g:i A" }}
+                        </span>
+                        {% if versions.0.ats_score %}
+                        <span class="preview-badge">
+                            <i class="bi bi-graph-up"></i> Score: {{ versions.0.ats_score|floatformat:1 }}%
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="preview-actions" id="previewActions">
+                <a href="{% url 'version_detail' resume.id versions.0.id %}" class="btn btn-outline" id="viewBtn">
+                    <i class="bi bi-eye"></i> View Full
+                </a>
+                <button class="btn btn-outline" id="restoreBtn" style="display: none;">
+                    <i class="bi bi-arrow-counterclockwise"></i> Restore
+                </button>
+            </div>
+            
+            <div class="preview-content" id="previewContent">
+                <p style="color: var(--color-text-secondary);">
+                    Select a version from the timeline to preview its content.
+                </p>
+            </div>
+            {% else %}
+            <div class="preview-empty">
+                <i class="bi bi-inbox"></i>
+                <p>No versions to preview</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Timeline item selection
+    const timelineItems = document.querySelectorAll('.timeline-item');
+    const previewTitle = document.getElementById('previewTitle');
+    const previewMeta = document.getElementById('previewMeta');
+    const previewContent = document.getElementById('previewContent');
+    const previewActions = document.getElementById('previewActions');
+    const viewBtn = document.getElementById('viewBtn');
+    const restoreBtn = document.getElementById('restoreBtn');
+    
+    timelineItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Update active state
+            timelineItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Get version data
+            const versionId = this.dataset.versionId;
+            const versionNumber = this.dataset.versionNumber;
+            const created = this.dataset.created;
+            const type = this.dataset.type;
+            const score = this.dataset.score;
+            const notes = this.dataset.notes;
+            const isCurrent = this.dataset.isCurrent === 'true';
+            
+            // Update preview
+            previewTitle.textContent = `Version ${versionNumber}`;
+            
+            // Update meta badges
+            let metaHTML = '';
+            if (isCurrent) {
+                metaHTML += `
+                    <span class="preview-badge current">
+                        <i class="bi bi-check-circle-fill"></i> Current Version
+                    </span>
+                `;
+            }
+            if (type === 'optimized') {
+                metaHTML += `
+                    <span class="preview-badge optimized">
+                        <i class="bi bi-stars"></i> Optimized
+                    </span>
+                `;
+            }
+            metaHTML += `
+                <span class="preview-badge">
+                    <i class="bi bi-calendar"></i> ${created}
+                </span>
+            `;
+            if (score) {
+                metaHTML += `
+                    <span class="preview-badge">
+                        <i class="bi bi-graph-up"></i> Score: ${score}%
+                    </span>
+                `;
+            }
+            previewMeta.innerHTML = metaHTML;
+            
+            // Update content
+            previewContent.innerHTML = `
+                <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-3);">
+                    <i class="bi bi-info-circle"></i> 
+                    Click "View Full" to see the complete version content.
+                </p>
+                ${notes ? `
+                <div style="background: var(--color-surface-elevated); border-left: 4px solid var(--color-primary-solid); padding: var(--spacing-3); border-radius: var(--radius-md); margin-bottom: var(--spacing-3);">
+                    <strong style="color: var(--color-text-primary);">Notes:</strong>
+                    <p style="color: var(--color-text-secondary); margin: var(--spacing-1) 0 0 0;">${notes}</p>
+                </div>
+                ` : ''}
+                <div style="background: var(--color-surface-elevated); border-radius: var(--radius-md); padding: var(--spacing-4); text-align: center;">
+                    <i class="bi bi-file-text" style="font-size: 3rem; color: var(--color-text-tertiary); margin-bottom: var(--spacing-2);"></i>
+                    <p style="color: var(--color-text-secondary); margin: 0;">
+                        Version ${versionNumber} Preview
+                    </p>
+                </div>
+            `;
+            
+            // Update action buttons
+            viewBtn.href = `/resumes/{{ resume.id }}/versions/${versionId}/`;
+            
+            if (isCurrent) {
+                restoreBtn.style.display = 'none';
+            } else {
+                restoreBtn.style.display = 'inline-flex';
+                restoreBtn.onclick = function() {
+                    if (confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.')) {
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/resumes/{{ resume.id }}/versions/${versionId}/restore/`;
+                        
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                        if (csrfToken) {
+                            form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken.value}">`;
+                        }
+                        
+                        document.body.appendChild(form);
+                        form.submit();
+                    }
+                };
+            }
+        });
+    });
+    
+    // Comparison toggle
+    const toggleCompareBtn = document.getElementById('toggleCompareBtn');
+    const comparisonSelectors = document.getElementById('comparisonSelectors');
+    const compareBtn = document.getElementById('compareBtn');
+    const compareVersion1 = document.getElementById('compareVersion1');
+    const compareVersion2 = document.getElementById('compareVersion2');
+    
+    toggleCompareBtn.addEventListener('click', function() {
+        if (comparisonSelectors.style.display === 'none') {
+            comparisonSelectors.style.display = 'grid';
+            toggleCompareBtn.innerHTML = '<i class="bi bi-x-circle"></i> Cancel';
+            toggleCompareBtn.classList.remove('btn-outline');
+            toggleCompareBtn.classList.add('btn-ghost');
+        } else {
+            comparisonSelectors.style.display = 'none';
+            toggleCompareBtn.innerHTML = '<i class="bi bi-arrow-left-right"></i> Enable Compare';
+            toggleCompareBtn.classList.remove('btn-ghost');
+            toggleCompareBtn.classList.add('btn-outline');
+        }
+    });
+    
+    compareBtn.addEventListener('click', function() {
+        const version1 = compareVersion1.value;
+        const version2 = compareVersion2.value;
+        
+        if (!version1 || !version2) {
+            alert('Please select both versions to compare');
+            return;
+        }
+        
+        if (version1 === version2) {
+            alert('Please select different versions to compare');
+            return;
+        }
+        
+        window.location.href = `/resumes/{{ resume.id }}/versions/compare/?version1=${version1}&version2=${version2}`;
+    });
+</script>
+{% endblock %}

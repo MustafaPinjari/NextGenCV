@@ -1,7 +1,74 @@
 """
 Custom middleware for ATS Resume Builder
 """
+import os
+from pathlib import Path
 from django.utils.cache import add_never_cache_headers, patch_cache_control
+from django.http import FileResponse, Http404
+
+
+class GzipStaticMiddleware:
+    """
+    Middleware to serve pre-compressed gzip files for static assets.
+    
+    If a .gz version of a static file exists and the client accepts gzip encoding,
+    serve the compressed version instead.
+    
+    Requirements: 14.4
+    """
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        
+        # Only process static file requests
+        if not request.path.startswith('/static/'):
+            return response
+        
+        # Check if client accepts gzip
+        accept_encoding = request.META.get('HTTP_ACCEPT_ENCODING', '')
+        if 'gzip' not in accept_encoding.lower():
+            return response
+        
+        # Check if this is a CSS or JS file
+        if not (request.path.endswith('.css') or request.path.endswith('.js')):
+            return response
+        
+        # Check if gzipped version exists
+        from django.conf import settings
+        static_root = Path(settings.STATIC_ROOT) if hasattr(settings, 'STATIC_ROOT') else None
+        
+        if static_root and static_root.exists():
+            # In production with collected static files
+            file_path = static_root / request.path.replace('/static/', '', 1)
+            gzip_path = Path(str(file_path) + '.gz')
+            
+            if gzip_path.exists():
+                try:
+                    # Serve the gzipped file
+                    response = FileResponse(open(gzip_path, 'rb'))
+                    response['Content-Encoding'] = 'gzip'
+                    
+                    # Set appropriate content type
+                    if request.path.endswith('.css'):
+                        response['Content-Type'] = 'text/css'
+                    elif request.path.endswith('.js'):
+                        response['Content-Type'] = 'application/javascript'
+                    
+                    # Add cache headers
+                    patch_cache_control(
+                        response,
+                        public=True,
+                        max_age=31536000,
+                        immutable=True
+                    )
+                    
+                    return response
+                except (IOError, OSError):
+                    pass
+        
+        return response
 
 
 class StaticFilesCacheMiddleware:

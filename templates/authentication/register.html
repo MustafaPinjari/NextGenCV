@@ -1,76 +1,539 @@
-{% extends 'base.html' %}
+{% extends 'layouts/public.html' %}
 
-{% block title %}Register - ATS Resume Builder{% endblock %}
+{% block title %}Sign Up - NextGenCV{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">Create Account</h2>
+<div class="auth-page">
+    <div class="auth-container">
+        <!-- Auth Card -->
+        <div class="auth-card">
+            <!-- Logo and Welcome -->
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <h1 class="auth-title">Create your account</h1>
+                <p class="auth-subtitle">Start building your perfect resume today</p>
+            </div>
+
+            <!-- Register Form -->
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
                 
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
+                {% if form.non_field_errors %}
+                    <div class="alert alert--error" role="alert">
+                        <div class="alert__icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="alert__content">
                             {{ form.non_field_errors }}
                         </div>
+                    </div>
+                {% endif %}
+                
+                <!-- Username Field -->
+                <div class="form-group {% if form.username.errors %}form-input-error{% endif %}">
+                    <input 
+                        type="text" 
+                        name="username" 
+                        id="{{ form.username.id_for_label }}" 
+                        class="form-input" 
+                        placeholder=" "
+                        value="{{ form.username.value|default:'' }}"
+                        required
+                        aria-describedby="{% if form.username.errors %}username-error{% endif %}"
+                    >
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                    {% if form.username.errors %}
+                        <div class="form-error" id="username-error" role="alert">
+                            {{ form.username.errors.0 }}
+                        </div>
                     {% endif %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger small">
-                                {{ form.username.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                        {{ form.email }}
-                        {% if form.email.errors %}
-                            <div class="text-danger small">
-                                {{ form.email.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="mb-3">
+                </div>
+                
+                <!-- Email Field -->
+                <div class="form-group {% if form.email.errors %}form-input-error{% endif %}">
+                    <input 
+                        type="email" 
+                        name="email" 
+                        id="{{ form.email.id_for_label }}" 
+                        class="form-input" 
+                        placeholder=" "
+                        value="{{ form.email.value|default:'' }}"
+                        required
+                        aria-describedby="{% if form.email.errors %}email-error{% endif %}"
+                    >
+                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                    {% if form.email.errors %}
+                        <div class="form-error" id="email-error" role="alert">
+                            {{ form.email.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Password Field -->
+                <div class="form-group {% if form.password1.errors %}form-input-error{% endif %}">
+                    <div class="password-input-wrapper">
+                        <input 
+                            type="password" 
+                            name="password1" 
+                            id="{{ form.password1.id_for_label }}" 
+                            class="form-input" 
+                            placeholder=" "
+                            required
+                            aria-describedby="password-help {% if form.password1.errors %}password1-error{% endif %}"
+                        >
                         <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
-                        {{ form.password1 }}
-                        {% if form.password1.errors %}
-                            <div class="text-danger small">
-                                {{ form.password1.errors }}
-                            </div>
-                        {% endif %}
-                        <div class="form-text">
+                        <button 
+                            type="button" 
+                            class="password-toggle" 
+                            aria-label="Toggle password visibility"
+                            data-target="{{ form.password1.id_for_label }}"
+                        >
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password1.errors %}
+                        <div class="form-error" id="password1-error" role="alert">
+                            {{ form.password1.errors.0 }}
+                        </div>
+                    {% else %}
+                        <div class="form-help" id="password-help">
                             Your password must contain at least 8 characters and can't be entirely numeric.
                         </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger small">
-                                {{ form.password2.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Register</button>
-                    </div>
-                </form>
-                
-                <div class="text-center mt-3">
-                    <p class="text-muted">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                    {% endif %}
                 </div>
+                
+                <!-- Confirm Password Field -->
+                <div class="form-group {% if form.password2.errors %}form-input-error{% endif %}">
+                    <div class="password-input-wrapper">
+                        <input 
+                            type="password" 
+                            name="password2" 
+                            id="{{ form.password2.id_for_label }}" 
+                            class="form-input" 
+                            placeholder=" "
+                            required
+                            aria-describedby="{% if form.password2.errors %}password2-error{% endif %}"
+                        >
+                        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                        <button 
+                            type="button" 
+                            class="password-toggle" 
+                            aria-label="Toggle password visibility"
+                            data-target="{{ form.password2.id_for_label }}"
+                        >
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="form-error" id="password2-error" role="alert">
+                            {{ form.password2.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Terms Acceptance -->
+                <div class="form-group">
+                    <div class="form-checkbox">
+                        <input 
+                            type="checkbox" 
+                            id="terms" 
+                            name="terms" 
+                            class="checkbox-input" 
+                            required
+                            aria-describedby="terms-error"
+                        >
+                        <label for="terms" class="checkbox-label">
+                            I agree to the <a href="#" class="auth-link auth-link--primary">Terms of Service</a> and <a href="#" class="auth-link auth-link--primary">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <div class="form-error" id="terms-error" style="display: none;">
+                        You must accept the terms and conditions
+                    </div>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn--primary btn--block">
+                    Create Account
+                </button>
+            </form>
+            
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span class="auth-divider__text">or</span>
+            </div>
+            
+            <!-- Social Login Buttons -->
+            <div class="auth-social">
+                <button type="button" class="btn btn--outline btn--block btn--social">
+                    <i class="bi bi-google"></i>
+                    <span>Sign up with Google</span>
+                </button>
+                <button type="button" class="btn btn--outline btn--block btn--social">
+                    <i class="bi bi-linkedin"></i>
+                    <span>Sign up with LinkedIn</span>
+                </button>
+            </div>
+            
+            <!-- Login Link -->
+            <div class="auth-footer">
+                <p class="auth-footer__text">
+                    Already have an account? 
+                    <a href="{% url 'login' %}" class="auth-link auth-link--primary">Sign in</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Auth Page Styles */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4);
+    background: var(--color-base-bg);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 480px;
+}
+
+.auth-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-6);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.auth-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-3);
+    box-shadow: var(--glow-primary);
+}
+
+.auth-logo i {
+    font-size: 2rem;
+    color: white;
+}
+
+.auth-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2);
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+.auth-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+}
+
+.auth-form {
+    margin-bottom: var(--spacing-4);
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: var(--spacing-4);
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color var(--duration-fast) var(--easing-default);
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: var(--color-text-primary);
+}
+
+.password-toggle:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.form-help {
+    margin-top: var(--spacing-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    line-height: var(--line-height-normal);
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-2);
+}
+
+.checkbox-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width: 1.25rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--easing-default);
+    margin-top: 0.125rem;
+}
+
+.checkbox-input:checked {
+    background: var(--color-primary-solid);
+    border-color: var(--color-primary-solid);
+}
+
+.checkbox-input:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.checkbox-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    user-select: none;
+    line-height: var(--line-height-normal);
+}
+
+.auth-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--easing-default);
+}
+
+.auth-link:hover {
+    color: var(--color-text-primary);
+}
+
+.auth-link--primary {
+    color: var(--color-primary-solid);
+    font-weight: var(--font-weight-medium);
+}
+
+.auth-link--primary:hover {
+    text-decoration: underline;
+}
+
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: var(--spacing-4) 0;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.auth-divider__text {
+    position: relative;
+    display: inline-block;
+    padding: 0 var(--spacing-2);
+    background: var(--color-surface);
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-sm);
+}
+
+.auth-social {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+}
+
+.btn--social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+}
+
+.btn--social i {
+    font-size: 1.25rem;
+}
+
+.auth-footer {
+    text-align: center;
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.auth-footer__text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .auth-page {
+        padding: var(--spacing-2);
+    }
+    
+    .auth-card {
+        padding: var(--spacing-4);
+    }
+    
+    .auth-title {
+        font-size: var(--font-size-2xl);
+    }
+}
+</style>
+
+<script>
+// Password toggle functionality
+document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+            this.setAttribute('aria-label', 'Hide password');
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+            this.setAttribute('aria-label', 'Show password');
+        }
+    });
+});
+
+// Form validation
+const form = document.querySelector('.auth-form');
+if (form) {
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate username
+        const usernameInput = form.querySelector('[name="username"]');
+        if (usernameInput && !usernameInput.value.trim()) {
+            isValid = false;
+            usernameInput.closest('.form-group').classList.add('form-input-error');
+        }
+        
+        // Validate email
+        const emailInput = form.querySelector('[name="email"]');
+        if (emailInput && !emailInput.value.trim()) {
+            isValid = false;
+            emailInput.closest('.form-group').classList.add('form-input-error');
+        } else if (emailInput && !isValidEmail(emailInput.value)) {
+            isValid = false;
+            emailInput.closest('.form-group').classList.add('form-input-error');
+        }
+        
+        // Validate password
+        const password1Input = form.querySelector('[name="password1"]');
+        if (password1Input && !password1Input.value) {
+            isValid = false;
+            password1Input.closest('.form-group').classList.add('form-input-error');
+        } else if (password1Input && password1Input.value.length < 8) {
+            isValid = false;
+            password1Input.closest('.form-group').classList.add('form-input-error');
+        }
+        
+        // Validate password confirmation
+        const password2Input = form.querySelector('[name="password2"]');
+        if (password2Input && !password2Input.value) {
+            isValid = false;
+            password2Input.closest('.form-group').classList.add('form-input-error');
+        } else if (password1Input && password2Input && password1Input.value !== password2Input.value) {
+            isValid = false;
+            password2Input.closest('.form-group').classList.add('form-input-error');
+        }
+        
+        // Validate terms acceptance
+        const termsCheckbox = form.querySelector('[name="terms"]');
+        const termsError = document.getElementById('terms-error');
+        if (termsCheckbox && !termsCheckbox.checked) {
+            isValid = false;
+            termsError.style.display = 'block';
+        } else if (termsError) {
+            termsError.style.display = 'none';
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    // Remove error state on input
+    form.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('input', function() {
+            this.closest('.form-group').classList.remove('form-input-error');
+        });
+    });
+    
+    // Remove terms error on checkbox change
+    const termsCheckbox = form.querySelector('[name="terms"]');
+    if (termsCheckbox) {
+        termsCheckbox.addEventListener('change', function() {
+            const termsError = document.getElementById('terms-error');
+            if (this.checked && termsError) {
+                termsError.style.display = 'none';
+            }
+        });
+    }
+}
+
+// Email validation helper
+function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+// Real-time password strength indicator (optional enhancement)
+const password1Input = document.querySelector('[name="password1"]');
+if (password1Input) {
+    password1Input.addEventListener('input', function() {
+        const value = this.value;
+        const formGroup = this.closest('.form-group');
+        
+        // Remove previous validation states
+        formGroup.classList.remove('form-input-error', 'form-input-success');
+        
+        // Add success state if password meets requirements
+        if (value.length >= 8 && !/^\d+$/.test(value)) {
+            formGroup.classList.add('form-input-success');
+        }
+    });
+}
+</script>
 {% endblock %}

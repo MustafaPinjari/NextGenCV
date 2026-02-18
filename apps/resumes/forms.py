@@ -402,3 +402,28 @@ class ProjectForm(forms.ModelForm):
             url = bleach.clean(url.strip())
             return url
         return ''
+
+
+
+class SummaryForm(forms.Form):
+    """Form for professional summary."""
+    
+    summary = forms.CharField(
+        required=False,
+        max_length=500,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 5,
+            'placeholder': 'Write a brief professional summary highlighting your key qualifications and career goals...',
+            'maxlength': '500'
+        }),
+        help_text='2-4 sentences that capture your professional identity and value proposition'
+    )
+    
+    def clean_summary(self):
+        summary = self.cleaned_data.get('summary', '')
+        if summary:
+            summary = bleach.clean(summary.strip())
+            if len(summary) > 500:
+                raise ValidationError('Summary cannot exceed 500 characters.')
+        return summary

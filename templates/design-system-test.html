@@ -1,0 +1,328 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Design System Test - NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+    body {
+        background: var(--color-base-bg);
+        padding: var(--spacing-6);
+    }
+    
+    .test-section {
+        margin-bottom: var(--spacing-8);
+        padding: var(--spacing-6);
+        background: var(--color-surface);
+        border-radius: var(--radius-xl);
+        border: 1px solid var(--color-border);
+    }
+    
+    .test-section h2 {
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-4);
+        font-size: var(--font-size-3xl);
+        border-bottom: 2px solid var(--color-primary-solid);
+        padding-bottom: var(--spacing-2);
+    }
+    
+    .test-section h3 {
+        color: var(--color-text-secondary);
+        margin: var(--spacing-4) 0 var(--spacing-2) 0;
+        font-size: var(--font-size-xl);
+    }
+    
+    .component-row {
+        display: flex;
+        gap: var(--spacing-3);
+        flex-wrap: wrap;
+        margin-bottom: var(--spacing-3);
+    }
+    
+    .color-swatch {
+        width: 100px;
+        height: 100px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--font-size-xs);
+        color: white;
+        text-align: center;
+        padding: var(--spacing-2);
+        border: 1px solid var(--color-border);
+    }
+    
+    .token-display {
+        background: var(--color-surface-elevated);
+        padding: var(--spacing-2);
+        border-radius: var(--radius-sm);
+        font-family: monospace;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 style="color: var(--color-text-primary); font-size: var(--font-size-6xl); margin-bottom: var(--spacing-6); text-align: center;">
+        NextGenCV Design System Test
+    </h1>
+    
+    <!-- Colors Section -->
+    <div class="test-section">
+        <h2>Colors</h2>
+        
+        <h3>Base Colors</h3>
+        <div class="component-row">
+            <div class="color-swatch" style="background: var(--color-base-bg);">
+                Base BG<br>#0a0a0a
+            </div>
+            <div class="color-swatch" style="background: var(--color-surface);">
+                Surface<br>#141414
+            </div>
+            <div class="color-swatch" style="background: var(--color-surface-elevated);">
+                Elevated<br>#1a1a1a
+            </div>
+        </div>
+        
+        <h3>Accent Colors</h3>
+        <div class="component-row">
+            <div class="color-swatch" style="background: var(--color-primary-solid);">
+                Primary<br>#0066ff
+            </div>
+            <div class="color-swatch" style="background: var(--color-secondary);">
+                Secondary<br>#6366f1
+            </div>
+        </div>
+        
+        <h3>Semantic Colors</h3>
+        <div class="component-row">
+            <div class="color-swatch" style="background: var(--color-success);">
+                Success<br>#10b981
+            </div>
+            <div class="color-swatch" style="background: var(--color-warning);">
+                Warning<br>#f59e0b
+            </div>
+            <div class="color-swatch" style="background: var(--color-error);">
+                Error<br>#ef4444
+            </div>
+        </div>
+    </div>
+    
+    <!-- Buttons Section -->
+    <div class="test-section">
+        <h2>Buttons</h2>
+        
+        <h3>Button Variants</h3>
+        <div class="component-row">
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-ghost">Ghost Button</button>
+            <button class="btn btn-outline">Outline Button</button>
+            <button class="btn btn-gradient">Gradient Button</button>
+        </div>
+        
+        <h3>Semantic Buttons</h3>
+        <div class="component-row">
+            <button class="btn btn-success">Success Button</button>
+            <button class="btn btn-warning">Warning Button</button>
+            <button class="btn btn-error">Error Button</button>
+            <button class="btn btn-secondary">Secondary Button</button>
+        </div>
+        
+        <h3>Button States</h3>
+        <div class="component-row">
+            <button class="btn btn-primary" disabled>Disabled Button</button>
+            <button class="btn btn-primary btn-loading">Loading Button</button>
+        </div>
+        
+        <h3>Button Sizes</h3>
+        <div class="component-row">
+            <button class="btn btn-primary btn-sm">Small Button</button>
+            <button class="btn btn-primary">Default Button</button>
+            <button class="btn btn-primary btn-lg">Large Button</button>
+        </div>
+    </div>
+    
+    <!-- Cards Section -->
+    <div class="test-section">
+        <h2>Cards</h2>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: var(--spacing-4);">
+            <div class="card card-default">
+                <div class="card-header">
+                    <h3 class="card-title">Default Card</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">This is a default card with standard styling.</p>
+                </div>
+            </div>
+            
+            <div class="card card-elevated">
+                <div class="card-header">
+                    <h3 class="card-title">Elevated Card</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">This card has elevation and hover effects.</p>
+                </div>
+            </div>
+            
+            <div class="card card-glass">
+                <div class="card-header">
+                    <h3 class="card-title">Glass Card</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">This card has a glass morphism effect.</p>
+                </div>
+            </div>
+            
+            <div class="card card-highlighted">
+                <div class="card-header">
+                    <h3 class="card-title">Highlighted Card</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">This card is highlighted with a blue border.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Forms Section -->
+    <div class="test-section">
+        <h2>Forms</h2>
+        
+        <h3>Text Inputs</h3>
+        <div style="max-width: 500px;">
+            <div class="form-group">
+                <input type="text" class="form-input" placeholder=" " id="test-input-1">
+                <label for="test-input-1" class="form-label">Default Input</label>
+            </div>
+            
+            <div class="form-group form-input-error">
+                <input type="text" class="form-input" placeholder=" " id="test-input-2" value="invalid@">
+                <label for="test-input-2" class="form-label">Error Input</label>
+                <div class="form-error-message">Please enter a valid email address</div>
+            </div>
+            
+            <div class="form-group form-input-success">
+                <input type="text" class="form-input" placeholder=" " id="test-input-3" value="valid@example.com">
+                <label for="test-input-3" class="form-label">Success Input</label>
+                <span class="form-success-icon"></span>
+            </div>
+        </div>
+        
+        <h3>Checkboxes and Radios</h3>
+        <div class="component-row">
+            <label class="form-checkbox">
+                <input type="checkbox" checked>
+                <span>Checkbox Option 1</span>
+            </label>
+            <label class="form-checkbox">
+                <input type="checkbox">
+                <span>Checkbox Option 2</span>
+            </label>
+        </div>
+        
+        <div class="component-row">
+            <label class="form-radio">
+                <input type="radio" name="test-radio" checked>
+                <span>Radio Option 1</span>
+            </label>
+            <label class="form-radio">
+                <input type="radio" name="test-radio">
+                <span>Radio Option 2</span>
+            </label>
+        </div>
+        
+        <h3>Toggle Switch</h3>
+        <label class="form-toggle">
+            <input type="checkbox" checked>
+            <span>Enable notifications</span>
+        </label>
+    </div>
+    
+    <!-- Typography Section -->
+    <div class="test-section">
+        <h2>Typography</h2>
+        
+        <h1 style="color: var(--color-text-primary);">Heading 1 - Display Font</h1>
+        <h2 style="color: var(--color-text-primary);">Heading 2 - Display Font</h2>
+        <h3 style="color: var(--color-text-primary);">Heading 3 - Regular Font</h3>
+        <h4 style="color: var(--color-text-primary);">Heading 4 - Regular Font</h4>
+        <h5 style="color: var(--color-text-primary);">Heading 5 - Regular Font</h5>
+        <h6 style="color: var(--color-text-primary);">Heading 6 - Regular Font</h6>
+        
+        <p style="color: var(--color-text-secondary); margin-top: var(--spacing-4);">
+            This is a paragraph with regular text. It uses the primary font family (Inter) and has a relaxed line height for better readability. The color is set to the secondary text color for reduced emphasis.
+        </p>
+        
+        <p style="color: var(--color-text-primary); margin-top: var(--spacing-2);">
+            <strong>This is bold text</strong> and <em>this is italic text</em>. You can also use <code>inline code</code> for technical content.
+        </p>
+    </div>
+    
+    <!-- Spacing Section -->
+    <div class="test-section">
+        <h2>Spacing (8px Grid)</h2>
+        
+        <div class="token-display">--spacing-1: 0.5rem (8px)</div>
+        <div style="height: var(--spacing-1); background: var(--color-primary-solid); margin-bottom: var(--spacing-2);"></div>
+        
+        <div class="token-display">--spacing-2: 1rem (16px)</div>
+        <div style="height: var(--spacing-2); background: var(--color-primary-solid); margin-bottom: var(--spacing-2);"></div>
+        
+        <div class="token-display">--spacing-3: 1.5rem (24px)</div>
+        <div style="height: var(--spacing-3); background: var(--color-primary-solid); margin-bottom: var(--spacing-2);"></div>
+        
+        <div class="token-display">--spacing-4: 2rem (32px)</div>
+        <div style="height: var(--spacing-4); background: var(--color-primary-solid); margin-bottom: var(--spacing-2);"></div>
+        
+        <div class="token-display">--spacing-6: 3rem (48px)</div>
+        <div style="height: var(--spacing-6); background: var(--color-primary-solid);"></div>
+    </div>
+    
+    <!-- Shadows Section -->
+    <div class="test-section">
+        <h2>Shadows & Glows</h2>
+        
+        <div class="component-row">
+            <div style="width: 150px; height: 150px; background: var(--color-surface-elevated); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); display: flex; align-items: center; justify-content: center; color: var(--color-text-primary);">
+                Small Shadow
+            </div>
+            <div style="width: 150px; height: 150px; background: var(--color-surface-elevated); border-radius: var(--radius-lg); box-shadow: var(--shadow-md); display: flex; align-items: center; justify-content: center; color: var(--color-text-primary);">
+                Medium Shadow
+            </div>
+            <div style="width: 150px; height: 150px; background: var(--color-surface-elevated); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: center; color: var(--color-text-primary);">
+                Large Shadow
+            </div>
+        </div>
+        
+        <h3 style="margin-top: var(--spacing-4);">Glow Effects</h3>
+        <div class="component-row">
+            <div style="width: 150px; height: 150px; background: var(--color-surface-elevated); border-radius: var(--radius-lg); box-shadow: var(--glow-primary); display: flex; align-items: center; justify-content: center; color: var(--color-text-primary);">
+                Primary Glow
+            </div>
+            <div style="width: 150px; height: 150px; background: var(--color-surface-elevated); border-radius: var(--radius-lg); box-shadow: var(--glow-success); display: flex; align-items: center; justify-content: center; color: var(--color-text-primary);">
+                Success Glow
+            </div>
+            <div style="width: 150px; height: 150px; background: var(--color-surface-elevated); border-radius: var(--radius-lg); box-shadow: var(--glow-error); display: flex; align-items: center; justify-content: center; color: var(--color-text-primary);">
+                Error Glow
+            </div>
+        </div>
+    </div>
+    
+    <!-- Status Message -->
+    <div class="test-section" style="text-align: center;">
+        <h2 style="color: var(--color-success); border-bottom: none;">✓ Design System is Working!</h2>
+        <p style="color: var(--color-text-secondary); font-size: var(--font-size-lg); margin-top: var(--spacing-2);">
+            All components are styled and ready to use. Check the browser console for any errors.
+        </p>
+        <div style="margin-top: var(--spacing-4);">
+            <a href="/" class="btn btn-primary">Go to Landing Page</a>
+            <a href="/dashboard/" class="btn btn-ghost">Go to Dashboard</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

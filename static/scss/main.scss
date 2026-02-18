@@ -1,0 +1,41 @@
+// NextGenCV Design System
+// Main SCSS entry point
+
+// 1. Design Tokens
+@import 'tokens/colors';
+@import 'tokens/typography';
+@import 'tokens/spacing';
+@import 'tokens/shadows';
+@import 'tokens/animations';
+@import 'tokens/borders';
+
+// 2. Utilities
+@import 'utilities/mixins';
+@import 'utilities/accessibility';
+
+// 3. Base Styles
+@import 'base/reset';
+@import 'base/global';
+
+// 4. Components
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/forms';
+@import 'components/navigation';
+@import 'components/public-navigation';
+@import 'components/progress';
+@import 'components/feedback';
+@import 'components/data-display';
+
+// 5. Layouts (will be added in future tasks)
+// @import 'layouts/authenticated';
+// @import 'layouts/public';
+// @import 'layouts/admin';
+
+// 6. Pages
+@import 'pages/resume-list';
+@import 'pages/error-pages';
+// @import 'pages/landing';
+// @import 'pages/dashboard';
+// @import 'pages/resume-builder';
+// etc.

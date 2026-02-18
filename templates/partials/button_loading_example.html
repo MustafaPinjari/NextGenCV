@@ -1,0 +1,35 @@
+<!-- Button Loading State Example
+     To use: Add 'btn-loading' class to any button to show loading state
+-->
+
+<!-- Example: Primary button with loading state -->
+<button class="btn btn-primary btn-loading" disabled>
+    Submit
+</button>
+
+<!-- Example: Ghost button with loading state -->
+<button class="btn btn-ghost btn-loading" disabled>
+    Save
+</button>
+
+<!-- JavaScript to toggle loading state -->
+<script>
+function setButtonLoading(button, isLoading) {
+    if (isLoading) {
+        button.classList.add('btn-loading');
+        button.disabled = true;
+        button.dataset.originalText = button.textContent;
+    } else {
+        button.classList.remove('btn-loading');
+        button.disabled = false;
+        if (button.dataset.originalText) {
+            button.textContent = button.dataset.originalText;
+        }
+    }
+}
+
+// Example usage:
+// const submitBtn = document.getElementById('submitBtn');
+// setButtonLoading(submitBtn, true);  // Show loading
+// setTimeout(() => setButtonLoading(submitBtn, false), 2000);  // Hide loading after 2s
+</script>

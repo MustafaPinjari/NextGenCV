@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Custom middleware
+    'config.middleware.GzipStaticMiddleware',  # Serve pre-compressed files
     'config.middleware.StaticFilesCacheMiddleware',
     'config.middleware.SecurityHeadersMiddleware',
     # Performance monitoring middleware (Requirements: 18.4)

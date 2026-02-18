@@ -1,0 +1,28 @@
+// Shadow Tokens
+
+// Soft Glow Shadows
+$shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+$shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+$shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+// Glow Effects
+$glow-primary: 0 0 20px rgba(0, 102, 255, 0.3);
+$glow-secondary: 0 0 20px rgba(99, 102, 241, 0.3);
+$glow-success: 0 0 20px rgba(16, 185, 129, 0.3);
+$glow-warning: 0 0 20px rgba(245, 158, 11, 0.3);
+$glow-error: 0 0 20px rgba(239, 68, 68, 0.3);
+
+// CSS Custom Properties for runtime theming
+:root {
+  // Soft Shadows
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  
+  // Glow Effects
+  --glow-primary: #{$glow-primary};
+  --glow-secondary: #{$glow-secondary};
+  --glow-success: #{$glow-success};
+  --glow-warning: #{$glow-warning};
+  --glow-error: #{$glow-error};
+}

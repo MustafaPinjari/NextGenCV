@@ -1,0 +1,46 @@
+<!-- Empty State: No Search Results -->
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="35" cy="35" r="20" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+            <path d="M50 50L65 65" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            <path d="M30 35H40M35 30V40" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+        </svg>
+    </div>
+    <h2 class="empty-state-title">No results found</h2>
+    <p class="empty-state-description">
+        Try adjusting your search terms or filters to find what you're looking for.
+    </p>
+    <div class="empty-state-action">
+        <button onclick="clearFilters()" class="btn btn-ghost">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Clear Filters
+        </button>
+    </div>
+</div>
+
+<script>
+function clearFilters() {
+    // Clear search input
+    const searchInput = document.querySelector('input[type="search"], input[name="search"], input[name="q"]');
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // Clear filter selects
+    const filterSelects = document.querySelectorAll('select[name*="filter"], select[name*="sort"]');
+    filterSelects.forEach(select => {
+        select.selectedIndex = 0;
+    });
+    
+    // Submit form or reload
+    const form = document.querySelector('form');
+    if (form) {
+        form.submit();
+    } else {
+        window.location.href = window.location.pathname;
+    }
+}
+</script>

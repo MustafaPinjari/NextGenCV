@@ -1,0 +1,572 @@
+// ============================================
+// Feedback Components
+// ============================================
+// Implements alerts, toasts, modals, and badges
+// Requirements: 6.3
+
+// ============================================
+// Alert Component
+// ============================================
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+  padding: $spacing-4;
+  border-radius: $radius-lg;
+  border: 1px solid;
+  margin-bottom: $spacing-4;
+  
+  &-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &-content {
+    flex: 1;
+  }
+  
+  &-title {
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-1;
+  }
+  
+  &-message {
+    font-size: $font-size-sm;
+    line-height: $line-height-relaxed;
+  }
+  
+  &-close {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity $duration-normal $easing-default;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Alert variants
+.alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: $color-success;
+  color: $color-success;
+  
+  .alert-title {
+    color: $color-success;
+  }
+  
+  .alert-message {
+    color: $color-text-primary;
+  }
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: $color-error;
+  color: $color-error;
+  
+  .alert-title {
+    color: $color-error;
+  }
+  
+  .alert-message {
+    color: $color-text-primary;
+  }
+}
+
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-color: $color-warning;
+  color: $color-warning;
+  
+  .alert-title {
+    color: $color-warning;
+  }
+  
+  .alert-message {
+    color: $color-text-primary;
+  }
+}
+
+.alert-info {
+  background: rgba(0, 102, 255, 0.1);
+  border-color: $color-primary-solid;
+  color: $color-primary-solid;
+  
+  .alert-title {
+    color: $color-primary-solid;
+  }
+  
+  .alert-message {
+    color: $color-text-primary;
+  }
+}
+
+// ============================================
+// Toast Notification Component
+// ============================================
+.toast-container {
+  position: fixed;
+  top: $spacing-6;
+  right: $spacing-6;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+  max-width: 400px;
+  
+  @media (max-width: 768px) {
+    left: $spacing-4;
+    right: $spacing-4;
+    max-width: none;
+  }
+}
+
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+  padding: $spacing-4;
+  background: $color-surface-elevated;
+  border: 1px solid;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  animation: toast-slide-in $duration-normal $easing-default;
+  position: relative;
+  overflow: hidden;
+  
+  &-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  &-content {
+    flex: 1;
+  }
+  
+  &-title {
+    font-weight: $font-weight-semibold;
+    margin-bottom: $spacing-1;
+    color: $color-text-primary;
+  }
+  
+  &-message {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    line-height: $line-height-relaxed;
+  }
+  
+  &-close {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    border: none;
+    color: $color-text-secondary;
+    cursor: pointer;
+    transition: color $duration-normal $easing-default;
+    
+    &:hover {
+      color: $color-text-primary;
+    }
+  }
+  
+  // Progress bar for auto-dismiss
+  &-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    animation: toast-progress 5s linear;
+  }
+  
+  // Pause animation on hover
+  &:hover .toast-progress {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes toast-progress {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0;
+  }
+}
+
+// Toast variants
+.toast-success {
+  border-color: $color-success;
+  
+  .toast-icon {
+    color: $color-success;
+  }
+  
+  .toast-progress {
+    background: $color-success;
+  }
+}
+
+.toast-error {
+  border-color: $color-error;
+  
+  .toast-icon {
+    color: $color-error;
+  }
+  
+  .toast-progress {
+    background: $color-error;
+  }
+}
+
+.toast-warning {
+  border-color: $color-warning;
+  
+  .toast-icon {
+    color: $color-warning;
+  }
+  
+  .toast-progress {
+    background: $color-warning;
+  }
+}
+
+.toast-info {
+  border-color: $color-primary-solid;
+  
+  .toast-icon {
+    color: $color-primary-solid;
+  }
+  
+  .toast-progress {
+    background: $color-primary-solid;
+  }
+}
+
+// Toast dismissing animation
+.toast-dismissing {
+  animation: toast-slide-out $duration-normal $easing-default;
+}
+
+@keyframes toast-slide-out {
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+// ============================================
+// Modal Component
+// ============================================
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9998;
+  padding: $spacing-4;
+  animation: modal-backdrop-fade-in $duration-normal $easing-default;
+  
+  // Fallback for browsers that don't support backdrop-filter
+  @supports not (backdrop-filter: blur(4px)) {
+    background: rgba(0, 0, 0, 0.9);
+  }
+}
+
+@keyframes modal-backdrop-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal {
+  background: $color-surface-elevated;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-lg;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: modal-scale-in $duration-normal $easing-bounce;
+  
+  @media (max-width: 768px) {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+}
+
+@keyframes modal-scale-in {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-5;
+  border-bottom: 1px solid $color-border;
+}
+
+.modal-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin: 0;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  border: none;
+  border-radius: $radius-md;
+  color: $color-text-secondary;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover {
+    background: $color-surface;
+    color: $color-text-primary;
+  }
+}
+
+.modal-body {
+  padding: $spacing-5;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: $spacing-3;
+  padding: $spacing-5;
+  border-top: 1px solid $color-border;
+}
+
+// Modal sizes
+.modal-sm {
+  max-width: 400px;
+}
+
+.modal-lg {
+  max-width: 800px;
+}
+
+.modal-xl {
+  max-width: 1200px;
+}
+
+// ============================================
+// Badge Component
+// ============================================
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-1 $spacing-2;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  border-radius: $radius-sm;
+  white-space: nowrap;
+}
+
+// Badge variants
+.badge-primary {
+  background: $color-primary-solid;
+  color: #ffffff;
+}
+
+.badge-success {
+  background: $color-success;
+  color: #ffffff;
+}
+
+.badge-error {
+  background: $color-error;
+  color: #ffffff;
+}
+
+.badge-warning {
+  background: $color-warning;
+  color: #ffffff;
+}
+
+.badge-info {
+  background: $color-secondary;
+  color: #ffffff;
+}
+
+.badge-neutral {
+  background: $color-surface-elevated;
+  color: $color-text-primary;
+  border: 1px solid $color-border;
+}
+
+// Badge with dot
+.badge-dot {
+  padding-left: $spacing-3;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    left: $spacing-1;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: $radius-full;
+    background: currentColor;
+  }
+}
+
+// Badge sizes
+.badge-sm {
+  padding: 2px $spacing-1;
+  font-size: 10px;
+}
+
+.badge-lg {
+  padding: $spacing-2 $spacing-3;
+  font-size: $font-size-sm;
+}
+
+// Badge pill (fully rounded)
+.badge-pill {
+  border-radius: $radius-full;
+  padding-left: $spacing-3;
+  padding-right: $spacing-3;
+}
+
+// Badge with icon
+.badge-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-1;
+}
+
+// ============================================
+// Tooltip Component
+// ============================================
+.tooltip {
+  position: absolute;
+  z-index: 9999;
+  padding: $spacing-2 $spacing-3;
+  background: $color-surface-elevated;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+  color: $color-text-primary;
+  font-size: $font-size-sm;
+  line-height: $line-height-normal;
+  box-shadow: $shadow-md;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity $duration-normal $easing-default;
+  
+  &.tooltip-visible {
+    opacity: 1;
+  }
+  
+  // Tooltip arrow
+  &::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    border: 6px solid transparent;
+  }
+  
+  // Top tooltip
+  &.tooltip-top {
+    &::before {
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-top-color: $color-border;
+    }
+  }
+  
+  // Bottom tooltip
+  &.tooltip-bottom {
+    &::before {
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      border-bottom-color: $color-border;
+    }
+  }
+  
+  // Left tooltip
+  &.tooltip-left {
+    &::before {
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left-color: $color-border;
+    }
+  }
+  
+  // Right tooltip
+  &.tooltip-right {
+    &::before {
+      left: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-right-color: $color-border;
+    }
+  }
+}

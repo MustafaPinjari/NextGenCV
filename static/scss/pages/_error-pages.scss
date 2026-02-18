@@ -1,0 +1,106 @@
+// ============================================
+// Error Pages (404, 500)
+// ============================================
+// Implements centered error page layouts with illustrations
+// Requirements: 2.1, 12.1, 12.2, 12.3
+
+.error-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-6;
+  background: $color-base-bg;
+}
+
+.error-page-content {
+  max-width: 600px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.error-page-icon {
+  margin-bottom: $spacing-6;
+  animation: float 3s ease-in-out infinite;
+  
+  svg {
+    width: 120px;
+    height: 120px;
+    filter: drop-shadow(0 0 20px rgba(0, 102, 255, 0.3));
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.error-page-code {
+  font-size: $font-size-6xl;
+  font-weight: $font-weight-bold;
+  background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: $spacing-4;
+  letter-spacing: $letter-spacing-tight;
+  
+  @media (max-width: 768px) {
+    font-size: $font-size-5xl;
+  }
+}
+
+.error-page-title {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-3;
+  
+  @media (max-width: 768px) {
+    font-size: $font-size-2xl;
+  }
+}
+
+.error-page-description {
+  font-size: $font-size-lg;
+  color: $color-text-secondary;
+  line-height: $line-height-relaxed;
+  margin-bottom: $spacing-6;
+  max-width: 480px;
+  
+  @media (max-width: 768px) {
+    font-size: $font-size-base;
+  }
+}
+
+.error-page-actions {
+  display: flex;
+  gap: $spacing-3;
+  flex-wrap: wrap;
+  justify-content: center;
+  
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-2;
+    
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+// Additional message for 500 errors
+.error-page-additional {
+  font-size: $font-size-base;
+  color: $color-text-tertiary;
+  margin-top: $spacing-4;
+  margin-bottom: $spacing-6;
+}

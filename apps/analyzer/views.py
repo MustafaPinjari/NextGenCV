@@ -38,6 +38,13 @@ def analyze_resume(request, resume_id):
             # Call the ATS analyzer service
             try:
                 analysis_result = ATSAnalyzerService.analyze_resume(resume_id, job_description)
+                
+                # Calculate stroke-dashoffset for circular progress (452.39 is circumference for r=72)
+                # Formula: circumference * (1 - score/100)
+                if analysis_result:
+                    score_decimal = analysis_result['score'] / 100
+                    analysis_result['stroke_dashoffset'] = 452.39 * (1 - score_decimal)
+                
                 logger.info(f'ATS analysis completed for resume {resume_id} by user {request.user.username}')
                 messages.success(request, 'Resume analysis completed successfully!')
             except Exception as e:
@@ -56,4 +63,5 @@ def analyze_resume(request, resume_id):
         'analysis_result': analysis_result,
     }
     
-    return render(request, 'analyzer/analyze.html', context)
+    # Use new redesigned template
+    return render(request, 'analyzer/analyze_new.html', context)

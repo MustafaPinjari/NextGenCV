@@ -1,0 +1,12 @@
+/* ============================================
+   Layout Styles - Combined Import
+   ============================================ */
+
+/* Import design system first */
+@import 'design-system.css';
+
+/* Authenticated Layout */
+@import 'layouts/authenticated.css';
+
+/* Public Layout */
+@import 'layouts/public.css';

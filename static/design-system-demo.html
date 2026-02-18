@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NextGenCV Design System Demo</title>
+    <link rel="stylesheet" href="css/design-system.css">
+    <style>
+        .demo-section {
+            margin-bottom: var(--spacing-8);
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--spacing-4);
+            margin-top: var(--spacing-4);
+        }
+        
+        .demo-card {
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-4);
+        }
+        
+        .color-swatch {
+            width: 100%;
+            height: 80px;
+            border-radius: var(--radius-md);
+            margin-bottom: var(--spacing-2);
+        }
+        
+        .spacing-box {
+            background-color: var(--color-primary-solid);
+            border-radius: var(--radius-sm);
+        }
+        
+        .shadow-demo {
+            background-color: var(--color-surface-elevated);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-4);
+            text-align: center;
+        }
+        
+        .glow-demo {
+            background-color: var(--color-surface-elevated);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-4);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="skip-to-main">Skip to main content</div>
+        
+        <header style="padding: var(--spacing-6) 0; border-bottom: 1px solid var(--color-border);">
+            <h1>NextGenCV Design System</h1>
+            <p style="margin-top: var(--spacing-2);">Foundation Demo - Design Tokens & Base Styles</p>
+        </header>
+        
+        <main style="padding: var(--spacing-6) 0;">
+            <!-- Colors -->
+            <section class="demo-section">
+                <h2>Color Palette</h2>
+                <div class="demo-grid">
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-base-bg);"></div>
+                        <strong>Base Background</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-base-bg</p>
+                    </div>
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-surface);"></div>
+                        <strong>Surface</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-surface</p>
+                    </div>
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-primary-solid);"></div>
+                        <strong>Primary</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-primary-solid</p>
+                    </div>
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-secondary);"></div>
+                        <strong>Secondary</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-secondary</p>
+                    </div>
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-success);"></div>
+                        <strong>Success</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-success</p>
+                    </div>
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-warning);"></div>
+                        <strong>Warning</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-warning</p>
+                    </div>
+                    <div class="demo-card">
+                        <div class="color-swatch" style="background-color: var(--color-error);"></div>
+                        <strong>Error</strong>
+                        <p style="font-size: var(--font-size-sm);">--color-error</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Typography -->
+            <section class="demo-section">
+                <h2>Typography Scale</h2>
+                <div class="demo-card" style="margin-top: var(--spacing-4);">
+                    <h1>Heading 1 - Display (60px)</h1>
+                    <h2>Heading 2 - Display (36px)</h2>
+                    <h3>Heading 3 (30px)</h3>
+                    <h4>Heading 4 (24px)</h4>
+                    <h5>Heading 5 (20px)</h5>
+                    <h6>Heading 6 (18px)</h6>
+                    <p>Body text - This is a paragraph with normal body text styling. It uses the primary font family and has relaxed line height for readability.</p>
+                    <p><strong>Bold text</strong> and <em>italic text</em> for emphasis.</p>
+                    <p><code>Inline code example</code> with monospace font.</p>
+                </div>
+            </section>
+            
+            <!-- Spacing -->
+            <section class="demo-section">
+                <h2>Spacing Scale (8px Grid)</h2>
+                <div class="demo-card" style="margin-top: var(--spacing-4);">
+                    <div style="display: flex; flex-direction: column; gap: var(--spacing-2);">
+                        <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                            <div class="spacing-box" style="width: var(--spacing-1); height: 40px;"></div>
+                            <span>spacing-1 (8px)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                            <div class="spacing-box" style="width: var(--spacing-2); height: 40px;"></div>
+                            <span>spacing-2 (16px)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                            <div class="spacing-box" style="width: var(--spacing-3); height: 40px;"></div>
+                            <span>spacing-3 (24px)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                            <div class="spacing-box" style="width: var(--spacing-4); height: 40px;"></div>
+                            <span>spacing-4 (32px)</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: var(--spacing-2);">
+                            <div class="spacing-box" style="width: var(--spacing-6); height: 40px;"></div>
+                            <span>spacing-6 (48px)</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Shadows -->
+            <section class="demo-section">
+                <h2>Shadows</h2>
+                <div class="demo-grid">
+                    <div class="shadow-demo" style="box-shadow: var(--shadow-sm);">
+                        <strong>Small Shadow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--shadow-sm</p>
+                    </div>
+                    <div class="shadow-demo" style="box-shadow: var(--shadow-md);">
+                        <strong>Medium Shadow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--shadow-md</p>
+                    </div>
+                    <div class="shadow-demo" style="box-shadow: var(--shadow-lg);">
+                        <strong>Large Shadow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--shadow-lg</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Glows -->
+            <section class="demo-section">
+                <h2>Glow Effects</h2>
+                <div class="demo-grid">
+                    <div class="glow-demo" style="box-shadow: var(--glow-primary);">
+                        <strong>Primary Glow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--glow-primary</p>
+                    </div>
+                    <div class="glow-demo" style="box-shadow: var(--glow-secondary);">
+                        <strong>Secondary Glow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--glow-secondary</p>
+                    </div>
+                    <div class="glow-demo" style="box-shadow: var(--glow-success);">
+                        <strong>Success Glow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--glow-success</p>
+                    </div>
+                    <div class="glow-demo" style="box-shadow: var(--glow-error);">
+                        <strong>Error Glow</strong>
+                        <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">--glow-error</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Border Radius -->
+            <section class="demo-section">
+                <h2>Border Radius</h2>
+                <div class="demo-grid">
+                    <div class="demo-card" style="border-radius: var(--radius-sm);">
+                        <strong>Small (8px)</strong>
+                        <p style="font-size: var(--font-size-sm);">--radius-sm</p>
+                    </div>
+                    <div class="demo-card" style="border-radius: var(--radius-md);">
+                        <strong>Medium (14px)</strong>
+                        <p style="font-size: var(--font-size-sm);">--radius-md</p>
+                    </div>
+                    <div class="demo-card" style="border-radius: var(--radius-lg);">
+                        <strong>Large (16px)</strong>
+                        <p style="font-size: var(--font-size-sm);">--radius-lg</p>
+                    </div>
+                    <div class="demo-card" style="border-radius: var(--radius-xl);">
+                        <strong>Extra Large (20px)</strong>
+                        <p style="font-size: var(--font-size-sm);">--radius-xl</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Utility Classes -->
+            <section class="demo-section">
+                <h2>Utility Classes</h2>
+                <div class="demo-card" style="margin-top: var(--spacing-4);">
+                    <p class="text-primary">Primary text color (.text-primary)</p>
+                    <p class="text-secondary">Secondary text color (.text-secondary)</p>
+                    <p class="text-tertiary">Tertiary text color (.text-tertiary)</p>
+                    <hr>
+                    <p class="text-center">Center aligned text (.text-center)</p>
+                    <p class="text-left">Left aligned text (.text-left)</p>
+                    <p class="text-right">Right aligned text (.text-right)</p>
+                    <hr>
+                    <div class="mt-4 pt-4" style="background-color: var(--color-surface-elevated); border-radius: var(--radius-md);">
+                        <p>Spacing utilities: .mt-4 .pt-4</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer style="padding: var(--spacing-6) 0; border-top: 1px solid var(--color-border); text-align: center;">
+            <p>NextGenCV Design System Foundation</p>
+            <p style="font-size: var(--font-size-sm); margin-top: var(--spacing-2);">
+                All design tokens are available as CSS custom properties
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

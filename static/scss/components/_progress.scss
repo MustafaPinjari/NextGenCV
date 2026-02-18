@@ -1,0 +1,457 @@
+// ============================================
+// Progress Components
+// ============================================
+// Implements linear, circular, and wizard progress indicators
+// Requirements: 6.3
+
+// ============================================
+// Linear Progress Bar
+// ============================================
+.progress {
+  width: 100%;
+  height: 8px;
+  background: $color-surface-elevated;
+  border-radius: $radius-full;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+  border-radius: $radius-full;
+  transition: width $duration-slow $easing-default;
+  position: relative;
+  
+  // Animated shimmer effect
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+// Progress bar with glow
+.progress-glow {
+  .progress-bar {
+    box-shadow: 0 0 12px rgba(0, 102, 255, 0.5);
+  }
+}
+
+// Progress bar sizes
+.progress-sm {
+  height: 4px;
+}
+
+.progress-lg {
+  height: 12px;
+}
+
+// Progress bar with label
+.progress-labeled {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+  
+  .progress {
+    flex: 1;
+  }
+  
+  .progress-label {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    white-space: nowrap;
+    min-width: 40px;
+    text-align: right;
+  }
+}
+
+// Progress bar variants
+.progress-success .progress-bar {
+  background: $color-success;
+  box-shadow: $glow-success;
+}
+
+.progress-warning .progress-bar {
+  background: $color-warning;
+  box-shadow: $glow-warning;
+}
+
+.progress-error .progress-bar {
+  background: $color-error;
+  box-shadow: $glow-error;
+}
+
+// ============================================
+// Circular Progress (SVG-based)
+// ============================================
+.progress-circular {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.progress-circular-svg {
+  transform: rotate(-90deg);
+}
+
+.progress-circular-bg {
+  fill: none;
+  stroke: $color-surface-elevated;
+  stroke-width: 8;
+}
+
+.progress-circular-bar {
+  fill: none;
+  stroke: url(#gradient-primary);
+  stroke-width: 8;
+  stroke-linecap: round;
+  transition: stroke-dashoffset $duration-slow $easing-default;
+}
+
+.progress-circular-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.progress-circular-value {
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  line-height: 1;
+}
+
+.progress-circular-label {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: $spacing-1;
+}
+
+// Circular progress sizes
+.progress-circular-sm {
+  width: 80px;
+  height: 80px;
+  
+  .progress-circular-value {
+    font-size: $font-size-xl;
+  }
+  
+  .progress-circular-label {
+    font-size: $font-size-xs;
+  }
+}
+
+.progress-circular-md {
+  width: 120px;
+  height: 120px;
+}
+
+.progress-circular-lg {
+  width: 160px;
+  height: 160px;
+  
+  .progress-circular-value {
+    font-size: $font-size-5xl;
+  }
+  
+  .progress-circular-label {
+    font-size: $font-size-base;
+  }
+}
+
+// ============================================
+// Wizard Step Progress
+// ============================================
+.wizard-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-6 0;
+  position: relative;
+  
+  // Connecting line
+  &::before {
+    content: '';
+    position: absolute;
+    top: calc(#{$spacing-6} + 16px); // Adjust for step circle center
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: $color-surface-elevated;
+    z-index: 0;
+  }
+}
+
+.wizard-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-2;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.wizard-step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  transition: all $duration-normal $easing-default;
+  background: $color-surface;
+  border: 2px solid $color-border;
+  color: $color-text-tertiary;
+}
+
+.wizard-step-label {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  text-align: center;
+  transition: color $duration-normal $easing-default;
+}
+
+// Completed step
+.wizard-step-completed {
+  .wizard-step-circle {
+    background: $color-success;
+    border-color: $color-success;
+    color: #ffffff;
+    
+    &::after {
+      content: '✓';
+    }
+  }
+  
+  .wizard-step-label {
+    color: $color-text-secondary;
+  }
+}
+
+// Current step
+.wizard-step-current {
+  .wizard-step-circle {
+    background: $color-primary-solid;
+    border-color: $color-primary-solid;
+    color: #ffffff;
+    box-shadow: $glow-primary;
+    animation: pulse-step 2s ease-in-out infinite;
+  }
+  
+  .wizard-step-label {
+    color: $color-text-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+@keyframes pulse-step {
+  0%, 100% {
+    box-shadow: $glow-primary;
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 102, 255, 0.5);
+  }
+}
+
+// Future step
+.wizard-step-future {
+  .wizard-step-circle {
+    background: $color-surface;
+    border-color: $color-border;
+    color: $color-text-tertiary;
+  }
+  
+  .wizard-step-label {
+    color: $color-text-tertiary;
+  }
+}
+
+// Responsive wizard progress
+@media (max-width: 768px) {
+  .wizard-progress {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    &::before {
+      top: 0;
+      bottom: 0;
+      left: 16px;
+      width: 2px;
+      height: auto;
+    }
+  }
+  
+  .wizard-step {
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+    gap: $spacing-3;
+  }
+  
+  .wizard-step-label {
+    text-align: left;
+  }
+}
+
+// ============================================
+// Loading Spinner
+// ============================================
+.spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid $color-surface-elevated;
+  border-top-color: $color-primary-solid;
+  border-radius: $radius-full;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// Spinner sizes
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.spinner-lg {
+  width: 32px;
+  height: 32px;
+  border-width: 4px;
+}
+
+// Spinner with glow
+.spinner-glow {
+  border-top-color: $color-primary-solid;
+  box-shadow: $glow-primary;
+}
+
+// Centered spinner
+.spinner-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-6;
+}
+
+// ============================================
+// Skeleton Loading
+// ============================================
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    $color-surface-elevated 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    $color-surface-elevated 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s ease-in-out infinite;
+  border-radius: $radius-md;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// Skeleton variants
+.skeleton-text {
+  height: 1em;
+  margin-bottom: $spacing-2;
+  
+  &:last-child {
+    margin-bottom: 0;
+    width: 80%;
+  }
+}
+
+.skeleton-title {
+  height: 2em;
+  width: 60%;
+  margin-bottom: $spacing-3;
+}
+
+.skeleton-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: $radius-full;
+}
+
+.skeleton-card {
+  height: 200px;
+  width: 100%;
+}
+
+.skeleton-button {
+  height: 40px;
+  width: 120px;
+}
+
+// ============================================
+// Progress with Steps (Alternative)
+// ============================================
+.progress-steps {
+  display: flex;
+  gap: $spacing-2;
+}
+
+.progress-step {
+  flex: 1;
+  height: 8px;
+  background: $color-surface-elevated;
+  border-radius: $radius-full;
+  transition: background $duration-normal $easing-default;
+  
+  &.progress-step-completed {
+    background: $color-primary-solid;
+  }
+  
+  &.progress-step-current {
+    background: $color-primary-solid;
+    animation: pulse-bar 2s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-bar {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}

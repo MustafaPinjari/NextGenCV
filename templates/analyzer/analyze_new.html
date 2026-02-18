@@ -1,0 +1,560 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}ATS Analyzer - NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ATS Analyzer Page Specific Styles */
+    .analyzer-container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .analyzer-header {
+        margin-bottom: 2rem;
+    }
+
+    .analyzer-header h1 {
+        font-size: 2.25rem;
+        font-weight: 600;
+        color: #f5f5f5;
+        margin-bottom: 0.5rem;
+    }
+
+    .analyzer-header p {
+        font-size: 1rem;
+        color: #a3a3a3;
+    }
+
+    /* Two-column layout */
+    .analyzer-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+        .analyzer-layout {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Upload/Input Section */
+    .analyzer-input-section {
+        position: sticky;
+        top: 2rem;
+    }
+
+    .resume-selector {
+        margin-bottom: 1.5rem;
+    }
+
+    .resume-selector-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #f5f5f5;
+        margin-bottom: 0.5rem;
+    }
+
+    .job-description-input {
+        margin-top: 1.5rem;
+    }
+
+    /* Results Section */
+    .analyzer-results-section {
+        min-height: 400px;
+    }
+
+    .results-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .results-empty-icon {
+        font-size: 4rem;
+        color: #6366f1;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+    }
+
+    .results-empty-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #f5f5f5;
+        margin-bottom: 0.5rem;
+    }
+
+    .results-empty-text {
+        font-size: 1rem;
+        color: #a3a3a3;
+    }
+
+    /* Score Section */
+    .score-section {
+        margin-bottom: 2rem;
+    }
+
+    .score-display {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .score-breakdown {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .score-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .score-item-label {
+        font-size: 0.875rem;
+        color: #a3a3a3;
+    }
+
+    .score-item-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #f5f5f5;
+    }
+
+    /* Keywords Section */
+    .keywords-section {
+        margin-bottom: 2rem;
+    }
+
+    .keywords-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .keywords-header h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #f5f5f5;
+        margin: 0;
+    }
+
+    .keywords-count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .keywords-count-success {
+        background: rgba(16, 185, 129, 0.2);
+        color: #10b981;
+    }
+
+    .keywords-count-error {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+
+    .keywords-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .keyword-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .keyword-tag-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .keyword-tag-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .keyword-tag:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Suggestions Section */
+    .suggestions-section {
+        margin-bottom: 2rem;
+    }
+
+    .suggestions-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    .suggestions-header h3 {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #f5f5f5;
+        margin: 0;
+    }
+
+    .suggestions-header i {
+        color: #0066ff;
+    }
+
+    .suggestions-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .suggestion-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(0, 102, 255, 0.05);
+        border: 1px solid rgba(0, 102, 255, 0.2);
+        border-radius: 0.875rem;
+        margin-bottom: 0.75rem;
+        transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .suggestion-item:hover {
+        background: rgba(0, 102, 255, 0.08);
+        border-color: rgba(0, 102, 255, 0.3);
+    }
+
+    .suggestion-icon {
+        flex-shrink: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0066ff;
+    }
+
+    .suggestion-text {
+        flex: 1;
+        font-size: 0.875rem;
+        color: #f5f5f5;
+        line-height: 1.5;
+    }
+
+    /* Loading State */
+    .loading-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+    }
+
+    .loading-spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid #1a1a1a;
+        border-top-color: #0066ff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .loading-text {
+        font-size: 1.125rem;
+        font-weight: 500;
+        color: #f5f5f5;
+        margin-bottom: 0.5rem;
+    }
+
+    .loading-subtext {
+        font-size: 0.875rem;
+        color: #a3a3a3;
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    @media (max-width: 640px) {
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="analyzer-container">
+    <!-- Page Header -->
+    <div class="analyzer-header">
+        <h1>ATS Analyzer</h1>
+        <p>Analyze your resume against job descriptions to optimize for Applicant Tracking Systems</p>
+    </div>
+
+    <!-- Two-Column Layout -->
+    <div class="analyzer-layout">
+        <!-- Left Column: Input Section -->
+        <div class="analyzer-input-section">
+            <div class="card card-default">
+                <div class="card-body">
+                    <h2 class="card-title">Resume & Job Description</h2>
+                    
+                    <!-- Resume Selector -->
+                    <div class="resume-selector">
+                        <label class="resume-selector-label">Select Resume</label>
+                        <div class="form-group">
+                            <select class="form-select" id="resumeSelect">
+                                <option value="{{ resume.id }}" selected>{{ resume.title }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Job Description Input -->
+                    <form method="post" id="analyzerForm">
+                        {% csrf_token %}
+                        
+                        <div class="job-description-input">
+                            <div class="form-group">
+                                <textarea 
+                                    class="form-textarea" 
+                                    id="jobDescription" 
+                                    name="job_description" 
+                                    placeholder=" "
+                                    rows="12"
+                                    required>{% if form.job_description.value %}{{ form.job_description.value }}{% endif %}</textarea>
+                                <label class="form-label" for="jobDescription">Job Description</label>
+                                {% if form.job_description.errors %}
+                                    <div class="form-error-message">
+                                        {{ form.job_description.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <p class="form-helper-text">
+                                Paste the complete job description to analyze keyword matches and get optimization suggestions.
+                            </p>
+                        </div>
+
+                        <!-- Analyze Button -->
+                        <button type="submit" class="btn btn-primary btn-block" id="analyzeBtn">
+                            <i class="bi bi-search"></i>
+                            Analyze Resume
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Results Section -->
+        <div class="analyzer-results-section">
+            {% if analysis_result %}
+                <!-- Analysis Results -->
+                <div class="card card-default">
+                    <div class="card-body">
+                        <!-- Score Section -->
+                        <div class="score-section">
+                            <h2 class="card-title">Analysis Results</h2>
+                            
+                            <!-- Circular Progress Score -->
+                            <div class="score-display">
+                                <div class="progress-circular progress-circular-lg">
+                                    <svg class="progress-circular-svg" width="160" height="160" viewBox="0 0 160 160">
+                                        <defs>
+                                            <linearGradient id="gradient-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                <stop offset="0%" style="stop-color:#0066ff;stop-opacity:1" />
+                                                <stop offset="100%" style="stop-color:#00ccff;stop-opacity:1" />
+                                            </linearGradient>
+                                        </defs>
+                                        <circle class="progress-circular-bg" cx="80" cy="80" r="72"></circle>
+                                        <circle 
+                                            class="progress-circular-bar" 
+                                            cx="80" 
+                                            cy="80" 
+                                            r="72"
+                                            stroke-dasharray="452.39"
+                                            stroke-dashoffset="{{ analysis_result.stroke_dashoffset }}"
+                                        ></circle>
+                                    </svg>
+                                    <div class="progress-circular-content">
+                                        <div class="progress-circular-value">{{ analysis_result.score|floatformat:0 }}%</div>
+                                        <div class="progress-circular-label">Match Score</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Score Breakdown -->
+                            <div class="score-breakdown">
+                                <div class="score-item">
+                                    <span class="score-item-label">Matched Keywords</span>
+                                    <span class="score-item-value">{{ analysis_result.matched_keywords|length }}</span>
+                                </div>
+                                <div class="score-item">
+                                    <span class="score-item-label">Missing Keywords</span>
+                                    <span class="score-item-value">{{ analysis_result.missing_keywords|length }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Matched Keywords -->
+                        <div class="keywords-section">
+                            <div class="keywords-header">
+                                <i class="bi bi-check-circle-fill" style="color: #10b981; font-size: 1.25rem;"></i>
+                                <h3>Matched Keywords</h3>
+                                <span class="keywords-count keywords-count-success">{{ analysis_result.matched_keywords|length }}</span>
+                            </div>
+                            {% if analysis_result.matched_keywords %}
+                                <div class="keywords-grid">
+                                    {% for keyword in analysis_result.matched_keywords %}
+                                        <span class="keyword-tag keyword-tag-success">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p style="color: #a3a3a3; font-size: 0.875rem;">No matching keywords found.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Missing Keywords -->
+                        <div class="keywords-section">
+                            <div class="keywords-header">
+                                <i class="bi bi-x-circle-fill" style="color: #ef4444; font-size: 1.25rem;"></i>
+                                <h3>Missing Keywords</h3>
+                                <span class="keywords-count keywords-count-error">{{ analysis_result.missing_keywords|length }}</span>
+                            </div>
+                            {% if analysis_result.missing_keywords %}
+                                <div class="keywords-grid">
+                                    {% for keyword in analysis_result.missing_keywords %}
+                                        <span class="keyword-tag keyword-tag-error">{{ keyword }}</span>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p style="color: #10b981; font-size: 0.875rem;">
+                                    <i class="bi bi-check-circle"></i> Great! Your resume contains all key terms from the job description.
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Suggestions -->
+                        {% if analysis_result.suggestions %}
+                        <div class="suggestions-section">
+                            <div class="suggestions-header">
+                                <i class="bi bi-lightbulb-fill" style="font-size: 1.25rem;"></i>
+                                <h3>Suggestions for Improvement</h3>
+                            </div>
+                            <ul class="suggestions-list">
+                                {% for suggestion in analysis_result.suggestions %}
+                                    <li class="suggestion-item">
+                                        <div class="suggestion-icon">
+                                            <i class="bi bi-arrow-right-circle"></i>
+                                        </div>
+                                        <div class="suggestion-text">{{ suggestion }}</div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <a href="{% url 'resume_update' resume.id %}" class="btn btn-primary">
+                                <i class="bi bi-pencil"></i>
+                                Edit Resume
+                            </a>
+                            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-ghost">
+                                <i class="bi bi-eye"></i>
+                                View Resume
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div class="card card-default">
+                    <div class="card-body">
+                        <div class="results-empty">
+                            <div class="results-empty-icon">
+                                <i class="bi bi-search"></i>
+                            </div>
+                            <h3 class="results-empty-title">Ready to Analyze</h3>
+                            <p class="results-empty-text">
+                                Enter a job description and click "Analyze Resume" to see how well your resume matches.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Loading State Overlay (hidden by default) -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 10, 0.9); z-index: 9999; backdrop-filter: blur(4px);">
+    <div class="loading-state" style="height: 100vh;">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Analyzing Resume...</div>
+        <div class="loading-subtext">This may take a few moments</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show loading state when form is submitted
+    document.getElementById('analyzerForm').addEventListener('submit', function() {
+        document.getElementById('loadingOverlay').style.display = 'block';
+        document.getElementById('analyzeBtn').classList.add('btn-loading');
+        document.getElementById('analyzeBtn').disabled = true;
+    });
+
+    // Animate score on page load if results exist
+    {% if analysis_result %}
+    window.addEventListener('load', function() {
+        const progressBar = document.querySelector('.progress-circular-bar');
+        if (progressBar) {
+            // Start from 0 and animate to actual value
+            const targetOffset = parseFloat(progressBar.getAttribute('stroke-dashoffset'));
+            progressBar.style.strokeDashoffset = '452.39';
+            
+            setTimeout(() => {
+                progressBar.style.transition = 'stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                progressBar.style.strokeDashoffset = targetOffset;
+            }, 100);
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}

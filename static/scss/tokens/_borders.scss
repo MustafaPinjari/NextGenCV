@@ -1,0 +1,16 @@
+// Border Radius Tokens
+
+$radius-sm: 0.5rem;   // 8px
+$radius-md: 0.875rem; // 14px
+$radius-lg: 1rem;     // 16px
+$radius-xl: 1.25rem;  // 20px
+$radius-full: 9999px; // Fully rounded
+
+// CSS Custom Properties for runtime theming
+:root {
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+  --radius-full: #{$radius-full};
+}

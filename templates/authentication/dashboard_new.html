@@ -1,0 +1,666 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Dashboard - NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard-specific styles */
+    .dashboard-grid {
+        display: grid;
+        gap: var(--spacing-4, 2rem);
+        margin-bottom: var(--spacing-6, 3rem);
+    }
+    
+    .dashboard-header {
+        margin-bottom: var(--spacing-6, 3rem);
+    }
+    
+    .dashboard-welcome {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-4, 2rem);
+    }
+    
+    .dashboard-welcome h1 {
+        font-size: var(--font-size-4xl, 2.25rem);
+        font-weight: var(--font-weight-bold, 700);
+        color: var(--color-text-primary, #f5f5f5);
+        margin: 0;
+    }
+    
+    .dashboard-date {
+        font-size: var(--font-size-sm, 0.875rem);
+        color: var(--color-text-secondary, #a3a3a3);
+    }
+    
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-4, 2rem);
+        margin-bottom: var(--spacing-6, 3rem);
+    }
+    
+    @media (max-width: 1024px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .dashboard-stats {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-4, 2rem);
+        margin-bottom: var(--spacing-6, 3rem);
+    }
+    
+    @media (max-width: 1200px) {
+        .quick-actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 640px) {
+        .quick-actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .action-card {
+        background: var(--color-surface, #141414);
+        border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+        border-radius: var(--radius-xl, 1rem);
+        padding: var(--spacing-5, 2.5rem);
+        text-align: center;
+        transition: all var(--duration-normal, 250ms) var(--easing-default, cubic-bezier(0.4, 0, 0.2, 1));
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+    }
+    
+    .action-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        border-color: var(--color-primary-solid, #0066ff);
+    }
+    
+    .action-card-icon {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto var(--spacing-3, 1.5rem);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface-elevated, #1a1a1a);
+        border-radius: var(--radius-lg, 1rem);
+        color: var(--color-primary-solid, #0066ff);
+        font-size: 24px;
+    }
+    
+    .action-card-title {
+        font-size: var(--font-size-lg, 1.125rem);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--color-text-primary, #f5f5f5);
+        margin-bottom: var(--spacing-2, 1rem);
+    }
+    
+    .action-card-description {
+        font-size: var(--font-size-sm, 0.875rem);
+        color: var(--color-text-secondary, #a3a3a3);
+        line-height: 1.5;
+    }
+    
+    .recent-resumes-section {
+        margin-bottom: var(--spacing-6, 3rem);
+    }
+    
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-4, 2rem);
+    }
+    
+    .section-title {
+        font-size: var(--font-size-2xl, 1.5rem);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--color-text-primary, #f5f5f5);
+        margin: 0;
+    }
+    
+    .resume-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-4, 2rem);
+    }
+    
+    @media (max-width: 1200px) {
+        .resume-cards-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .resume-cards-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .resume-card {
+        background: var(--color-surface, #141414);
+        border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+        border-radius: var(--radius-xl, 1rem);
+        padding: var(--spacing-4, 2rem);
+        transition: all var(--duration-normal, 250ms) var(--easing-default, cubic-bezier(0.4, 0, 0.2, 1));
+        position: relative;
+    }
+    
+    .resume-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+    
+    .resume-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: var(--spacing-3, 1.5rem);
+    }
+    
+    .resume-card-title {
+        font-size: var(--font-size-lg, 1.125rem);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--color-text-primary, #f5f5f5);
+        margin: 0 0 var(--spacing-1, 0.5rem) 0;
+    }
+    
+    .resume-card-date {
+        font-size: var(--font-size-xs, 0.75rem);
+        color: var(--color-text-tertiary, #737373);
+    }
+    
+    .resume-card-badge {
+        padding: var(--spacing-1, 0.5rem) var(--spacing-2, 1rem);
+        background: var(--color-primary-solid, #0066ff);
+        color: #ffffff;
+        font-size: var(--font-size-xs, 0.75rem);
+        font-weight: var(--font-weight-semibold, 600);
+        border-radius: var(--radius-sm, 0.5rem);
+    }
+    
+    .resume-card-actions {
+        display: flex;
+        gap: var(--spacing-2, 1rem);
+        margin-top: var(--spacing-3, 1.5rem);
+    }
+    
+    .activity-feed {
+        background: var(--color-surface, #141414);
+        border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+        border-radius: var(--radius-xl, 1rem);
+        padding: var(--spacing-5, 2.5rem);
+    }
+    
+    .activity-item {
+        display: flex;
+        gap: var(--spacing-3, 1.5rem);
+        padding: var(--spacing-3, 1.5rem) 0;
+        border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface-elevated, #1a1a1a);
+        border-radius: var(--radius-md, 0.875rem);
+        color: var(--color-primary-solid, #0066ff);
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-title {
+        font-size: var(--font-size-base, 1rem);
+        color: var(--color-text-primary, #f5f5f5);
+        margin-bottom: var(--spacing-1, 0.5rem);
+    }
+    
+    .activity-time {
+        font-size: var(--font-size-sm, 0.875rem);
+        color: var(--color-text-tertiary, #737373);
+    }
+    
+    .charts-section {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-4, 2rem);
+        margin-bottom: var(--spacing-6, 3rem);
+    }
+    
+    @media (max-width: 1024px) {
+        .charts-section {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    .chart-card {
+        background: var(--color-surface, #141414);
+        border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+        border-radius: var(--radius-xl, 1rem);
+        padding: var(--spacing-5, 2.5rem);
+    }
+    
+    .chart-title {
+        font-size: var(--font-size-lg, 1.125rem);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--color-text-primary, #f5f5f5);
+        margin-bottom: var(--spacing-4, 2rem);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-welcome {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-2, 1rem);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<div class="dashboard-header">
+    <div class="dashboard-welcome">
+        <div>
+            <h1>Welcome back, {{ user.username }}!</h1>
+            <p class="dashboard-date">{{ current_date|date:"l, F j, Y" }}</p>
+        </div>
+    </div>
+    
+    <!-- Quick Stats -->
+    <div class="dashboard-stats">
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <span class="stats-card-title">Total Resumes</span>
+                <div class="stats-card-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+            </div>
+            <div class="stats-card-value">{{ resumes.count }}</div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <span class="stats-card-title">Average Score</span>
+                <div class="stats-card-icon">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+            <div class="stats-card-value">{{ average_score|default:"--" }}</div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="stats-card-header">
+                <span class="stats-card-title">Resume Health</span>
+                <div class="stats-card-icon">
+                    <i class="bi bi-heart-pulse"></i>
+                </div>
+            </div>
+            <div class="stats-card-value">{{ resume_health|default:"--" }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Resume Health Meter -->
+<div class="dashboard-grid">
+    <div class="card-elevated">
+        <div class="card-body" style="text-align: center;">
+            <h3 class="card-title">Resume Health</h3>
+            
+            <!-- Circular Progress Meter -->
+            <div class="progress-circular progress-circular-lg" style="margin: 2rem auto;">
+                <svg class="progress-circular-svg" width="160" height="160" viewBox="0 0 160 160">
+                    <defs>
+                        <linearGradient id="gradient-primary" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#0066ff;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#00ccff;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <circle class="progress-circular-bg" cx="80" cy="80" r="70"></circle>
+                    <circle class="progress-circular-bar" cx="80" cy="80" r="70"
+                            stroke-dasharray="439.8" 
+                            stroke-dashoffset="{{ health_dashoffset|default:'439.8' }}"
+                            id="healthCircle"></circle>
+                </svg>
+                <div class="progress-circular-content">
+                    <div class="progress-circular-value" id="healthValue">{{ resume_health|default:"0" }}</div>
+                    <div class="progress-circular-label">Health Score</div>
+                </div>
+            </div>
+            
+            {% if resume_health %}
+            <p class="card-text" style="margin-top: 1rem;">
+                {% if resume_health >= 80 %}
+                    <span style="color: var(--color-success);">Excellent! Your resume is in great shape.</span>
+                {% elif resume_health >= 60 %}
+                    <span style="color: var(--color-primary-solid);">Good! A few improvements could help.</span>
+                {% elif resume_health >= 40 %}
+                    <span style="color: var(--color-warning);">Fair. Focus on key improvements.</span>
+                {% else %}
+                    <span style="color: var(--color-error);">Needs work. Let's improve it together!</span>
+                {% endif %}
+            </p>
+            {% endif %}
+            
+            <a href="{% url 'analytics_dashboard' %}" class="btn btn-primary" style="margin-top: 1.5rem;">
+                View Detailed Analytics
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="section-header">
+    <h2 class="section-title">Quick Actions</h2>
+</div>
+
+<div class="quick-actions-grid">
+    <a href="{% url 'resume_create' %}" class="action-card">
+        <div class="action-card-icon">
+            <i class="bi bi-plus-circle"></i>
+        </div>
+        <h3 class="action-card-title">Create Resume</h3>
+        <p class="action-card-description">Build a new ATS-optimized resume from scratch</p>
+    </a>
+    
+    <a href="{% url 'pdf_upload' %}" class="action-card">
+        <div class="action-card-icon">
+            <i class="bi bi-upload"></i>
+        </div>
+        <h3 class="action-card-title">Upload PDF</h3>
+        <p class="action-card-description">Import and analyze your existing resume</p>
+    </a>
+    
+    <a href="{% url 'analytics_dashboard' %}" class="action-card">
+        <div class="action-card-icon">
+            <i class="bi bi-graph-up"></i>
+        </div>
+        <h3 class="action-card-title">View Analytics</h3>
+        <p class="action-card-description">Track your resume performance over time</p>
+    </a>
+    
+    <a href="{% url 'template_gallery' %}" class="action-card">
+        <div class="action-card-icon">
+            <i class="bi bi-palette"></i>
+        </div>
+        <h3 class="action-card-title">Browse Templates</h3>
+        <p class="action-card-description">Choose from professional resume templates</p>
+    </a>
+</div>
+
+<!-- Recent Resumes -->
+<div class="recent-resumes-section">
+    <div class="section-header">
+        <h2 class="section-title">Recent Resumes</h2>
+        <a href="{% url 'resume_list' %}" class="btn btn-ghost">View All</a>
+    </div>
+    
+    {% if resumes %}
+    <div class="resume-cards-grid">
+        {% for resume in resumes|slice:":3" %}
+        <div class="resume-card">
+            <div class="resume-card-header">
+                <div>
+                    <h3 class="resume-card-title">{{ resume.title }}</h3>
+                    <p class="resume-card-date">Updated {{ resume.updated_at|timesince }} ago</p>
+                </div>
+                {% if resume.latest_score %}
+                <span class="resume-card-badge">{{ resume.latest_score }}/100</span>
+                {% endif %}
+            </div>
+            
+            <div class="resume-card-actions">
+                <a href="{% url 'resume_detail' resume.id %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-eye"></i> View
+                </a>
+                <a href="{% url 'resume_update' resume.id %}" class="btn btn-outline btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-file-earmark-text" style="font-size: 80px;"></i>
+        </div>
+        <h3 class="empty-state-title">No resumes yet</h3>
+        <p class="empty-state-description">Create your first resume to get started with NextGenCV</p>
+        <a href="{% url 'resume_create' %}" class="btn btn-primary">Create Resume</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Activity Feed -->
+<div class="section-header">
+    <h2 class="section-title">Recent Activity</h2>
+</div>
+
+<div class="activity-feed">
+    {% if recent_activities %}
+        {% for activity in recent_activities|slice:":5" %}
+        <div class="activity-item">
+            <div class="activity-icon">
+                {% if activity.type == 'created' %}
+                    <i class="bi bi-plus-circle"></i>
+                {% elif activity.type == 'updated' %}
+                    <i class="bi bi-pencil"></i>
+                {% elif activity.type == 'analyzed' %}
+                    <i class="bi bi-search"></i>
+                {% else %}
+                    <i class="bi bi-clock-history"></i>
+                {% endif %}
+            </div>
+            <div class="activity-content">
+                <div class="activity-title">{{ activity.description }}</div>
+                <div class="activity-time">{{ activity.timestamp|timesince }} ago</div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="empty-state empty-state-sm">
+        <div class="empty-state-icon">
+            <i class="bi bi-activity" style="font-size: 60px;"></i>
+        </div>
+        <h3 class="empty-state-title">No activity yet</h3>
+        <p class="empty-state-description">Your recent actions will appear here</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Charts Section -->
+{% if show_charts %}
+<div class="section-header" style="margin-top: 3rem;">
+    <h2 class="section-title">Performance Overview</h2>
+</div>
+
+<div class="charts-section">
+    <!-- Score Trend Chart -->
+    <div class="chart-card">
+        <h3 class="chart-title">Score Trend</h3>
+        <div class="chart-container">
+            <canvas id="scoreTrendChart"></canvas>
+        </div>
+    </div>
+    
+    <!-- Keyword Match Chart -->
+    <div class="chart-card">
+        <h3 class="chart-title">Keyword Coverage</h3>
+        <div class="chart-container">
+            <canvas id="keywordMatchChart"></canvas>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Animate health circle on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const healthValue = {{ resume_health|default:"0" }};
+        const circle = document.getElementById('healthCircle');
+        const valueDisplay = document.getElementById('healthValue');
+        
+        if (circle && valueDisplay) {
+            // Calculate stroke-dashoffset for the target value
+            const circumference = 439.8; // 2 * PI * radius (70)
+            const targetOffset = circumference - (healthValue / 100) * circumference;
+            
+            // Animate from 100% to target
+            let currentValue = 0;
+            const duration = 1500; // 1.5 seconds
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // Easing function
+                const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+                
+                currentValue = healthValue * easeOutCubic;
+                const currentOffset = circumference - (currentValue / 100) * circumference;
+                
+                circle.style.strokeDashoffset = currentOffset;
+                valueDisplay.textContent = Math.round(currentValue);
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                }
+            }
+            
+            animate();
+        }
+    });
+    
+    {% if show_charts and chart_data_json %}
+    // Chart.js configuration for dark theme
+    Chart.defaults.color = '#a3a3a3';
+    Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.08)';
+    
+    // Parse chart data
+    const chartData = JSON.parse('{{ chart_data_json|escapejs }}');
+    
+    // Score Trend Chart
+    const scoreTrendCtx = document.getElementById('scoreTrendChart');
+    if (scoreTrendCtx) {
+        new Chart(scoreTrendCtx, {
+            type: 'line',
+            data: {
+                labels: chartData.score_trend.labels,
+                datasets: [{
+                    label: 'ATS Score',
+                    data: chartData.score_trend.scores,
+                    borderColor: '#0066ff',
+                    backgroundColor: 'rgba(0, 102, 255, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Keyword Match Chart (Radar)
+    const keywordMatchCtx = document.getElementById('keywordMatchChart');
+    if (keywordMatchCtx) {
+        new Chart(keywordMatchCtx, {
+            type: 'radar',
+            data: {
+                labels: chartData.keyword_match.labels,
+                datasets: [{
+                    label: 'Coverage',
+                    data: chartData.keyword_match.data,
+                    borderColor: '#0066ff',
+                    backgroundColor: 'rgba(0, 102, 255, 0.2)',
+                    pointBackgroundColor: '#0066ff',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: '#0066ff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        },
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.05)'
+                        },
+                        pointLabels: {
+                            color: '#a3a3a3'
+                        }
+                    }
+                }
+            }
+        });
+    }
+    {% endif %}
+</script>
+{% endblock %}

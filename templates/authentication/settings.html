@@ -1,0 +1,721 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: var(--spacing-6);
+        min-height: calc(100vh - 200px);
+    }
+    
+    /* Settings Sidebar */
+    .settings-sidebar {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-4);
+        height: fit-content;
+        position: sticky;
+        top: 80px;
+    }
+    
+    .settings-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .settings-nav-item {
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .settings-nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        padding: var(--spacing-2) var(--spacing-3);
+        border-radius: var(--radius-md);
+        color: var(--color-text-secondary);
+        text-decoration: none;
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .settings-nav-link:hover {
+        background: var(--color-surface-elevated);
+        color: var(--color-text-primary);
+    }
+    
+    .settings-nav-link.active {
+        background: var(--color-surface-elevated);
+        color: var(--color-primary-solid);
+        border-left: 4px solid var(--color-primary-solid);
+        padding-left: calc(var(--spacing-3) - 4px);
+    }
+    
+    .settings-nav-icon {
+        font-size: var(--font-size-lg);
+    }
+    
+    /* Settings Content */
+    .settings-content {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-6);
+    }
+    
+    .settings-section {
+        display: none;
+    }
+    
+    .settings-section.active {
+        display: block;
+    }
+    
+    .settings-header {
+        margin-bottom: var(--spacing-5);
+        padding-bottom: var(--spacing-3);
+        border-bottom: 1px solid var(--color-border);
+    }
+    
+    .settings-title {
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .settings-description {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-base);
+    }
+    
+    .settings-form-group {
+        margin-bottom: var(--spacing-5);
+    }
+    
+    .settings-form-label {
+        display: block;
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-2);
+    }
+    
+    .settings-form-input {
+        width: 100%;
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-2) var(--spacing-3);
+        color: var(--color-text-primary);
+        font-size: var(--font-size-base);
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .settings-form-input:focus {
+        outline: none;
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    .settings-form-help {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-tertiary);
+        margin-top: var(--spacing-1);
+    }
+    
+    .settings-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-3);
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        margin-bottom: var(--spacing-2);
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .settings-toggle:hover {
+        border-color: var(--color-border-hover);
+    }
+    
+    .settings-toggle-info {
+        flex: 1;
+    }
+    
+    .settings-toggle-title {
+        font-weight: var(--font-weight-medium);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .settings-toggle-description {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+    
+    /* Toggle Switch */
+    .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 24px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--color-surface);
+        border: 2px solid var(--color-border);
+        transition: all var(--duration-normal) var(--easing-default);
+        border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background: var(--color-text-secondary);
+        transition: all var(--duration-normal) var(--easing-default);
+        border-radius: 50%;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        background: var(--color-primary-solid);
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+        background: white;
+    }
+    
+    .settings-actions {
+        display: flex;
+        gap: var(--spacing-2);
+        margin-top: var(--spacing-5);
+        padding-top: var(--spacing-4);
+        border-top: 1px solid var(--color-border);
+    }
+    
+    .profile-photo-upload {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-4);
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .profile-photo-preview {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: var(--color-surface-elevated);
+        border: 2px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+    
+    .profile-photo-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .profile-photo-preview i {
+        font-size: 2rem;
+        color: var(--color-text-tertiary);
+    }
+    
+    .profile-photo-actions {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+    
+    @media (max-width: 1024px) {
+        .settings-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .settings-sidebar {
+            position: static;
+        }
+        
+        .settings-nav {
+            display: flex;
+            overflow-x: auto;
+            gap: var(--spacing-1);
+        }
+        
+        .settings-nav-item {
+            margin-bottom: 0;
+        }
+        
+        .settings-nav-link {
+            white-space: nowrap;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-layout">
+    <!-- Settings Sidebar -->
+    <aside class="settings-sidebar">
+        <ul class="settings-nav">
+            <li class="settings-nav-item">
+                <a href="#profile" class="settings-nav-link active" data-section="profile">
+                    <i class="bi bi-person settings-nav-icon"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+            <li class="settings-nav-item">
+                <a href="#account" class="settings-nav-link" data-section="account">
+                    <i class="bi bi-shield-lock settings-nav-icon"></i>
+                    <span>Account</span>
+                </a>
+            </li>
+            <li class="settings-nav-item">
+                <a href="#notifications" class="settings-nav-link" data-section="notifications">
+                    <i class="bi bi-bell settings-nav-icon"></i>
+                    <span>Notifications</span>
+                </a>
+            </li>
+            <li class="settings-nav-item">
+                <a href="#privacy" class="settings-nav-link" data-section="privacy">
+                    <i class="bi bi-eye-slash settings-nav-icon"></i>
+                    <span>Privacy</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+    
+    <!-- Settings Content -->
+    <main class="settings-content">
+        <!-- Profile Settings -->
+        <section class="settings-section active" id="profile-section">
+            <div class="settings-header">
+                <h2 class="settings-title">Profile Settings</h2>
+                <p class="settings-description">
+                    Manage your personal information and profile photo
+                </p>
+            </div>
+            
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Profile Photo -->
+                <div class="profile-photo-upload">
+                    <div class="profile-photo-preview">
+                        {% if user.profile_photo %}
+                        <img src="{{ user.profile_photo.url }}" alt="Profile photo">
+                        {% else %}
+                        <i class="bi bi-person-circle"></i>
+                        {% endif %}
+                    </div>
+                    <div class="profile-photo-actions">
+                        <label class="btn btn-outline" style="cursor: pointer;">
+                            <i class="bi bi-upload"></i> Upload Photo
+                            <input type="file" name="profile_photo" accept="image/*" style="display: none;">
+                        </label>
+                        {% if user.profile_photo %}
+                        <button type="button" class="btn btn-ghost">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Full Name -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Full Name</label>
+                    <input type="text" name="full_name" class="settings-form-input" 
+                           value="{{ user.get_full_name }}" placeholder="Enter your full name">
+                </div>
+                
+                <!-- Email -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Email Address</label>
+                    <input type="email" name="email" class="settings-form-input" 
+                           value="{{ user.email }}" placeholder="your.email@example.com">
+                    <p class="settings-form-help">
+                        We'll send important updates to this email
+                    </p>
+                </div>
+                
+                <!-- Phone -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Phone Number</label>
+                    <input type="tel" name="phone" class="settings-form-input" 
+                           value="{{ user.phone|default:'' }}" placeholder="+1 (555) 123-4567">
+                </div>
+                
+                <!-- Bio -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Bio</label>
+                    <textarea name="bio" class="settings-form-input" rows="4" 
+                              placeholder="Tell us about yourself...">{{ user.bio|default:'' }}</textarea>
+                    <p class="settings-form-help">
+                        Brief description for your profile (max 500 characters)
+                    </p>
+                </div>
+                
+                <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <button type="reset" class="btn btn-ghost">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <!-- Account Settings -->
+        <section class="settings-section" id="account-section">
+            <div class="settings-header">
+                <h2 class="settings-title">Account Settings</h2>
+                <p class="settings-description">
+                    Manage your account security and preferences
+                </p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Change Password -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Current Password</label>
+                    <input type="password" name="current_password" class="settings-form-input" 
+                           placeholder="Enter current password">
+                </div>
+                
+                <div class="settings-form-group">
+                    <label class="settings-form-label">New Password</label>
+                    <input type="password" name="new_password" class="settings-form-input" 
+                           placeholder="Enter new password">
+                    <p class="settings-form-help">
+                        Must be at least 8 characters with letters and numbers
+                    </p>
+                </div>
+                
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Confirm New Password</label>
+                    <input type="password" name="confirm_password" class="settings-form-input" 
+                           placeholder="Confirm new password">
+                </div>
+                
+                <!-- Language -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Language</label>
+                    <select name="language" class="settings-form-input">
+                        <option value="en">English</option>
+                        <option value="es">Español</option>
+                        <option value="fr">Français</option>
+                        <option value="de">Deutsch</option>
+                    </select>
+                </div>
+                
+                <!-- Timezone -->
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Timezone</label>
+                    <select name="timezone" class="settings-form-input">
+                        <option value="UTC">UTC (Coordinated Universal Time)</option>
+                        <option value="America/New_York">Eastern Time (US & Canada)</option>
+                        <option value="America/Chicago">Central Time (US & Canada)</option>
+                        <option value="America/Denver">Mountain Time (US & Canada)</option>
+                        <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                        <option value="Europe/London">London</option>
+                        <option value="Europe/Paris">Paris</option>
+                        <option value="Asia/Tokyo">Tokyo</option>
+                    </select>
+                </div>
+                
+                <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Changes
+                    </button>
+                    <button type="reset" class="btn btn-ghost">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <!-- Notification Settings -->
+        <section class="settings-section" id="notifications-section">
+            <div class="settings-header">
+                <h2 class="settings-title">Notification Settings</h2>
+                <p class="settings-description">
+                    Choose what notifications you want to receive
+                </p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <h4 style="color: var(--color-text-primary); margin-bottom: var(--spacing-3);">
+                    Email Notifications
+                </h4>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Resume Analysis Complete</div>
+                        <div class="settings-toggle-description">
+                            Get notified when your resume analysis is ready
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="notify_analysis" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Weekly Summary</div>
+                        <div class="settings-toggle-description">
+                            Receive a weekly summary of your resume improvements
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="notify_weekly" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Tips & Recommendations</div>
+                        <div class="settings-toggle-description">
+                            Get personalized tips to improve your resume
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="notify_tips" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Product Updates</div>
+                        <div class="settings-toggle-description">
+                            Stay informed about new features and improvements
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="notify_updates">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Marketing Emails</div>
+                        <div class="settings-toggle-description">
+                            Receive promotional content and special offers
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="notify_marketing">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <h4 style="color: var(--color-text-primary); margin: var(--spacing-5) 0 var(--spacing-3) 0;">
+                    Notification Frequency
+                </h4>
+                
+                <div class="settings-form-group">
+                    <label class="settings-form-label">Email Frequency</label>
+                    <select name="email_frequency" class="settings-form-input">
+                        <option value="realtime">Real-time (as they happen)</option>
+                        <option value="daily">Daily digest</option>
+                        <option value="weekly" selected>Weekly digest</option>
+                        <option value="never">Never</option>
+                    </select>
+                </div>
+                
+                <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Preferences
+                    </button>
+                    <button type="reset" class="btn btn-ghost">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </section>
+        
+        <!-- Privacy Settings -->
+        <section class="settings-section" id="privacy-section">
+            <div class="settings-header">
+                <h2 class="settings-title">Privacy Settings</h2>
+                <p class="settings-description">
+                    Control your data and privacy preferences
+                </p>
+            </div>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Profile Visibility</div>
+                        <div class="settings-toggle-description">
+                            Make your profile visible to other users
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="profile_public">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Analytics & Cookies</div>
+                        <div class="settings-toggle-description">
+                            Help us improve by sharing anonymous usage data
+                        </div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" name="analytics_enabled" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                
+                <div class="settings-toggle">
+                    <div class="settings-toggle-info">
+                        <div class="settings-toggle-title">Data Export</div>
+                        <div class="settings-toggle-description">
+                            Download all your data in a portable format
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-outline">
+                        <i class="bi bi-download"></i> Export Data
+                    </button>
+                </div>
+                
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--color-error); border-radius: var(--radius-lg); padding: var(--spacing-4); margin-top: var(--spacing-5);">
+                    <h4 style="color: var(--color-error); margin-bottom: var(--spacing-2);">
+                        <i class="bi bi-exclamation-triangle"></i> Danger Zone
+                    </h4>
+                    <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-3);">
+                        Once you delete your account, there is no going back. Please be certain.
+                    </p>
+                    <button type="button" class="btn" style="background: var(--color-error); color: white;" 
+                            onclick="if(confirm('Are you sure you want to delete your account? This action cannot be undone.')) { alert('Account deletion would be processed here'); }">
+                        <i class="bi bi-trash"></i> Delete Account
+                    </button>
+                </div>
+                
+                <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Save Preferences
+                    </button>
+                    <button type="reset" class="btn btn-ghost">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Settings navigation
+    const navLinks = document.querySelectorAll('.settings-nav-link');
+    const sections = document.querySelectorAll('.settings-section');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Update active nav link
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Show corresponding section
+            const sectionId = this.dataset.section + '-section';
+            sections.forEach(section => {
+                section.classList.remove('active');
+                if (section.id === sectionId) {
+                    section.classList.add('active');
+                }
+            });
+            
+            // Update URL hash
+            window.location.hash = this.dataset.section;
+        });
+    });
+    
+    // Handle initial hash
+    if (window.location.hash) {
+        const hash = window.location.hash.substring(1);
+        const link = document.querySelector(`[data-section="${hash}"]`);
+        if (link) {
+            link.click();
+        }
+    }
+    
+    // Profile photo preview
+    const photoInput = document.querySelector('input[name="profile_photo"]');
+    const photoPreview = document.querySelector('.profile-photo-preview');
+    
+    if (photoInput) {
+        photoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    photoPreview.innerHTML = `<img src="${e.target.result}" alt="Profile photo">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Form submission feedback
+    const forms = document.querySelectorAll('form');
+    forms.forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show success message (in real implementation, this would submit via AJAX)
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Saved!';
+            submitBtn.disabled = true;
+            
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }, 2000);
+        });
+    });
+</script>
+{% endblock %}

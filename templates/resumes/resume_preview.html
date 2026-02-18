@@ -1,0 +1,570 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}{{ resume.title }} - Preview{% endblock %}
+
+{% block extra_css %}
+<style>
+    .preview-toolbar {
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--spacing-3);
+        position: sticky;
+        top: 64px;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--spacing-3);
+    }
+    
+    .preview-toolbar__left {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+    }
+    
+    .preview-toolbar__center {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+    }
+    
+    .preview-toolbar__right {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+    }
+    
+    .template-selector {
+        position: relative;
+    }
+    
+    .template-selector__button {
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-2) var(--spacing-3);
+        color: var(--color-text-primary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .template-selector__button:hover {
+        border-color: var(--color-border-hover);
+        background: var(--color-surface);
+    }
+    
+    .template-selector__dropdown {
+        position: absolute;
+        top: calc(100% + var(--spacing-1));
+        left: 0;
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-2);
+        min-width: 200px;
+        display: none;
+        box-shadow: var(--shadow-lg);
+        z-index: 1000;
+    }
+    
+    .template-selector__dropdown.active {
+        display: block;
+    }
+    
+    .template-option {
+        padding: var(--spacing-2);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: background var(--duration-fast) var(--easing-default);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+    }
+    
+    .template-option:hover {
+        background: var(--color-surface);
+    }
+    
+    .template-option.active {
+        background: var(--color-surface);
+        border-left: 4px solid var(--color-primary-solid);
+    }
+    
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-1) var(--spacing-2);
+    }
+    
+    .zoom-controls__button {
+        background: transparent;
+        border: none;
+        color: var(--color-text-primary);
+        cursor: pointer;
+        padding: var(--spacing-1);
+        border-radius: var(--radius-sm);
+        transition: background var(--duration-fast) var(--easing-default);
+    }
+    
+    .zoom-controls__button:hover {
+        background: var(--color-surface);
+    }
+    
+    .zoom-controls__value {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        min-width: 50px;
+        text-align: center;
+    }
+    
+    .preview-area {
+        background: var(--color-base-bg);
+        padding: var(--spacing-6);
+        min-height: calc(100vh - 200px);
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
+    
+    .preview-container {
+        background: white;
+        box-shadow: var(--shadow-lg);
+        transition: transform var(--duration-normal) var(--easing-default);
+        transform-origin: top center;
+        max-width: 8.5in;
+        width: 100%;
+    }
+    
+    .preview-container.zoom-50 { transform: scale(0.5); }
+    .preview-container.zoom-75 { transform: scale(0.75); }
+    .preview-container.zoom-100 { transform: scale(1); }
+    .preview-container.zoom-125 { transform: scale(1.25); }
+    .preview-container.zoom-150 { transform: scale(1.5); }
+    
+    .download-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeIn var(--duration-normal) var(--easing-default);
+    }
+    
+    .download-modal.active {
+        display: flex;
+    }
+    
+    .download-modal__content {
+        background: var(--color-surface-elevated);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-6);
+        max-width: 500px;
+        width: 90%;
+        box-shadow: var(--shadow-lg);
+        animation: scaleIn var(--duration-normal) var(--easing-bounce);
+    }
+    
+    .download-modal__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .download-modal__title {
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+    }
+    
+    .download-modal__close {
+        background: transparent;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+        padding: var(--spacing-1);
+        border-radius: var(--radius-sm);
+        transition: all var(--duration-fast) var(--easing-default);
+    }
+    
+    .download-modal__close:hover {
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+    }
+    
+    .download-modal__body {
+        margin-bottom: var(--spacing-4);
+    }
+    
+    .download-option {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-3);
+        margin-bottom: var(--spacing-2);
+        cursor: pointer;
+        transition: all var(--duration-fast) var(--easing-default);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-3);
+    }
+    
+    .download-option:hover {
+        border-color: var(--color-primary-solid);
+        box-shadow: var(--glow-primary);
+    }
+    
+    .download-option.selected {
+        border-color: var(--color-primary-solid);
+        background: rgba(0, 102, 255, 0.1);
+    }
+    
+    .download-option__icon {
+        font-size: var(--font-size-2xl);
+    }
+    
+    .download-option__info {
+        flex: 1;
+    }
+    
+    .download-option__title {
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+    
+    .download-option__description {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+    
+    .download-modal__footer {
+        display: flex;
+        gap: var(--spacing-2);
+        justify-content: flex-end;
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes scaleIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @media print {
+        .preview-toolbar,
+        .btn-back {
+            display: none !important;
+        }
+        
+        .preview-area {
+            padding: 0;
+            background: white;
+        }
+        
+        .preview-container {
+            box-shadow: none;
+            transform: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Toolbar -->
+<div class="preview-toolbar">
+    <div class="preview-toolbar__left">
+        <a href="{% url 'resume_list' %}" class="btn btn-ghost">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+    
+    <div class="preview-toolbar__center">
+        <!-- Template Selector -->
+        <div class="template-selector">
+            <button class="template-selector__button" id="templateSelectorBtn">
+                <i class="bi bi-palette"></i>
+                <span id="currentTemplate">{{ resume.template|title }}</span>
+                <i class="bi bi-chevron-down"></i>
+            </button>
+            <div class="template-selector__dropdown" id="templateDropdown">
+                <div class="template-option {% if resume.template == 'professional' %}active{% endif %}" data-template="professional">
+                    <i class="bi bi-briefcase"></i>
+                    <span>Professional</span>
+                </div>
+                <div class="template-option {% if resume.template == 'modern' %}active{% endif %}" data-template="modern">
+                    <i class="bi bi-lightning"></i>
+                    <span>Modern</span>
+                </div>
+                <div class="template-option {% if resume.template == 'creative' %}active{% endif %}" data-template="creative">
+                    <i class="bi bi-palette"></i>
+                    <span>Creative</span>
+                </div>
+                <div class="template-option {% if resume.template == 'minimal' %}active{% endif %}" data-template="minimal">
+                    <i class="bi bi-circle"></i>
+                    <span>Minimal</span>
+                </div>
+                <div class="template-option {% if resume.template == 'classic' %}active{% endif %}" data-template="classic">
+                    <i class="bi bi-file-text"></i>
+                    <span>Classic</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Zoom Controls -->
+        <div class="zoom-controls">
+            <button class="zoom-controls__button" id="zoomOut">
+                <i class="bi bi-dash-lg"></i>
+            </button>
+            <span class="zoom-controls__value" id="zoomValue">100%</span>
+            <button class="zoom-controls__button" id="zoomIn">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </div>
+    </div>
+    
+    <div class="preview-toolbar__right">
+        <button class="btn btn-outline" id="downloadBtn">
+            <i class="bi bi-download"></i> Download
+        </button>
+        <button class="btn btn-outline" onclick="window.print()">
+            <i class="bi bi-printer"></i> Print
+        </button>
+        <a href="{% url 'resume_update' resume.id %}" class="btn btn-primary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
+<!-- Preview Area -->
+<div class="preview-area">
+    <div class="preview-container zoom-100" id="previewContainer">
+        {% include 'resumes/'|add:resume.template|add:'.html' %}
+    </div>
+</div>
+
+<!-- Download Modal -->
+<div class="download-modal" id="downloadModal">
+    <div class="download-modal__content">
+        <div class="download-modal__header">
+            <h3 class="download-modal__title">Download Resume</h3>
+            <button class="download-modal__close" id="closeModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        
+        <div class="download-modal__body">
+            <p style="color: var(--color-text-secondary); margin-bottom: var(--spacing-3);">
+                Choose your preferred format:
+            </p>
+            
+            <div class="download-option selected" data-format="pdf">
+                <div class="download-option__icon">
+                    <i class="bi bi-file-pdf" style="color: #ef4444;"></i>
+                </div>
+                <div class="download-option__info">
+                    <div class="download-option__title">PDF Document</div>
+                    <div class="download-option__description">Best for sharing and printing</div>
+                </div>
+            </div>
+            
+            <div class="download-option" data-format="docx">
+                <div class="download-option__icon">
+                    <i class="bi bi-file-word" style="color: #0066ff;"></i>
+                </div>
+                <div class="download-option__info">
+                    <div class="download-option__title">Word Document</div>
+                    <div class="download-option__description">Editable format for further customization</div>
+                </div>
+            </div>
+            
+            <div class="download-option" data-format="txt">
+                <div class="download-option__icon">
+                    <i class="bi bi-file-text" style="color: var(--color-text-secondary);"></i>
+                </div>
+                <div class="download-option__info">
+                    <div class="download-option__title">Plain Text</div>
+                    <div class="download-option__description">Simple text format for ATS systems</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="download-modal__footer">
+            <button class="btn btn-ghost" id="cancelDownload">Cancel</button>
+            <button class="btn btn-primary" id="confirmDownload">
+                <i class="bi bi-download"></i> Download
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Template Selector
+    const templateSelectorBtn = document.getElementById('templateSelectorBtn');
+    const templateDropdown = document.getElementById('templateDropdown');
+    const currentTemplate = document.getElementById('currentTemplate');
+    const templateOptions = document.querySelectorAll('.template-option');
+    
+    templateSelectorBtn.addEventListener('click', () => {
+        templateDropdown.classList.toggle('active');
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!templateSelectorBtn.contains(e.target) && !templateDropdown.contains(e.target)) {
+            templateDropdown.classList.remove('active');
+        }
+    });
+    
+    templateOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            const template = option.dataset.template;
+            // Update active state
+            templateOptions.forEach(opt => opt.classList.remove('active'));
+            option.classList.add('active');
+            currentTemplate.textContent = template.charAt(0).toUpperCase() + template.slice(1);
+            templateDropdown.classList.remove('active');
+            
+            // Reload page with new template
+            window.location.href = `{% url 'resume_detail' resume.id %}?template=${template}`;
+        });
+    });
+    
+    // Zoom Controls
+    const zoomLevels = [50, 75, 100, 125, 150];
+    let currentZoomIndex = 2; // Start at 100%
+    const previewContainer = document.getElementById('previewContainer');
+    const zoomValue = document.getElementById('zoomValue');
+    const zoomIn = document.getElementById('zoomIn');
+    const zoomOut = document.getElementById('zoomOut');
+    
+    function updateZoom() {
+        const zoom = zoomLevels[currentZoomIndex];
+        previewContainer.className = `preview-container zoom-${zoom}`;
+        zoomValue.textContent = `${zoom}%`;
+        
+        // Disable buttons at limits
+        zoomOut.disabled = currentZoomIndex === 0;
+        zoomIn.disabled = currentZoomIndex === zoomLevels.length - 1;
+    }
+    
+    zoomIn.addEventListener('click', () => {
+        if (currentZoomIndex < zoomLevels.length - 1) {
+            currentZoomIndex++;
+            updateZoom();
+        }
+    });
+    
+    zoomOut.addEventListener('click', () => {
+        if (currentZoomIndex > 0) {
+            currentZoomIndex--;
+            updateZoom();
+        }
+    });
+    
+    // Download Modal
+    const downloadBtn = document.getElementById('downloadBtn');
+    const downloadModal = document.getElementById('downloadModal');
+    const closeModal = document.getElementById('closeModal');
+    const cancelDownload = document.getElementById('cancelDownload');
+    const confirmDownload = document.getElementById('confirmDownload');
+    const downloadOptions = document.querySelectorAll('.download-option');
+    let selectedFormat = 'pdf';
+    
+    downloadBtn.addEventListener('click', () => {
+        downloadModal.classList.add('active');
+    });
+    
+    closeModal.addEventListener('click', () => {
+        downloadModal.classList.remove('active');
+    });
+    
+    cancelDownload.addEventListener('click', () => {
+        downloadModal.classList.remove('active');
+    });
+    
+    // Close modal when clicking backdrop
+    downloadModal.addEventListener('click', (e) => {
+        if (e.target === downloadModal) {
+            downloadModal.classList.remove('active');
+        }
+    });
+    
+    downloadOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            downloadOptions.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            selectedFormat = option.dataset.format;
+        });
+    });
+    
+    confirmDownload.addEventListener('click', () => {
+        // Trigger download based on selected format
+        const resumeId = {{ resume.id }};
+        let downloadUrl;
+        
+        switch(selectedFormat) {
+            case 'pdf':
+                downloadUrl = `{% url 'resume_export' resume.id %}`;
+                break;
+            case 'docx':
+                downloadUrl = `/resumes/${resumeId}/export/docx/`;
+                break;
+            case 'txt':
+                downloadUrl = `/resumes/${resumeId}/export/txt/`;
+                break;
+        }
+        
+        window.location.href = downloadUrl;
+        downloadModal.classList.remove('active');
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + P for print
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+            e.preventDefault();
+            window.print();
+        }
+        
+        // Ctrl/Cmd + D for download
+        if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+            e.preventDefault();
+            downloadModal.classList.add('active');
+        }
+        
+        // Escape to close modal
+        if (e.key === 'Escape') {
+            downloadModal.classList.remove('active');
+            templateDropdown.classList.remove('active');
+        }
+    });
+</script>
+{% endblock %}

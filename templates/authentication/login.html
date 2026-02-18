@@ -1,57 +1,409 @@
-{% extends 'base.html' %}
+{% extends 'layouts/public.html' %}
 
-{% block title %}Login - ATS Resume Builder{% endblock %}
+{% block title %}Login - NextGenCV{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title text-center mb-4">Login</h2>
+<div class="auth-page">
+    <div class="auth-container">
+        <!-- Auth Card -->
+        <div class="auth-card">
+            <!-- Logo and Welcome -->
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <h1 class="auth-title">Welcome back</h1>
+                <p class="auth-subtitle">Sign in to your NextGenCV account</p>
+            </div>
+
+            <!-- Login Form -->
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
                 
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger">
+                {% if form.non_field_errors %}
+                    <div class="alert alert--error" role="alert">
+                        <div class="alert__icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                        <div class="alert__content">
                             {{ form.non_field_errors }}
                         </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                        <input type="text" name="username" class="form-control" id="{{ form.username.id_for_label }}" placeholder="Username" required>
-                        {% if form.username.errors %}
-                            <div class="text-danger small">
-                                {{ form.username.errors }}
-                            </div>
-                        {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                        <input type="password" name="password" class="form-control" id="{{ form.password.id_for_label }}" placeholder="Password" required>
-                        {% if form.password.errors %}
-                            <div class="text-danger small">
-                                {{ form.password.errors }}
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary">Login</button>
-                    </div>
-                    
-                    {% if request.GET.next %}
-                        <input type="hidden" name="next" value="{{ request.GET.next }}">
-                    {% endif %}
-                </form>
+                {% endif %}
                 
-                <div class="text-center mt-3">
-                    <p class="text-muted">Don't have an account? <a href="{% url 'register' %}">Register here</a></p>
+                <!-- Username Field -->
+                <div class="form-group {% if form.username.errors %}form-input-error{% endif %}">
+                    <input 
+                        type="text" 
+                        name="username" 
+                        id="{{ form.username.id_for_label }}" 
+                        class="form-input" 
+                        placeholder=" "
+                        value="{{ form.username.value|default:'' }}"
+                        required
+                        aria-describedby="{% if form.username.errors %}username-error{% endif %}"
+                    >
+                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                    {% if form.username.errors %}
+                        <div class="form-error" id="username-error" role="alert">
+                            {{ form.username.errors.0 }}
+                        </div>
+                    {% endif %}
                 </div>
+                
+                <!-- Password Field -->
+                <div class="form-group {% if form.password.errors %}form-input-error{% endif %}">
+                    <div class="password-input-wrapper">
+                        <input 
+                            type="password" 
+                            name="password" 
+                            id="{{ form.password.id_for_label }}" 
+                            class="form-input" 
+                            placeholder=" "
+                            required
+                            aria-describedby="{% if form.password.errors %}password-error{% endif %}"
+                        >
+                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
+                        <button 
+                            type="button" 
+                            class="password-toggle" 
+                            aria-label="Toggle password visibility"
+                            data-target="{{ form.password.id_for_label }}"
+                        >
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="form-error" id="password-error" role="alert">
+                            {{ form.password.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Remember Me & Forgot Password -->
+                <div class="auth-options">
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="remember-me" name="remember" class="checkbox-input">
+                        <label for="remember-me" class="checkbox-label">Remember me</label>
+                    </div>
+                    <a href="#" class="auth-link">Forgot password?</a>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn--primary btn--block">
+                    Sign In
+                </button>
+                
+                {% if request.GET.next %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
+            </form>
+            
+            <!-- Divider -->
+            <div class="auth-divider">
+                <span class="auth-divider__text">or</span>
+            </div>
+            
+            <!-- Social Login Buttons -->
+            <div class="auth-social">
+                <button type="button" class="btn btn--outline btn--block btn--social">
+                    <i class="bi bi-google"></i>
+                    <span>Continue with Google</span>
+                </button>
+                <button type="button" class="btn btn--outline btn--block btn--social">
+                    <i class="bi bi-linkedin"></i>
+                    <span>Continue with LinkedIn</span>
+                </button>
+            </div>
+            
+            <!-- Sign Up Link -->
+            <div class="auth-footer">
+                <p class="auth-footer__text">
+                    Don't have an account? 
+                    <a href="{% url 'register' %}" class="auth-link auth-link--primary">Sign up</a>
+                </p>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Auth Page Styles */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4);
+    background: var(--color-base-bg);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 480px;
+}
+
+.auth-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-6);
+    box-shadow: var(--shadow-lg);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: var(--spacing-6);
+}
+
+.auth-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--spacing-3);
+    box-shadow: var(--glow-primary);
+}
+
+.auth-logo i {
+    font-size: 2rem;
+    color: white;
+}
+
+.auth-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-2);
+    letter-spacing: var(--letter-spacing-tight);
+}
+
+.auth-subtitle {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+}
+
+.auth-form {
+    margin-bottom: var(--spacing-4);
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: var(--spacing-4);
+}
+
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: color var(--duration-fast) var(--easing-default);
+    z-index: 10;
+}
+
+.password-toggle:hover {
+    color: var(--color-text-primary);
+}
+
+.password-toggle:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+
+.auth-options {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-4);
+}
+
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.checkbox-input {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    cursor: pointer;
+    transition: all var(--duration-fast) var(--easing-default);
+}
+
+.checkbox-input:checked {
+    background: var(--color-primary-solid);
+    border-color: var(--color-primary-solid);
+}
+
+.checkbox-input:focus {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+}
+
+.checkbox-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+
+.auth-link {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--easing-default);
+}
+
+.auth-link:hover {
+    color: var(--color-text-primary);
+}
+
+.auth-link--primary {
+    color: var(--color-primary-solid);
+    font-weight: var(--font-weight-medium);
+}
+
+.auth-link--primary:hover {
+    text-decoration: underline;
+}
+
+.auth-divider {
+    position: relative;
+    text-align: center;
+    margin: var(--spacing-4) 0;
+}
+
+.auth-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--color-border);
+}
+
+.auth-divider__text {
+    position: relative;
+    display: inline-block;
+    padding: 0 var(--spacing-2);
+    background: var(--color-surface);
+    color: var(--color-text-tertiary);
+    font-size: var(--font-size-sm);
+}
+
+.auth-social {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-2);
+    margin-bottom: var(--spacing-4);
+}
+
+.btn--social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-2);
+}
+
+.btn--social i {
+    font-size: 1.25rem;
+}
+
+.auth-footer {
+    text-align: center;
+    padding-top: var(--spacing-4);
+    border-top: 1px solid var(--color-border);
+}
+
+.auth-footer__text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .auth-page {
+        padding: var(--spacing-2);
+    }
+    
+    .auth-card {
+        padding: var(--spacing-4);
+    }
+    
+    .auth-title {
+        font-size: var(--font-size-2xl);
+    }
+}
+</style>
+
+<script>
+// Password toggle functionality
+document.querySelectorAll('.password-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const icon = this.querySelector('i');
+        
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'bi bi-eye-slash';
+            this.setAttribute('aria-label', 'Hide password');
+        } else {
+            input.type = 'password';
+            icon.className = 'bi bi-eye';
+            this.setAttribute('aria-label', 'Show password');
+        }
+    });
+});
+
+// Form validation
+const form = document.querySelector('.auth-form');
+if (form) {
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Validate username
+        const usernameInput = form.querySelector('[name="username"]');
+        if (usernameInput && !usernameInput.value.trim()) {
+            isValid = false;
+            usernameInput.closest('.form-group').classList.add('form-input-error');
+        }
+        
+        // Validate password
+        const passwordInput = form.querySelector('[name="password"]');
+        if (passwordInput && !passwordInput.value) {
+            isValid = false;
+            passwordInput.closest('.form-group').classList.add('form-input-error');
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+    
+    // Remove error state on input
+    form.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('input', function() {
+            this.closest('.form-group').classList.remove('form-input-error');
+        });
+    });
+}
+</script>
 {% endblock %}

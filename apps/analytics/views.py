@@ -45,7 +45,7 @@ def analytics_dashboard(request):
             'has_resumes': False,
             'message': 'Create your first resume to see analytics!'
         }
-        return render(request, 'analytics/dashboard.html', context)
+        return render(request, 'analytics/dashboard_new.html', context)
     
     # Calculate metrics for each resume
     resume_health_scores = []
@@ -177,7 +177,7 @@ def analytics_dashboard(request):
         'improvement_rate': score_trends.get('improvement_rate', 0.0),
     }
     
-    return render(request, 'analytics/dashboard.html', context)
+    return render(request, 'analytics/dashboard_new.html', context)
 
 
 @login_required

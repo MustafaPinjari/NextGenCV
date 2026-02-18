@@ -388,4 +388,89 @@ class ATSAnalyzerService(ScoringEngineService):
     Alias for ScoringEngineService to maintain backward compatibility.
     This is the main service class that should be imported.
     """
-    pass
+    
+    @staticmethod
+    def analyze_resume(resume_id: int, job_description: str) -> dict:
+        """
+        Main analysis function to compare resume against job description.
+        
+        Performs complete ATS analysis workflow:
+        1. Aggregate all resume text
+        2. Extract keywords from resume
+        3. Extract keywords from job description
+        4. Calculate match score
+        5. Generate improvement suggestions
+        
+        Args:
+            resume_id: ID of the resume to analyze
+            job_description: Job description text to compare against
+            
+        Returns:
+            dict: {
+                'score': float (0-100),
+                'matched_keywords': list of matched keywords,
+                'missing_keywords': list of missing keywords,
+                'suggestions': list of suggestion strings
+            }
+            
+        Raises:
+            Resume.DoesNotExist: If resume_id is invalid
+        """
+        from apps.resumes.models import Resume
+        
+        # Load the resume with all related sections
+        resume = Resume.objects.prefetch_related(
+            'personal_info',
+            'experiences',
+            'education',
+            'skills',
+            'projects'
+        ).get(id=resume_id)
+        
+        # Aggregate resume text
+        resume_text = ScoringEngineService._get_resume_text(resume)
+        
+        # Extract keywords from resume
+        resume_keywords = KeywordExtractorService.extract_keywords(resume_text)
+        
+        # Extract keywords from job description
+        jd_keywords = KeywordExtractorService.extract_keywords(job_description)
+        
+        # Calculate match score
+        matched_keywords = list(resume_keywords & jd_keywords)
+        missing_keywords = list(jd_keywords - resume_keywords)
+        
+        if len(jd_keywords) == 0:
+            score = 0.0
+        else:
+            score = (len(matched_keywords) / len(jd_keywords)) * 100
+        
+        # Generate suggestions
+        suggestions = []
+        
+        if not missing_keywords:
+            suggestions.append("Great! Your resume contains all the key terms from the job description.")
+        else:
+            suggestions.append(
+                f"Your resume is missing {len(missing_keywords)} keywords from the job description. "
+                "Consider incorporating these terms naturally into your resume:"
+            )
+            
+            keyword_list = ', '.join(missing_keywords[:10])
+            if len(missing_keywords) > 10:
+                keyword_list += f", and {len(missing_keywords) - 10} more"
+            
+            suggestions.append(f"Missing keywords: {keyword_list}")
+            suggestions.append("Tips for improvement:")
+            suggestions.append("- Add relevant missing keywords to your work experience descriptions")
+            suggestions.append("- Include missing technical skills in your Skills section")
+            suggestions.append("- Incorporate missing terms into your project descriptions")
+            suggestions.append("- Ensure your resume uses the same terminology as the job description")
+        
+        # Return complete analysis result
+        return {
+            'score': score,
+            'matched_keywords': sorted(matched_keywords),
+            'missing_keywords': sorted(missing_keywords),
+            'suggestions': suggestions
+        }

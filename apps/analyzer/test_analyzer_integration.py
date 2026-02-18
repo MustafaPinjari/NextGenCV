@@ -298,7 +298,7 @@ class AnalyzerViewTests(TestCase):
         response = self.client.get(f'/analyzer/{self.resume.id}/analyze/')
         
         self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'analyzer/analyze.html')
+        self.assertTemplateUsed(response, 'analyzer/analyze_new.html')
         self.assertIn('form', response.context)
         self.assertIn('resume', response.context)
         self.assertIsNone(response.context['analysis_result'])

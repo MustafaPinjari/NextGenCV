@@ -1,0 +1,304 @@
+// ============================================
+// Resume List Page Styles
+// ============================================
+// Page-specific styles for the resume list page
+// Requirements: 2.1
+
+// ============================================
+// Page Header
+// ============================================
+.page-header {
+  margin-bottom: $spacing-6;
+  
+  &__content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: $spacing-4;
+    margin-bottom: $spacing-4;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+  
+  &__title-section {
+    flex: 1;
+  }
+  
+  &__title {
+    font-size: $font-size-4xl;
+    font-weight: $font-weight-bold;
+    color: $color-text-primary;
+    margin: 0 0 $spacing-2 0;
+    letter-spacing: $letter-spacing-tight;
+  }
+  
+  &__subtitle {
+    font-size: $font-size-lg;
+    color: $color-text-secondary;
+    margin: 0;
+  }
+  
+  &__actions {
+    display: flex;
+    gap: $spacing-3;
+    
+    @media (max-width: 768px) {
+      width: 100%;
+      
+      .btn {
+        flex: 1;
+      }
+    }
+  }
+  
+  &__toolbar {
+    display: flex;
+    gap: $spacing-3;
+    align-items: center;
+    
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  }
+}
+
+// ============================================
+// Search Bar
+// ============================================
+.search-bar {
+  position: relative;
+  flex: 1;
+  max-width: 400px;
+  
+  @media (max-width: 768px) {
+    max-width: none;
+  }
+  
+  &__icon {
+    position: absolute;
+    left: $spacing-3;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $color-text-secondary;
+    pointer-events: none;
+  }
+  
+  &__input {
+    width: 100%;
+    padding: $spacing-2 $spacing-3 $spacing-2 $spacing-8;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    color: $color-text-primary;
+    font-size: $font-size-base;
+    transition: all $duration-normal $easing-default;
+    
+    &::placeholder {
+      color: $color-text-tertiary;
+    }
+    
+    &:focus {
+      outline: none;
+      border-color: $color-border-focus;
+      box-shadow: $glow-primary;
+    }
+  }
+}
+
+// ============================================
+// Filter Group
+// ============================================
+.filter-group {
+  display: flex;
+  gap: $spacing-2;
+}
+
+.filter-select {
+  padding: $spacing-2 $spacing-4;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  color: $color-text-primary;
+  font-size: $font-size-base;
+  cursor: pointer;
+  transition: all $duration-normal $easing-default;
+  
+  &:hover {
+    border-color: $color-border-hover;
+  }
+  
+  &:focus {
+    outline: none;
+    border-color: $color-border-focus;
+    box-shadow: $glow-primary;
+  }
+  
+  option {
+    background: $color-surface;
+    color: $color-text-primary;
+  }
+}
+
+// ============================================
+// Resume Grid
+// ============================================
+.resume-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $spacing-4;
+  margin-bottom: $spacing-6;
+  
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ============================================
+// Resume Card
+// ============================================
+.resume-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  
+  &__preview {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    background: $color-base-bg;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid $color-border;
+    overflow: hidden;
+  }
+  
+  &__preview-placeholder {
+    font-size: 64px;
+    color: $color-text-tertiary;
+    opacity: 0.3;
+  }
+  
+  &__badge {
+    position: absolute;
+    top: $spacing-3;
+    right: $spacing-3;
+  }
+  
+  &__content {
+    padding: $spacing-4;
+    flex: 1;
+  }
+  
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    margin: 0 0 $spacing-3 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-3;
+  }
+  
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    
+    i {
+      font-size: $font-size-base;
+    }
+  }
+  
+  &__actions {
+    padding: $spacing-3;
+    border-top: 1px solid $color-border;
+    background: $color-surface;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-2;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all $duration-normal $easing-default;
+  }
+  
+  &__actions-row {
+    display: flex;
+    gap: $spacing-2;
+    
+    .btn {
+      flex: 1;
+    }
+  }
+  
+  // Show actions on hover
+  &:hover &__actions {
+    opacity: 1;
+    max-height: 300px;
+    padding: $spacing-3;
+  }
+  
+  // Enhanced hover effect
+  &:hover {
+    .resume-card__preview {
+      background: $color-surface;
+    }
+    
+    .resume-card__preview-placeholder {
+      opacity: 0.5;
+      transform: scale(1.1);
+      transition: all $duration-normal $easing-default;
+    }
+  }
+}
+
+// ============================================
+// Pagination Container
+// ============================================
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  margin-top: $spacing-6;
+  padding-top: $spacing-6;
+  border-top: 1px solid $color-border;
+}
+
+.pagination-info {
+  display: flex;
+  align-items: center;
+  padding: 0 $spacing-3;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+// ============================================
+// Responsive Adjustments
+// ============================================
+@media (max-width: 768px) {
+  .page-header__title {
+    font-size: $font-size-3xl;
+  }
+  
+  .resume-card {
+    &__actions {
+      // Always show actions on mobile
+      opacity: 1;
+      max-height: none;
+      padding: $spacing-3;
+    }
+  }
+}

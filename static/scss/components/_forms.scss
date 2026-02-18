@@ -1,0 +1,441 @@
+// ============================================
+// Form Input Components
+// ============================================
+// Implements form inputs with floating labels and states
+// Requirements: 5.1, 5.2, 5.4, 5.5
+
+// ============================================
+// Form Group Container
+// ============================================
+.form-group {
+  position: relative;
+  margin-bottom: $spacing-4;
+}
+
+// ============================================
+// Base Input Styles
+// ============================================
+.form-input {
+  width: 100%;
+  padding: $spacing-3 $spacing-3 $spacing-2 $spacing-3;
+  background: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  color: $color-text-primary;
+  font-family: $font-primary;
+  font-size: $font-size-base;
+  line-height: $line-height-normal;
+  transition: all $duration-normal $easing-default;
+  outline: none;
+  
+  // Remove default appearance
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  
+  // Placeholder
+  &::placeholder {
+    color: transparent;
+  }
+  
+  // Focus state
+  &:focus {
+    border: 2px solid $color-border-focus;
+    box-shadow: $glow-primary;
+    padding: $spacing-3 calc($spacing-3 - 1px) $spacing-2 calc($spacing-3 - 1px);
+    
+    ~ .form-label {
+      transform: translateY(-$spacing-4) scale(0.85);
+      color: $color-primary-solid;
+    }
+  }
+  
+  // Filled state (when input has value)
+  &:not(:placeholder-shown) {
+    ~ .form-label {
+      transform: translateY(-$spacing-4) scale(0.85);
+    }
+  }
+  
+  // Disabled state
+  &:disabled {
+    background: $color-base-bg;
+    opacity: 0.5;
+    cursor: not-allowed;
+    
+    ~ .form-label {
+      opacity: 0.5;
+    }
+  }
+}
+
+// ============================================
+// Floating Label
+// ============================================
+.form-label {
+  position: absolute;
+  top: $spacing-3;
+  left: $spacing-3;
+  color: $color-text-secondary;
+  font-size: $font-size-base;
+  pointer-events: none;
+  transition: all $duration-normal $easing-default;
+  transform-origin: left top;
+  background: $color-surface;
+  padding: 0 $spacing-1;
+}
+
+// ============================================
+// Input with Icon
+// ============================================
+.form-input-icon {
+  position: relative;
+  
+  .form-input {
+    padding-left: $spacing-8;
+  }
+  
+  .form-icon {
+    position: absolute;
+    top: 50%;
+    left: $spacing-3;
+    transform: translateY(-50%);
+    color: $color-text-secondary;
+    pointer-events: none;
+    transition: color $duration-normal $easing-default;
+  }
+  
+  .form-input:focus ~ .form-icon {
+    color: $color-primary-solid;
+  }
+}
+
+// ============================================
+// Error State
+// ============================================
+.form-input-error {
+  .form-input {
+    border: 2px solid $color-error;
+    box-shadow: $glow-error;
+    padding: $spacing-3 calc($spacing-3 - 1px) $spacing-2 calc($spacing-3 - 1px);
+    
+    &:focus {
+      border-color: $color-error;
+      box-shadow: $glow-error;
+    }
+    
+    ~ .form-label {
+      color: $color-error;
+    }
+  }
+}
+
+.form-error-message {
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  margin-top: $spacing-1;
+  color: $color-error;
+  font-size: $font-size-sm;
+  
+  &::before {
+    content: '⚠';
+    font-size: $font-size-base;
+  }
+}
+
+// ============================================
+// Success State
+// ============================================
+.form-input-success {
+  .form-input {
+    border: 2px solid $color-success;
+    box-shadow: $glow-success;
+    padding: $spacing-3 calc($spacing-3 - 1px) $spacing-2 calc($spacing-3 - 1px);
+    
+    &:focus {
+      border-color: $color-success;
+      box-shadow: $glow-success;
+    }
+    
+    ~ .form-label {
+      color: $color-success;
+    }
+  }
+}
+
+.form-success-icon {
+  position: absolute;
+  top: 50%;
+  right: $spacing-3;
+  transform: translateY(-50%);
+  color: $color-success;
+  font-size: $font-size-lg;
+  
+  &::before {
+    content: '✓';
+  }
+}
+
+// ============================================
+// Helper Text
+// ============================================
+.form-helper-text {
+  margin-top: $spacing-1;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+  line-height: $line-height-normal;
+}
+
+// ============================================
+// Textarea
+// ============================================
+.form-textarea {
+  @extend .form-input;
+  min-height: 120px;
+  resize: vertical;
+  padding-top: $spacing-4;
+}
+
+// ============================================
+// Select
+// ============================================
+.form-select {
+  @extend .form-input;
+  padding-right: $spacing-8;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a3a3a3' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right $spacing-3 center;
+  cursor: pointer;
+  
+  &:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230066ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  }
+}
+
+// ============================================
+// Checkbox
+// ============================================
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  cursor: pointer;
+  
+  input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: all $duration-normal $easing-default;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: relative;
+    
+    &:checked {
+      background: $color-primary-solid;
+      border-color: $color-primary-solid;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 6px;
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+    }
+    
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  label {
+    color: $color-text-primary;
+    font-size: $font-size-base;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+// ============================================
+// Radio Button
+// ============================================
+.form-radio {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  cursor: pointer;
+  
+  input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-full;
+    cursor: pointer;
+    transition: all $duration-normal $easing-default;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: relative;
+    
+    &:checked {
+      border-color: $color-primary-solid;
+      
+      &::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        background: $color-primary-solid;
+        border-radius: $radius-full;
+        transform: translate(-50%, -50%);
+      }
+    }
+    
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  label {
+    color: $color-text-primary;
+    font-size: $font-size-base;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+// ============================================
+// Toggle Switch
+// ============================================
+.form-toggle {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  cursor: pointer;
+  
+  input[type="checkbox"] {
+    width: 48px;
+    height: 24px;
+    background: $color-surface-elevated;
+    border: 1px solid $color-border;
+    border-radius: $radius-full;
+    cursor: pointer;
+    transition: all $duration-normal $easing-default;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    position: relative;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      background: $color-text-secondary;
+      border-radius: $radius-full;
+      transition: all $duration-normal $easing-default;
+    }
+    
+    &:checked {
+      background: $color-primary-solid;
+      border-color: $color-primary-solid;
+      
+      &::after {
+        left: 26px;
+        background: #ffffff;
+      }
+    }
+    
+    &:focus {
+      box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.3);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  label {
+    color: $color-text-primary;
+    font-size: $font-size-base;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+// ============================================
+// Form Row (Horizontal Layout)
+// ============================================
+.form-row {
+  display: grid;
+  gap: $spacing-4;
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// ============================================
+// Input Group (with addon)
+// ============================================
+.input-group {
+  display: flex;
+  
+  .input-group-addon {
+    display: flex;
+    align-items: center;
+    padding: 0 $spacing-3;
+    background: $color-surface-elevated;
+    border: 1px solid $color-border;
+    color: $color-text-secondary;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+    
+    &:first-child {
+      border-right: none;
+      border-radius: $radius-lg 0 0 $radius-lg;
+    }
+    
+    &:last-child {
+      border-left: none;
+      border-radius: 0 $radius-lg $radius-lg 0;
+    }
+  }
+  
+  .form-input {
+    border-radius: 0;
+    
+    &:first-child {
+      border-radius: $radius-lg 0 0 $radius-lg;
+    }
+    
+    &:last-child {
+      border-radius: 0 $radius-lg $radius-lg 0;
+    }
+  }
+}

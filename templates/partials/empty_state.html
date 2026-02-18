@@ -1,0 +1,36 @@
+<!-- Generic Empty State Component
+     Usage: {% include 'partials/empty_state.html' with title="Title" description="Description" icon_svg="<svg>...</svg>" button_text="Action" button_url="/url/" %}
+-->
+<div class="empty-state {% if size == 'sm' %}empty-state-sm{% endif %}">
+    <div class="empty-state-icon">
+        {% if icon_svg %}
+            {{ icon_svg|safe }}
+        {% else %}
+            <!-- Default icon -->
+            <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="40" cy="40" r="35" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+                <path d="M40 25V45M40 55V60" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+            </svg>
+        {% endif %}
+    </div>
+    
+    {% if title %}
+    <h2 class="empty-state-title">{{ title }}</h2>
+    {% endif %}
+    
+    {% if description %}
+    <p class="empty-state-description">{{ description }}</p>
+    {% endif %}
+    
+    {% if button_text and button_url %}
+    <div class="empty-state-action">
+        <a href="{{ button_url }}" class="btn btn-primary">{{ button_text }}</a>
+    </div>
+    {% endif %}
+    
+    {% if button_text and button_onclick %}
+    <div class="empty-state-action">
+        <button onclick="{{ button_onclick }}" class="btn btn-ghost">{{ button_text }}</button>
+    </div>
+    {% endif %}
+</div>

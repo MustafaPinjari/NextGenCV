@@ -1,0 +1,290 @@
+{% extends 'resumes/resume_wizard.html' %}
+
+{% block wizard_step %}
+<div class="form-step">
+    <h2 class="form-step__title">Work Experience</h2>
+    <p class="form-step__description">Add your work history. Start with your most recent position.</p>
+
+    <!-- Added Experiences -->
+    {% if experiences %}
+        <div class="added-items" id="experiencesList">
+            {% for exp in experiences %}
+                <div class="added-item" data-index="{{ forloop.counter0 }}">
+                    <div class="added-item__header">
+                        <div class="added-item__info">
+                            <h4 class="added-item__title">{{ exp.role }}</h4>
+                            <p class="added-item__subtitle">{{ exp.company }}</p>
+                            <p class="added-item__meta">{{ exp.start_date }} - {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}</p>
+                        </div>
+                        <div class="added-item__actions">
+                            <button type="button" class="btn-icon" onclick="editExperience({{ forloop.counter0 }})" title="Edit">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button type="button" class="btn-icon btn-icon--danger" onclick="removeExperience({{ forloop.counter0 }})" title="Remove">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% if exp.description %}
+                        <div class="added-item__description">{{ exp.description|truncatewords:20 }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Add Experience Form -->
+    <div class="collapsible-section" id="addExperienceSection">
+        <button type="button" class="collapsible-section__toggle" onclick="toggleSection('addExperienceSection')">
+            <i class="bi bi-plus-circle"></i>
+            <span>Add Work Experience</span>
+            <i class="bi bi-chevron-down collapsible-section__icon"></i>
+        </button>
+        
+        <div class="collapsible-section__content">
+            <form method="post" id="addExperienceForm">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.company.id_for_label }}" class="form-label">Company *</label>
+                        <div class="form-input-wrapper">
+                            {{ form.company }}
+                        </div>
+                        {% if form.company.errors %}
+                            <div class="form-error">{{ form.company.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.role.id_for_label }}" class="form-label">Job Title *</label>
+                        <div class="form-input-wrapper">
+                            {{ form.role }}
+                        </div>
+                        {% if form.role.errors %}
+                            <div class="form-error">{{ form.role.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date *</label>
+                        <div class="form-input-wrapper">
+                            <i class="bi bi-calendar form-input-icon"></i>
+                            {{ form.start_date }}
+                        </div>
+                        {% if form.start_date.errors %}
+                            <div class="form-error">{{ form.start_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
+                        <div class="form-input-wrapper">
+                            <i class="bi bi-calendar form-input-icon"></i>
+                            {{ form.end_date }}
+                        </div>
+                        <small class="form-help">Leave blank if current position</small>
+                        {% if form.end_date.errors %}
+                            <div class="form-error">{{ form.end_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
+                    <div class="form-input-wrapper">
+                        {{ form.description }}
+                    </div>
+                    <small class="form-help">Use bullet points to describe your responsibilities and achievements</small>
+                    {% if form.description.errors %}
+                        <div class="form-error">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" name="action" value="add_experience" class="btn btn-success">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Add Experience</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Continue Form -->
+    <form method="post" id="wizardForm" style="display: none;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="next">
+    </form>
+</div>
+
+<style>
+    .added-items {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-3);
+        margin-bottom: var(--spacing-5);
+    }
+
+    .added-item {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-4);
+        transition: all 250ms var(--easing-default);
+    }
+
+    .added-item:hover {
+        border-color: var(--color-border-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .added-item__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--spacing-3);
+    }
+
+    .added-item__info {
+        flex: 1;
+    }
+
+    .added-item__title {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .added-item__subtitle {
+        font-size: var(--font-size-base);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .added-item__meta {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-tertiary);
+    }
+
+    .added-item__description {
+        margin-top: var(--spacing-2);
+        padding-top: var(--spacing-2);
+        border-top: 1px solid var(--color-border);
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+    }
+
+    .added-item__actions {
+        display: flex;
+        gap: var(--spacing-2);
+    }
+
+    .btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-md);
+        border: 1px solid var(--color-border);
+        background: transparent;
+        color: var(--color-text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 250ms var(--easing-default);
+    }
+
+    .btn-icon:hover {
+        background: var(--color-surface-elevated);
+        color: var(--color-text-primary);
+        border-color: var(--color-border-hover);
+    }
+
+    .btn-icon--danger:hover {
+        background: var(--color-error);
+        color: white;
+        border-color: var(--color-error);
+    }
+
+    .collapsible-section {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        margin-bottom: var(--spacing-4);
+    }
+
+    .collapsible-section__toggle {
+        width: 100%;
+        padding: var(--spacing-4);
+        background: transparent;
+        border: none;
+        color: var(--color-text-primary);
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        cursor: pointer;
+        transition: all 250ms var(--easing-default);
+    }
+
+    .collapsible-section__toggle:hover {
+        background: var(--color-surface-elevated);
+    }
+
+    .collapsible-section__icon {
+        margin-left: auto;
+        transition: transform 250ms var(--easing-default);
+    }
+
+    .collapsible-section--open .collapsible-section__icon {
+        transform: rotate(180deg);
+    }
+
+    .collapsible-section__content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 350ms var(--easing-default);
+    }
+
+    .collapsible-section--open .collapsible-section__content {
+        max-height: 2000px;
+        padding: 0 var(--spacing-4) var(--spacing-4);
+    }
+</style>
+
+<script>
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        section.classList.toggle('collapsible-section--open');
+    }
+
+    function removeExperience(index) {
+        if (confirm('Are you sure you want to remove this experience?')) {
+            // Submit form to remove experience
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.innerHTML = `
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove_experience">
+                <input type="hidden" name="index" value="${index}">
+            `;
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+
+    function editExperience(index) {
+        // For now, just show a message. Full edit functionality would require more complex state management
+        alert('Edit functionality coming soon! For now, you can remove and re-add the experience.');
+    }
+
+    // Auto-open the add section if no experiences exist
+    {% if not experiences %}
+        document.getElementById('addExperienceSection').classList.add('collapsible-section--open');
+    {% endif %}
+</script>
+{% endblock %}

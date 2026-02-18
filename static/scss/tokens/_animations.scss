@@ -1,0 +1,26 @@
+// Animation Tokens
+
+// Duration
+$duration-fast: 150ms;
+$duration-normal: 250ms;
+$duration-slow: 350ms;
+
+// Easing Functions
+$easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+$easing-in: cubic-bezier(0.4, 0, 1, 1);
+$easing-out: cubic-bezier(0, 0, 0.2, 1);
+$easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+// CSS Custom Properties for runtime theming
+:root {
+  // Duration
+  --duration-fast: #{$duration-fast};
+  --duration-normal: #{$duration-normal};
+  --duration-slow: #{$duration-slow};
+  
+  // Easing Functions
+  --easing-default: #{$easing-default};
+  --easing-in: #{$easing-in};
+  --easing-out: #{$easing-out};
+  --easing-bounce: #{$easing-bounce};
+}

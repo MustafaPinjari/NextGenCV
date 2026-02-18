@@ -1,28 +1,73 @@
-{% extends 'base.html' %}
-
-{% block title %}Page Not Found - ATS Resume Builder{% endblock %}
-
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8 text-center">
-        <div class="error-container py-5">
-            <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 5rem;"></i>
-            <h1 class="display-1 fw-bold mt-4">404</h1>
-            <h2 class="mb-4">Page Not Found</h2>
-            <p class="lead text-muted mb-4">
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - NextGenCV</title>
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--color-base-bg, #0a0a0a);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-page">
+        <div class="error-page-content">
+            <!-- Error Icon/Illustration -->
+            <div class="error-page-icon">
+                <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="60" cy="60" r="55" stroke="url(#gradient)" stroke-width="2" opacity="0.3"/>
+                    <path d="M60 30V70M60 85V90" stroke="url(#gradient)" stroke-width="4" stroke-linecap="round"/>
+                    <defs>
+                        <linearGradient id="gradient" x1="0" y1="0" x2="120" y2="120">
+                            <stop offset="0%" stop-color="#0066ff"/>
+                            <stop offset="100%" stop-color="#00ccff"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+            
+            <!-- Error Code -->
+            <h1 class="error-page-code">404</h1>
+            
+            <!-- Error Message -->
+            <h2 class="error-page-title">Page Not Found</h2>
+            <p class="error-page-description">
                 Sorry, the page you're looking for doesn't exist or has been moved.
             </p>
-            <div class="d-flex gap-3 justify-content-center">
+            
+            <!-- Action Buttons -->
+            <div class="error-page-actions">
                 <a href="{% url 'landing' %}" class="btn btn-primary">
-                    <i class="bi bi-house-door"></i> Go Home
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 10L10 3L17 10M4 9V17H7V13H13V17H16V9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Go Home
                 </a>
                 {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="btn btn-outline-primary">
-                    <i class="bi bi-speedometer2"></i> Dashboard
+                <a href="{% url 'dashboard' %}" class="btn btn-ghost">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="11" y="3" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="3" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+                        <rect x="11" y="11" width="6" height="6" rx="1" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Dashboard
                 </a>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
+</body>
+</html>

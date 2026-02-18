@@ -1,0 +1,25 @@
+<!-- Empty State: No Resumes -->
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="15" y="10" width="50" height="60" rx="4" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+            <line x1="25" y1="20" x2="55" y2="20" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+            <line x1="25" y1="30" x2="55" y2="30" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+            <line x1="25" y1="40" x2="45" y2="40" stroke="currentColor" stroke-width="2" opacity="0.5"/>
+            <circle cx="60" cy="60" r="12" fill="var(--color-primary-solid, #0066ff)"/>
+            <path d="M60 54V66M54 60H66" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </div>
+    <h2 class="empty-state-title">No resumes yet</h2>
+    <p class="empty-state-description">
+        Create your first ATS-optimized resume to get started with your job search journey.
+    </p>
+    <div class="empty-state-action">
+        <a href="{% url 'resume_create' %}" class="btn btn-primary">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Create Resume
+        </a>
+    </div>
+</div>

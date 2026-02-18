@@ -1,0 +1,246 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}NextGenCV - AI-Powered Resume Builder{% endblock %}</title>
+    
+    <!-- Design System CSS -->
+    <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="public-layout">
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="skip-to-main">Skip to main content</a>
+
+    <!-- Top Navigation -->
+    <nav class="public-nav" id="publicNav" role="navigation" aria-label="Main navigation">
+        <div class="public-nav__container">
+            <a href="{% url 'landing' %}" class="public-nav__logo">
+                <span class="public-nav__logo-icon">
+                    <i class="bi bi-file-earmark-text"></i>
+                </span>
+                <span class="public-nav__logo-text">NextGenCV</span>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <ul class="public-nav__menu">
+                <li class="public-nav__item">
+                    <a href="{% url 'landing' %}#features" class="public-nav__link">Features</a>
+                </li>
+                <li class="public-nav__item">
+                    <a href="{% url 'landing' %}#how-it-works" class="public-nav__link">How It Works</a>
+                </li>
+                <li class="public-nav__item">
+                    <a href="/help/" class="public-nav__link">Help</a>
+                </li>
+            </ul>
+
+            <!-- Auth Actions -->
+            <div class="public-nav__actions">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="btn btn--ghost">Dashboard</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn--ghost">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn--primary">Get Started</a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="public-nav__mobile-toggle" id="mobileNavToggle" aria-label="Toggle mobile menu" aria-expanded="false">
+                <span class="hamburger">
+                    <span class="hamburger__line"></span>
+                    <span class="hamburger__line"></span>
+                    <span class="hamburger__line"></span>
+                </span>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="public-nav__mobile-menu" id="mobileMenu">
+            <ul class="public-nav__mobile-list">
+                <li class="public-nav__mobile-item">
+                    <a href="{% url 'landing' %}#features" class="public-nav__mobile-link">Features</a>
+                </li>
+                <li class="public-nav__mobile-item">
+                    <a href="{% url 'landing' %}#how-it-works" class="public-nav__mobile-link">How It Works</a>
+                </li>
+                <li class="public-nav__mobile-item">
+                    <a href="/help/" class="public-nav__mobile-link">Help</a>
+                </li>
+                {% if not user.is_authenticated %}
+                    <li class="public-nav__mobile-item">
+                        <a href="{% url 'login' %}" class="public-nav__mobile-link">Login</a>
+                    </li>
+                    <li class="public-nav__mobile-item">
+                        <a href="{% url 'register' %}" class="btn btn--primary btn--block">Get Started</a>
+                    </li>
+                {% else %}
+                    <li class="public-nav__mobile-item">
+                        <a href="{% url 'dashboard' %}" class="btn btn--primary btn--block">Dashboard</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="public-footer" role="contentinfo">
+        <div class="public-footer__container">
+            <div class="public-footer__grid">
+                <!-- Brand Column -->
+                <div class="public-footer__column public-footer__column--brand">
+                    <div class="public-footer__logo">
+                        <span class="public-footer__logo-icon">
+                            <i class="bi bi-file-earmark-text"></i>
+                        </span>
+                        <span class="public-footer__logo-text">NextGenCV</span>
+                    </div>
+                    <p class="public-footer__tagline">
+                        AI-powered resume builder that helps you land your dream job.
+                    </p>
+                    <div class="public-footer__social">
+                        <a href="#" class="public-footer__social-link" aria-label="Twitter">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" class="public-footer__social-link" aria-label="LinkedIn">
+                            <i class="bi bi-linkedin"></i>
+                        </a>
+                        <a href="#" class="public-footer__social-link" aria-label="GitHub">
+                            <i class="bi bi-github"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Product Column -->
+                <div class="public-footer__column">
+                    <h3 class="public-footer__heading">Product</h3>
+                    <ul class="public-footer__links">
+                        <li><a href="{% url 'landing' %}#features" class="public-footer__link">Features</a></li>
+                        <li><a href="{% url 'landing' %}#how-it-works" class="public-footer__link">How It Works</a></li>
+                        <li><a href="#" class="public-footer__link">Templates</a></li>
+                        <li><a href="#" class="public-footer__link">Pricing</a></li>
+                    </ul>
+                </div>
+
+                <!-- Company Column -->
+                <div class="public-footer__column">
+                    <h3 class="public-footer__heading">Company</h3>
+                    <ul class="public-footer__links">
+                        <li><a href="#" class="public-footer__link">About Us</a></li>
+                        <li><a href="#" class="public-footer__link">Blog</a></li>
+                        <li><a href="#" class="public-footer__link">Careers</a></li>
+                        <li><a href="#" class="public-footer__link">Contact</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources Column -->
+                <div class="public-footer__column">
+                    <h3 class="public-footer__heading">Resources</h3>
+                    <ul class="public-footer__links">
+                        <li><a href="/help/" class="public-footer__link">Help Center</a></li>
+                        <li><a href="#" class="public-footer__link">Documentation</a></li>
+                        <li><a href="#" class="public-footer__link">Tutorials</a></li>
+                        <li><a href="#" class="public-footer__link">Community</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal Column -->
+                <div class="public-footer__column">
+                    <h3 class="public-footer__heading">Legal</h3>
+                    <ul class="public-footer__links">
+                        <li><a href="#" class="public-footer__link">Privacy Policy</a></li>
+                        <li><a href="#" class="public-footer__link">Terms of Service</a></li>
+                        <li><a href="#" class="public-footer__link">Cookie Policy</a></li>
+                        <li><a href="#" class="public-footer__link">GDPR</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="public-footer__bottom">
+                <p class="public-footer__copyright">
+                    &copy; 2026 NextGenCV. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <!-- Accessibility Enhancements -->
+    <script src="{% static 'js/accessibility.js' %}"></script>
+    
+    <script>
+        // Scroll-based navigation behavior
+        const publicNav = document.getElementById('publicNav');
+        let lastScrollTop = 0;
+        let scrollThreshold = 50;
+
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            // Add solid background after scrolling
+            if (scrollTop > scrollThreshold) {
+                publicNav.classList.add('public-nav--scrolled');
+            } else {
+                publicNav.classList.remove('public-nav--scrolled');
+            }
+            
+            lastScrollTop = scrollTop;
+        });
+
+        // Mobile menu toggle
+        const mobileNavToggle = document.getElementById('mobileNavToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const body = document.body;
+
+        mobileNavToggle.addEventListener('click', () => {
+            const isOpen = body.classList.toggle('mobile-nav-open');
+            mobileNavToggle.setAttribute('aria-expanded', isOpen);
+            
+            // Toggle hamburger animation
+            mobileNavToggle.querySelector('.hamburger').classList.toggle('hamburger--active');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('.public-nav__mobile-link').forEach(link => {
+            link.addEventListener('click', () => {
+                body.classList.remove('mobile-nav-open');
+                mobileNavToggle.setAttribute('aria-expanded', 'false');
+                mobileNavToggle.querySelector('.hamburger').classList.remove('hamburger--active');
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                if (href !== '#' && href.includes('#')) {
+                    e.preventDefault();
+                    const targetId = href.split('#')[1];
+                    const target = document.getElementById(targetId);
+                    
+                    if (target) {
+                        target.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                }
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

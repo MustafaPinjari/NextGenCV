@@ -1,0 +1,211 @@
+{% load resume_filters %}
+
+<div class="resume-preview">
+    <style>
+        .resume-preview {
+            color: var(--color-text-primary);
+            font-size: var(--font-size-sm);
+            line-height: 1.6;
+        }
+
+        .resume-preview__header {
+            text-align: center;
+            margin-bottom: var(--spacing-4);
+            padding-bottom: var(--spacing-3);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .resume-preview__name {
+            font-size: var(--font-size-2xl);
+            font-weight: var(--font-weight-bold);
+            color: var(--color-text-primary);
+            margin-bottom: var(--spacing-1);
+        }
+
+        .resume-preview__contact {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-secondary);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--spacing-2);
+        }
+
+        .resume-preview__section {
+            margin-bottom: var(--spacing-4);
+        }
+
+        .resume-preview__section-title {
+            font-size: var(--font-size-lg);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-primary-solid);
+            margin-bottom: var(--spacing-2);
+            padding-bottom: var(--spacing-1);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .resume-preview__item {
+            margin-bottom: var(--spacing-3);
+        }
+
+        .resume-preview__item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: var(--spacing-1);
+        }
+
+        .resume-preview__item-title {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+        }
+
+        .resume-preview__item-subtitle {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
+        }
+
+        .resume-preview__item-date {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-tertiary);
+        }
+
+        .resume-preview__item-description {
+            color: var(--color-text-secondary);
+            font-size: var(--font-size-xs);
+            margin-top: var(--spacing-1);
+        }
+
+        .resume-preview__skills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-2);
+        }
+
+        .resume-preview__skill-tag {
+            background: var(--color-surface-elevated);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-1) var(--spacing-2);
+            font-size: var(--font-size-xs);
+            color: var(--color-text-primary);
+        }
+
+        .resume-preview__empty {
+            text-align: center;
+            padding: var(--spacing-6);
+            color: var(--color-text-tertiary);
+            font-style: italic;
+        }
+    </style>
+
+    <!-- Header -->
+    <div class="resume-preview__header">
+        {% if wizard_data.personal_info.full_name %}
+            <h1 class="resume-preview__name">{{ wizard_data.personal_info.full_name }}</h1>
+        {% else %}
+            <h1 class="resume-preview__name">Your Name</h1>
+        {% endif %}
+        
+        <div class="resume-preview__contact">
+            {% if wizard_data.personal_info.email %}
+                <span>{{ wizard_data.personal_info.email }}</span>
+            {% endif %}
+            {% if wizard_data.personal_info.phone %}
+                <span>{{ wizard_data.personal_info.phone }}</span>
+            {% endif %}
+            {% if wizard_data.personal_info.location %}
+                <span>{{ wizard_data.personal_info.location }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Summary -->
+    {% if wizard_data.summary %}
+        <div class="resume-preview__section">
+            <h2 class="resume-preview__section-title">Professional Summary</h2>
+            <p class="resume-preview__item-description">{{ wizard_data.summary }}</p>
+        </div>
+    {% endif %}
+
+    <!-- Experience -->
+    {% if wizard_data.experiences %}
+        <div class="resume-preview__section">
+            <h2 class="resume-preview__section-title">Experience</h2>
+            {% for exp in wizard_data.experiences %}
+                <div class="resume-preview__item">
+                    <div class="resume-preview__item-header">
+                        <div>
+                            <div class="resume-preview__item-title">{{ exp.role }}</div>
+                            <div class="resume-preview__item-subtitle">{{ exp.company }}</div>
+                        </div>
+                        <div class="resume-preview__item-date">
+                            {{ exp.start_date }} - {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}
+                        </div>
+                    </div>
+                    {% if exp.description %}
+                        <div class="resume-preview__item-description">{{ exp.description|linebreaks }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Education -->
+    {% if wizard_data.education %}
+        <div class="resume-preview__section">
+            <h2 class="resume-preview__section-title">Education</h2>
+            {% for edu in wizard_data.education %}
+                <div class="resume-preview__item">
+                    <div class="resume-preview__item-header">
+                        <div>
+                            <div class="resume-preview__item-title">{{ edu.degree }} in {{ edu.field }}</div>
+                            <div class="resume-preview__item-subtitle">{{ edu.institution }}</div>
+                        </div>
+                        <div class="resume-preview__item-date">
+                            {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Skills -->
+    {% if wizard_data.skills %}
+        <div class="resume-preview__section">
+            <h2 class="resume-preview__section-title">Skills</h2>
+            <div class="resume-preview__skills">
+                {% for skill in wizard_data.skills %}
+                    <span class="resume-preview__skill-tag">{{ skill.name }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Projects -->
+    {% if wizard_data.projects %}
+        <div class="resume-preview__section">
+            <h2 class="resume-preview__section-title">Projects</h2>
+            {% for project in wizard_data.projects %}
+                <div class="resume-preview__item">
+                    <div class="resume-preview__item-title">{{ project.name }}</div>
+                    {% if project.description %}
+                        <div class="resume-preview__item-description">{{ project.description }}</div>
+                    {% endif %}
+                    {% if project.technologies %}
+                        <div class="resume-preview__item-subtitle">Technologies: {{ project.technologies }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Empty state -->
+    {% if not wizard_data.personal_info and not wizard_data.experiences and not wizard_data.education and not wizard_data.skills %}
+        <div class="resume-preview__empty">
+            <i class="bi bi-file-earmark-text" style="font-size: 3rem; opacity: 0.3;"></i>
+            <p>Your resume preview will appear here as you fill in the form.</p>
+        </div>
+    {% endif %}
+</div>

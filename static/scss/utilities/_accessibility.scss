@@ -1,0 +1,483 @@
+/**
+ * Accessibility Utilities
+ * Styles for enhanced accessibility including focus states, skip links, and screen reader utilities
+ * Requirements: 13.1, 13.2, 13.4, 13.5
+ */
+
+// ============================================================================
+// Screen Reader Only Content (Requirement 13.3)
+// ============================================================================
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+}
+
+// ============================================================================
+// Skip Links (Requirement 13.2)
+// ============================================================================
+
+.skip-to-main,
+.skip-link {
+    position: absolute;
+    top: -100px;
+    left: 0;
+    background: var(--color-primary-solid, #0066ff);
+    color: #ffffff;
+    padding: var(--spacing-2, 1rem) var(--spacing-4, 2rem);
+    text-decoration: none;
+    font-weight: var(--font-weight-semibold, 600);
+    border-radius: 0 0 var(--radius-md, 0.875rem) 0;
+    z-index: 10000;
+    transition: top var(--duration-normal, 250ms) var(--easing-default, cubic-bezier(0.4, 0, 0.2, 1));
+    box-shadow: 0 4px 16px rgba(0, 102, 255, 0.4);
+
+    &:focus {
+        top: 0;
+        outline: 2px solid #ffffff;
+        outline-offset: -4px;
+    }
+}
+
+// ============================================================================
+// Enhanced Focus States (Requirement 13.4)
+// ============================================================================
+
+// Base focus styles for keyboard navigation
+.keyboard-navigation {
+    *:focus {
+        outline: 2px solid var(--color-primary-solid, #0066ff);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.2);
+    }
+
+    // Specific focus styles for interactive elements
+    button:focus,
+    a:focus,
+    input:focus,
+    textarea:focus,
+    select:focus,
+    [tabindex]:focus {
+        outline: 2px solid var(--color-primary-solid, #0066ff);
+        outline-offset: 2px;
+    }
+
+    // Focus styles for custom components
+    .btn:focus {
+        outline: 2px solid var(--color-primary-solid, #0066ff);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.2);
+    }
+
+    .card:focus,
+    .action-card:focus,
+    .resume-card:focus {
+        outline: 2px solid var(--color-primary-solid, #0066ff);
+        outline-offset: 2px;
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.2);
+    }
+
+    // Focus styles for form inputs
+    .form-input:focus,
+    .form-textarea:focus,
+    .form-select:focus {
+        outline: none; // Remove default outline
+        border-color: var(--color-border-focus, rgba(0, 102, 255, 0.5));
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.2), 0 0 20px rgba(0, 102, 255, 0.3);
+    }
+
+    // Focus styles for navigation items
+    .sidebar__link:focus,
+    .topbar__action-btn:focus,
+    .public-nav__link:focus {
+        outline: 2px solid var(--color-primary-solid, #0066ff);
+        outline-offset: 2px;
+    }
+}
+
+// Focus-visible polyfill for browsers that don't support :focus-visible
+:focus:not(:focus-visible) {
+    outline: none;
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-primary-solid, #0066ff);
+    outline-offset: 2px;
+}
+
+// High contrast focus for dark backgrounds
+.sidebar,
+.topbar,
+.card,
+.modal {
+    *:focus-visible {
+        outline-color: var(--color-primary-solid, #0066ff);
+        box-shadow: 0 0 0 4px rgba(0, 102, 255, 0.3);
+    }
+}
+
+// ============================================================================
+// Redundant Encoding for Color Information (Requirement 13.5)
+// ============================================================================
+
+// Status icons for color-coded information
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: var(--spacing-1, 0.5rem);
+    flex-shrink: 0;
+}
+
+// Success states with icons
+.alert-success,
+.text-success,
+.badge-success {
+    &::before {
+        content: '\F26A'; // Bootstrap Icons check-circle-fill
+        font-family: 'bootstrap-icons';
+        margin-right: var(--spacing-1, 0.5rem);
+        display: inline-block;
+    }
+}
+
+// Error states with icons
+.alert-error,
+.alert-danger,
+.text-error,
+.text-danger,
+.badge-error,
+.badge-danger {
+    &::before {
+        content: '\F659'; // Bootstrap Icons x-circle-fill
+        font-family: 'bootstrap-icons';
+        margin-right: var(--spacing-1, 0.5rem);
+        display: inline-block;
+    }
+}
+
+// Warning states with icons
+.alert-warning,
+.text-warning,
+.badge-warning {
+    &::before {
+        content: '\F33A'; // Bootstrap Icons exclamation-triangle-fill
+        font-family: 'bootstrap-icons';
+        margin-right: var(--spacing-1, 0.5rem);
+        display: inline-block;
+    }
+}
+
+// Info states with icons
+.alert-info,
+.text-info,
+.badge-info {
+    &::before {
+        content: '\F431'; // Bootstrap Icons info-circle-fill
+        font-family: 'bootstrap-icons';
+        margin-right: var(--spacing-1, 0.5rem);
+        display: inline-block;
+    }
+}
+
+// Pattern fills for charts (for colorblind accessibility)
+.chart-pattern-success {
+    fill: url(#pattern-success);
+}
+
+.chart-pattern-error {
+    fill: url(#pattern-error);
+}
+
+.chart-pattern-warning {
+    fill: url(#pattern-warning);
+}
+
+.chart-pattern-info {
+    fill: url(#pattern-info);
+}
+
+// ============================================================================
+// WCAG Contrast Compliance (Requirement 13.1)
+// ============================================================================
+
+// Ensure minimum contrast ratios for text
+.text-low-contrast {
+    // For text that doesn't meet WCAG AA, increase contrast
+    color: var(--color-text-primary, #f5f5f5);
+    font-weight: var(--font-weight-medium, 500);
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+    :root {
+        --color-text-primary: #ffffff;
+        --color-text-secondary: #e5e5e5;
+        --color-border: rgba(255, 255, 255, 0.2);
+        --color-border-hover: rgba(255, 255, 255, 0.4);
+    }
+
+    .btn,
+    .card,
+    .form-input {
+        border-width: 2px;
+    }
+
+    *:focus-visible {
+        outline-width: 3px;
+        outline-offset: 3px;
+    }
+}
+
+// ============================================================================
+// Reduced Motion Support (Requirement 13.2)
+// ============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    // Disable smooth scrolling
+    html {
+        scroll-behavior: auto;
+    }
+
+    // Disable parallax effects
+    .parallax {
+        background-attachment: scroll;
+    }
+}
+
+// ============================================================================
+// Keyboard Navigation Indicators
+// ============================================================================
+
+// Show keyboard navigation hints
+.keyboard-shortcut {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background: var(--color-surface-elevated, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-sm, 0.5rem);
+    font-size: var(--font-size-xs, 0.75rem);
+    font-family: monospace;
+    color: var(--color-text-secondary, #a3a3a3);
+    margin-left: var(--spacing-1, 0.5rem);
+}
+
+// Keyboard navigation help overlay
+.keyboard-help {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--color-surface, #141414);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: var(--radius-xl, 1rem);
+    padding: var(--spacing-6, 3rem);
+    max-width: 600px;
+    z-index: 10000;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+
+    &__title {
+        font-size: var(--font-size-2xl, 1.5rem);
+        font-weight: var(--font-weight-semibold, 600);
+        color: var(--color-text-primary, #f5f5f5);
+        margin-bottom: var(--spacing-4, 2rem);
+    }
+
+    &__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    &__item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-2, 1rem) 0;
+        border-bottom: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+
+        &:last-child {
+            border-bottom: none;
+        }
+    }
+
+    &__action {
+        color: var(--color-text-primary, #f5f5f5);
+    }
+
+    &__keys {
+        display: flex;
+        gap: var(--spacing-1, 0.5rem);
+    }
+}
+
+// ============================================================================
+// Touch Target Sizes (Mobile Accessibility)
+// ============================================================================
+
+@media (max-width: 768px) {
+    // Ensure minimum touch target size of 44x44px
+    button,
+    a,
+    input[type="checkbox"],
+    input[type="radio"],
+    select {
+        min-height: 44px;
+        min-width: 44px;
+    }
+
+    // Increase padding for better touch targets
+    .btn {
+        padding: var(--spacing-3, 1.5rem) var(--spacing-4, 2rem);
+    }
+
+    .form-input,
+    .form-textarea,
+    .form-select {
+        padding: var(--spacing-3, 1.5rem);
+        font-size: 16px; // Prevent zoom on iOS
+    }
+}
+
+// ============================================================================
+// ARIA Live Regions
+// ============================================================================
+
+[aria-live="polite"],
+[aria-live="assertive"] {
+    position: relative;
+}
+
+// Style for live region announcements
+.live-region {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+
+    &--visible {
+        position: static;
+        width: auto;
+        height: auto;
+        overflow: visible;
+    }
+}
+
+// ============================================================================
+// Focus Trap for Modals
+// ============================================================================
+
+.modal,
+[role="dialog"] {
+    &:focus {
+        outline: none;
+    }
+
+    // Ensure first focusable element is highlighted
+    &[data-focus-trap="true"] {
+        *:first-child:focus {
+            outline: 2px solid var(--color-primary-solid, #0066ff);
+            outline-offset: 2px;
+        }
+    }
+}
+
+// ============================================================================
+// Accessible Form Validation
+// ============================================================================
+
+// Error messages with proper ARIA
+.form-error-message {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1, 0.5rem);
+    color: var(--color-error, #ef4444);
+    font-size: var(--font-size-sm, 0.875rem);
+    margin-top: var(--spacing-1, 0.5rem);
+
+    &::before {
+        content: '\F659'; // Bootstrap Icons x-circle-fill
+        font-family: 'bootstrap-icons';
+        flex-shrink: 0;
+    }
+}
+
+.form-success-message {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1, 0.5rem);
+    color: var(--color-success, #10b981);
+    font-size: var(--font-size-sm, 0.875rem);
+    margin-top: var(--spacing-1, 0.5rem);
+
+    &::before {
+        content: '\F26A'; // Bootstrap Icons check-circle-fill
+        font-family: 'bootstrap-icons';
+        flex-shrink: 0;
+    }
+}
+
+// ============================================================================
+// Accessible Tables
+// ============================================================================
+
+table {
+    // Ensure table headers are properly associated
+    th[scope="col"],
+    th[scope="row"] {
+        font-weight: var(--font-weight-semibold, 600);
+    }
+}
+
+// ============================================================================
+// Print Accessibility
+// ============================================================================
+
+@media print {
+    // Ensure focus indicators don't print
+    *:focus {
+        outline: none;
+        box-shadow: none;
+    }
+
+    // Show skip links in print
+    .skip-to-main,
+    .skip-link {
+        position: static;
+        display: block;
+    }
+
+    // Ensure sufficient contrast for printing
+    body {
+        background: white;
+        color: black;
+    }
+}

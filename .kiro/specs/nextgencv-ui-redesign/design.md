@@ -1211,3 +1211,699 @@ $breakpoint-2xl: 1536px; // Extra large
 - Reduced padding/margins
 - Maintain visual breathing room
 
+
+
+## Correctness Properties
+
+A property is a characteristic or behavior that should hold true across all valid executions of a system—essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.
+
+For this UI/UX redesign, correctness properties focus on verifying that the design system is consistently applied, all required components exist, accessibility standards are met, and the implementation matches the design specifications.
+
+### Property 1: Design Token Completeness
+
+*For any* design token category (colors, typography, spacing, shadows, animations), all required tokens within that category should be defined and accessible in the compiled CSS.
+
+**Validates: Requirements 1.1, 1.2, 1.7, 15.2**
+
+### Property 2: Spacing Grid Consistency
+
+*For any* spacing token value, the value should be a multiple of 8px (the base grid unit).
+
+**Validates: Requirements 1.3**
+
+### Property 3: Border Radius Range Compliance
+
+*For any* border-radius token, the value should fall within the range of 14-20px (or be 0 for no radius, or 9999px for full rounding).
+
+**Validates: Requirements 1.4**
+
+### Property 4: Animation Duration Range Compliance
+
+*For any* animation duration token used for micro-interactions, the value should fall within the range of 150-250ms.
+
+**Validates: Requirements 1.6**
+
+### Property 5: Universal Page Coverage
+
+*For any* page in the application (landing, register, login, forgot password, dashboard, resume list, resume builder, resume preview, ATS analyzer, PDF upload, fix comparison, version history, analytics, settings, profile, admin panel, 404, 500), the page template should include the design system CSS and should not contain legacy style references.
+
+**Validates: Requirements 2.1, 2.3**
+
+### Property 6: Layout Template Inheritance
+
+*For any* authenticated page (dashboard, resume pages, analytics, settings, profile), the page template should extend the authenticated layout template. *For any* public page (landing, login, register, forgot password), the page template should extend the public layout template.
+
+**Validates: Requirements 3.5, 4.6**
+
+### Property 7: Sidebar Responsive Behavior
+
+*For any* authenticated page, when the sidebar collapse state is toggled, the main content area width should adjust accordingly to utilize the available space.
+
+**Validates: Requirements 3.4**
+
+### Property 8: Form System Universal Application
+
+*For any* form in the application (resume builder, login, register, PDF upload, settings, profile edit, admin forms), the form inputs should use the form design system component classes.
+
+**Validates: Requirements 5.7**
+
+### Property 9: Form Input Focus State
+
+*For any* form input, when the input receives focus, the input should display a floating label animation, dark background, and soft border glow.
+
+**Validates: Requirements 5.1, 5.2**
+
+### Property 10: Form Input Error State
+
+*For any* form input with validation errors, the input should display an error state with red border, red glow, and a descriptive error message below the input.
+
+**Validates: Requirements 5.4**
+
+### Property 11: Form Input Success State
+
+*For any* form input that passes validation, the input should display a success state with green border and green glow.
+
+**Validates: Requirements 5.5**
+
+### Property 12: Form Inline Validation
+
+*For any* form with validation, when validation is triggered, validation feedback should appear inline next to the relevant input fields.
+
+**Validates: Requirements 5.3**
+
+### Property 13: Component Library Completeness
+
+*For any* component type in the required list (buttons with 4 variants, cards with 4 variants, alerts, badges, progress bars, circular progress, tabs, accordions, modals, dropdowns, pagination, tooltips, file upload UI, data tables, charts, empty states, sidebar navigation), the component should have corresponding CSS classes or template files defined.
+
+**Validates: Requirements 6.1, 6.2, 6.3**
+
+### Property 14: Interactive Component Hover Feedback
+
+*For any* interactive component (buttons, cards, links, navigation items), when hovered, the component should display micro-interaction feedback through CSS transitions (lift effect, glow, or background change).
+
+**Validates: Requirements 6.4, 10.5**
+
+### Property 15: Component Reusability
+
+*For any* component in the component library, the component should be defined in shared CSS/template files (not page-specific files) to enable reuse across all pages.
+
+**Validates: Requirements 6.6**
+
+### Property 16: Wizard Step Transition Animation
+
+*For any* step transition in the resume builder wizard, the transition should include smooth CSS animations with appropriate duration and easing.
+
+**Validates: Requirements 8.3, 8.7**
+
+### Property 17: File Upload Drag State Feedback
+
+*For any* file upload zone, when a file is dragged over the zone, the border glow intensity should increase compared to the default state.
+
+**Validates: Requirements 9.2**
+
+### Property 18: Upload Progress Indication
+
+*For any* file upload operation, during the upload process, a progress indicator should be displayed and should update to reflect upload progress.
+
+**Validates: Requirements 9.4**
+
+### Property 19: Score Reveal Animation
+
+*For any* completed upload or analysis, the score display should animate from 0 to the actual score value rather than appearing instantly.
+
+**Validates: Requirements 9.5**
+
+### Property 20: Improvement Highlighting
+
+*For any* improvement displayed on the fix comparison page, the improvement should be highlighted with a subtle neon left border using an accent color.
+
+**Validates: Requirements 10.2**
+
+### Property 21: Chart Animation on Load
+
+*For any* chart on the analytics dashboard, when data loads, the chart should animate smoothly into view rather than appearing instantly.
+
+**Validates: Requirements 11.6**
+
+### Property 22: WCAG Contrast Compliance
+
+*For any* text and background color combination used in the UI, the contrast ratio should meet WCAG AA standards (minimum 4.5:1 for normal text, 3:1 for large text).
+
+**Validates: Requirements 13.1**
+
+### Property 23: Keyboard Navigation Support
+
+*For any* interactive element (buttons, links, form inputs, navigation items), the element should be keyboard focusable and should have a proper tab order.
+
+**Validates: Requirements 13.2**
+
+### Property 24: ARIA Label Presence
+
+*For any* interactive element that doesn't have visible text (icon buttons, image links), the element should include proper aria-label or aria-labelledby attributes.
+
+**Validates: Requirements 13.3**
+
+### Property 25: Focus State Visibility
+
+*For any* focusable element, when the element receives keyboard focus, a clearly visible focus indicator (outline or box-shadow) should be displayed.
+
+**Validates: Requirements 13.4**
+
+### Property 26: Redundant Encoding for Color Information
+
+*For any* UI element that uses color to convey information (success/error states, status indicators), the element should also include non-color indicators (icons, text labels, or patterns) for colorblind accessibility.
+
+**Validates: Requirements 13.5**
+
+### Property 27: Unused CSS Removal
+
+*For any* Bootstrap component that is not used in the application, the component's CSS should not be included in the final compiled stylesheet.
+
+**Validates: Requirements 14.2**
+
+### Property 28: Image Lazy Loading
+
+*For any* image element that is not in the initial viewport, the image should have the loading="lazy" attribute to enable lazy loading.
+
+**Validates: Requirements 14.3**
+
+### Property 29: Asset Compression
+
+*For any* static asset file (CSS, JavaScript, images), the production version should be compressed/minified to reduce file size.
+
+**Validates: Requirements 14.4**
+
+## Error Handling
+
+### Design System Loading Errors
+
+**Scenario:** CSS files fail to load or are blocked
+
+**Handling:**
+- Implement fallback inline critical CSS for basic layout
+- Display user-friendly error message if design system fails to load
+- Log error to monitoring system
+- Provide "Reload" button to retry
+
+### Component Rendering Errors
+
+**Scenario:** JavaScript-dependent components fail to initialize
+
+**Handling:**
+- Ensure core functionality works without JavaScript (progressive enhancement)
+- Display fallback static content for dynamic components
+- Log component initialization errors
+- Provide graceful degradation for animations and interactions
+
+### Browser Compatibility Issues
+
+**Scenario:** Older browsers don't support modern CSS features
+
+**Handling:**
+- Use CSS feature detection (@supports)
+- Provide fallback styles for unsupported features
+- Test on target browsers (last 2 versions of major browsers)
+- Display upgrade notice for very old browsers
+
+### Accessibility Errors
+
+**Scenario:** Screen readers or keyboard navigation fails
+
+**Handling:**
+- Ensure semantic HTML as foundation
+- Test with actual screen readers (NVDA, JAWS, VoiceOver)
+- Provide skip links for keyboard navigation
+- Include ARIA landmarks for page structure
+
+### Performance Issues
+
+**Scenario:** Animations cause jank or slow page loads
+
+**Handling:**
+- Use CSS transforms and opacity for animations (GPU-accelerated)
+- Implement lazy loading for below-fold content
+- Monitor performance metrics (Core Web Vitals)
+- Disable animations on low-end devices (prefers-reduced-motion)
+
+### Theme Loading Race Conditions
+
+**Scenario:** Content flashes with wrong styling before theme loads
+
+**Handling:**
+- Inline critical CSS in HTML head
+- Use CSS custom properties for instant theme application
+- Implement loading screen until critical styles load
+- Prevent FOUC (Flash of Unstyled Content)
+
+## Testing Strategy
+
+### Dual Testing Approach
+
+This redesign requires both unit tests and property-based tests to ensure comprehensive coverage:
+
+**Unit Tests** verify specific examples, edge cases, and error conditions:
+- Specific component rendering (e.g., primary button renders correctly)
+- Specific page layouts (e.g., dashboard includes all required sections)
+- Edge cases (e.g., empty states, error pages)
+- Integration points (e.g., form submission, file upload)
+
+**Property-Based Tests** verify universal properties across all inputs:
+- Design token consistency across all pages
+- Component behavior across all variants
+- Accessibility compliance across all interactive elements
+- Responsive behavior across all breakpoints
+
+Both testing approaches are complementary and necessary for comprehensive coverage.
+
+### Testing Layers
+
+#### 1. Visual Regression Testing
+
+**Tool:** Percy, Chromatic, or BackstopJS
+
+**Approach:**
+- Capture screenshots of all pages in multiple states
+- Compare against baseline screenshots
+- Flag visual differences for review
+- Test across multiple browsers and viewports
+
+**Coverage:**
+- All 20+ pages
+- Component variants
+- Interactive states (hover, focus, active)
+- Responsive breakpoints
+
+#### 2. CSS Unit Tests
+
+**Tool:** Jest with jest-styled-components or CSS testing utilities
+
+**Approach:**
+- Test that design tokens are defined correctly
+- Test that component classes apply correct styles
+- Test that responsive styles apply at correct breakpoints
+- Test that animations have correct timing
+
+**Example Tests:**
+```javascript
+// Test design token existence
+test('primary color token is defined', () => {
+  const styles = getComputedStyle(document.documentElement);
+  expect(styles.getPropertyValue('--color-primary-solid')).toBe('#0066ff');
+});
+
+// Test spacing grid consistency
+test('all spacing tokens are multiples of 8px', () => {
+  const spacingTokens = ['--spacing-1', '--spacing-2', '--spacing-3'];
+  spacingTokens.forEach(token => {
+    const value = parseInt(getComputedStyle(document.documentElement).getPropertyValue(token));
+    expect(value % 8).toBe(0);
+  });
+});
+```
+
+#### 3. Component Integration Tests
+
+**Tool:** Django test framework with Selenium or Playwright
+
+**Approach:**
+- Test that components render correctly in templates
+- Test that interactive components respond to user actions
+- Test that forms validate and submit correctly
+- Test that navigation works across pages
+
+**Example Tests:**
+```python
+def test_sidebar_collapse_expands_content(self):
+    """Test that collapsing sidebar expands main content area"""
+    # Property 7: Sidebar Responsive Behavior
+    self.client.login(username='testuser', password='password')
+    response = self.client.get('/dashboard/')
+    
+    # Check that sidebar and main content exist
+    self.assertContains(response, 'class="sidebar"')
+    self.assertContains(response, 'class="main-content"')
+    
+    # Test with JavaScript that toggling sidebar changes main content width
+    # (This would be done with Selenium/Playwright for full interaction testing)
+```
+
+#### 4. Accessibility Tests
+
+**Tool:** axe-core, Pa11y, or WAVE
+
+**Approach:**
+- Automated accessibility scanning of all pages
+- Test keyboard navigation flows
+- Test screen reader compatibility
+- Test color contrast ratios
+
+**Example Tests:**
+```python
+def test_wcag_contrast_compliance(self):
+    """Test that text/background combinations meet WCAG AA standards"""
+    # Property 22: WCAG Contrast Compliance
+    color_combinations = [
+        ('#f5f5f5', '#0a0a0a'),  # Primary text on base background
+        ('#a3a3a3', '#0a0a0a'),  # Secondary text on base background
+    ]
+    
+    for text_color, bg_color in color_combinations:
+        contrast_ratio = calculate_contrast_ratio(text_color, bg_color)
+        self.assertGreaterEqual(contrast_ratio, 4.5)  # WCAG AA for normal text
+
+def test_keyboard_navigation(self):
+    """Test that all interactive elements are keyboard accessible"""
+    # Property 23: Keyboard Navigation Support
+    self.client.login(username='testuser', password='password')
+    response = self.client.get('/dashboard/')
+    
+    # Parse HTML and find all interactive elements
+    soup = BeautifulSoup(response.content, 'html.parser')
+    interactive_elements = soup.find_all(['button', 'a', 'input', 'select', 'textarea'])
+    
+    for element in interactive_elements:
+        # Check that element is focusable (has tabindex or is naturally focusable)
+        self.assertTrue(
+            element.get('tabindex') is not None or 
+            element.name in ['button', 'a', 'input', 'select', 'textarea']
+        )
+```
+
+#### 5. Performance Tests
+
+**Tool:** Lighthouse, WebPageTest, or custom performance monitoring
+
+**Approach:**
+- Test page load times
+- Test animation frame rates
+- Test asset sizes
+- Test Core Web Vitals (LCP, FID, CLS)
+
+**Metrics:**
+- First Contentful Paint < 1.8s
+- Largest Contentful Paint < 2.5s
+- Cumulative Layout Shift < 0.1
+- First Input Delay < 100ms
+- CSS bundle size < 100KB (gzipped)
+- JavaScript bundle size < 200KB (gzipped)
+
+#### 6. Cross-Browser Testing
+
+**Tool:** BrowserStack or Sauce Labs
+
+**Approach:**
+- Test on target browsers (Chrome, Firefox, Safari, Edge - last 2 versions)
+- Test on mobile browsers (iOS Safari, Chrome Mobile)
+- Test responsive behavior at standard breakpoints
+- Test fallbacks for unsupported features
+
+**Coverage:**
+- Desktop: Chrome, Firefox, Safari, Edge
+- Mobile: iOS Safari, Chrome Mobile, Samsung Internet
+- Breakpoints: 640px, 768px, 1024px, 1280px
+
+### Property-Based Test Configuration
+
+**Library:** Hypothesis (Python)
+
+**Configuration:**
+- Minimum 100 iterations per property test
+- Each property test references its design document property
+- Tag format: `# Feature: nextgencv-ui-redesign, Property {number}: {property_text}`
+
+**Example Property Tests:**
+
+```python
+from hypothesis import given, strategies as st
+
+@given(st.sampled_from(['landing', 'dashboard', 'login', 'register', 'resume-list']))
+def test_all_pages_include_design_system(page_name):
+    """
+    Property 5: Universal Page Coverage
+    For any page in the application, the page template should include 
+    the design system CSS and should not contain legacy style references.
+    
+    Feature: nextgencv-ui-redesign, Property 5: Universal Page Coverage
+    """
+    response = client.get(f'/{page_name}/')
+    
+    # Check that design system CSS is included
+    assert 'main.css' in response.content.decode()
+    
+    # Check that legacy CSS is not included
+    assert 'style.css' not in response.content.decode()  # Old style file
+    assert 'legacy' not in response.content.decode().lower()
+
+@given(st.sampled_from(['primary', 'ghost', 'outline', 'gradient']))
+def test_button_variants_have_hover_effects(variant):
+    """
+    Property 14: Interactive Component Hover Feedback
+    For any interactive component, when hovered, the component should 
+    display micro-interaction feedback through CSS transitions.
+    
+    Feature: nextgencv-ui-redesign, Property 14: Interactive Component Hover Feedback
+    """
+    # Get computed styles for button variant
+    button_class = f'btn-{variant}'
+    styles = get_css_rules_for_class(button_class)
+    hover_styles = get_css_rules_for_class(f'{button_class}:hover')
+    
+    # Check that hover state has transition
+    assert 'transition' in styles or 'transition' in hover_styles
+    
+    # Check that hover state changes something (transform, box-shadow, background)
+    assert (
+        hover_styles.get('transform') != styles.get('transform') or
+        hover_styles.get('box-shadow') != styles.get('box-shadow') or
+        hover_styles.get('background') != styles.get('background')
+    )
+
+@given(st.integers(min_value=1, max_value=16))
+def test_spacing_tokens_follow_8px_grid(spacing_level):
+    """
+    Property 2: Spacing Grid Consistency
+    For any spacing token value, the value should be a multiple of 8px.
+    
+    Feature: nextgencv-ui-redesign, Property 2: Spacing Grid Consistency
+    """
+    token_name = f'--spacing-{spacing_level}'
+    styles = getComputedStyle(document.documentElement)
+    token_value = styles.getPropertyValue(token_name)
+    
+    if token_value:  # Token exists
+        # Convert to pixels and check if multiple of 8
+        px_value = parse_css_value_to_px(token_value)
+        assert px_value % 8 == 0, f'{token_name} = {px_value}px is not a multiple of 8'
+```
+
+### Test Execution Strategy
+
+**Development Phase:**
+1. Run unit tests on every code change (pre-commit hook)
+2. Run visual regression tests on pull requests
+3. Run accessibility tests on pull requests
+4. Run property-based tests in CI/CD pipeline
+
+**Pre-Release Phase:**
+1. Full cross-browser testing
+2. Performance testing and optimization
+3. Manual QA of all user flows
+4. Accessibility audit with real assistive technologies
+
+**Post-Release Phase:**
+1. Monitor real user performance metrics
+2. Collect user feedback on design
+3. A/B test design variations
+4. Continuous accessibility monitoring
+
+### Success Criteria
+
+The UI redesign is considered successful when:
+
+1. **All property tests pass** (100% pass rate)
+2. **Visual regression tests show no unintended changes** (all changes reviewed and approved)
+3. **Accessibility score ≥ 95** (Lighthouse accessibility audit)
+4. **Performance score ≥ 90** (Lighthouse performance audit)
+5. **Cross-browser compatibility** (all features work on target browsers)
+6. **Zero legacy styling** (all old CSS removed)
+7. **User feedback positive** (>80% approval in user testing)
+
+## Migration Strategy
+
+### Phase 1: Foundation (Week 1-2)
+
+**Objective:** Establish design system foundation
+
+**Tasks:**
+1. Create design token files (SCSS variables and CSS custom properties)
+2. Set up SCSS architecture and build process
+3. Customize Bootstrap via SCSS overrides
+4. Create base layout templates (authenticated, public)
+5. Document design system
+
+**Deliverables:**
+- `_tokens/` directory with all token files
+- `main.scss` with proper import structure
+- Base layout templates
+- Design system documentation
+
+**Testing:**
+- Unit tests for token definitions
+- Build process verification
+
+### Phase 2: Component Library (Week 3-4)
+
+**Objective:** Build reusable component library
+
+**Tasks:**
+1. Create button components (all variants)
+2. Create card components (all variants)
+3. Create form components (inputs, labels, validation)
+4. Create navigation components (sidebar, top bar)
+5. Create feedback components (alerts, toasts, modals)
+6. Create data visualization components (charts, progress)
+7. Document each component with usage examples
+
+**Deliverables:**
+- `_components/` directory with all component files
+- Component documentation
+- Storybook or style guide (optional)
+
+**Testing:**
+- Unit tests for each component
+- Visual regression tests for component variants
+- Accessibility tests for interactive components
+
+### Phase 3: Page Migration (Week 5-8)
+
+**Objective:** Migrate all pages to new design system
+
+**Priority Order:**
+1. **High Priority:** Landing, Login, Register, Dashboard (most visible)
+2. **Medium Priority:** Resume List, Resume Builder, PDF Upload (core features)
+3. **Low Priority:** Settings, Profile, Admin Panel (less frequently used)
+
+**Approach per Page:**
+1. Create new template using layout and components
+2. Migrate page-specific logic
+3. Remove legacy styles
+4. Test functionality
+5. Run visual regression tests
+6. Get stakeholder approval
+
+**Deliverables:**
+- All page templates migrated
+- Legacy templates removed
+- Page-specific SCSS files (minimal)
+
+**Testing:**
+- Integration tests for each page
+- Visual regression tests
+- User acceptance testing
+
+### Phase 4: Polish and Optimization (Week 9-10)
+
+**Objective:** Refine details and optimize performance
+
+**Tasks:**
+1. Add micro-interactions and animations
+2. Optimize asset loading (lazy loading, compression)
+3. Remove unused CSS
+4. Cross-browser testing and fixes
+5. Accessibility audit and fixes
+6. Performance optimization
+7. Final QA
+
+**Deliverables:**
+- Polished, production-ready UI
+- Performance optimization report
+- Accessibility audit report
+- Cross-browser compatibility report
+
+**Testing:**
+- Full test suite execution
+- Performance testing
+- Accessibility testing
+- Cross-browser testing
+- User acceptance testing
+
+### Phase 5: Deployment and Monitoring (Week 11)
+
+**Objective:** Deploy to production and monitor
+
+**Tasks:**
+1. Deploy to staging environment
+2. Final stakeholder review
+3. Deploy to production (gradual rollout if possible)
+4. Monitor performance metrics
+5. Monitor error logs
+6. Collect user feedback
+7. Address critical issues
+
+**Deliverables:**
+- Production deployment
+- Monitoring dashboard
+- User feedback collection system
+
+**Testing:**
+- Smoke tests in production
+- Real user monitoring
+- A/B testing (if applicable)
+
+### Rollback Plan
+
+**Trigger Conditions:**
+- Critical accessibility issues discovered
+- Performance degradation > 50%
+- Major functionality broken
+- Negative user feedback > 50%
+
+**Rollback Process:**
+1. Revert to previous version via version control
+2. Communicate issue to stakeholders
+3. Analyze root cause
+4. Fix issues in development
+5. Re-test thoroughly
+6. Re-deploy when ready
+
+### Risk Mitigation
+
+**Risk:** Breaking existing functionality during migration
+
+**Mitigation:**
+- Comprehensive integration tests before migration
+- Gradual page-by-page migration
+- Keep legacy templates as backup during transition
+- Thorough QA of each migrated page
+
+**Risk:** Performance regression from new CSS/animations
+
+**Mitigation:**
+- Performance testing at each phase
+- Optimize assets before deployment
+- Use CSS transforms for animations (GPU-accelerated)
+- Implement lazy loading
+
+**Risk:** Accessibility issues not caught in testing
+
+**Mitigation:**
+- Automated accessibility testing in CI/CD
+- Manual testing with screen readers
+- User testing with people with disabilities
+- Accessibility audit by expert
+
+**Risk:** Browser compatibility issues
+
+**Mitigation:**
+- Test on target browsers throughout development
+- Use feature detection and fallbacks
+- Polyfills for unsupported features
+- Clear browser support policy
+
+## Conclusion
+
+This design document provides a comprehensive blueprint for transforming NextGenCV into a premium, futuristic, dark-themed SaaS product. The design system approach ensures consistency across all pages while the detailed component specifications enable efficient implementation.
+
+The correctness properties provide clear, testable criteria for validating the implementation, while the testing strategy ensures comprehensive coverage through both unit tests and property-based tests. The migration strategy provides a practical roadmap for executing the redesign in manageable phases with clear deliverables and risk mitigation.
+
+By following this design, NextGenCV will achieve a cohesive, accessible, performant, and visually stunning user interface that matches the quality expectations of a 2026 AI-powered SaaS product.

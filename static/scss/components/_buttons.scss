@@ -1,0 +1,297 @@
+// ============================================
+// Button Components
+// ============================================
+// Implements all button variants with states
+// Requirements: 6.1
+
+// Base button styles
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-1;
+  padding: $spacing-2 $spacing-4;
+  border: none;
+  border-radius: $radius-lg;
+  font-family: $font-primary;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-normal;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all $duration-normal $easing-default;
+  white-space: nowrap;
+  user-select: none;
+  
+  // Prevent text selection
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  
+  // Focus state for accessibility
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.3);
+  }
+  
+  &:focus:not(:focus-visible) {
+    box-shadow: none;
+  }
+  
+  &:focus-visible {
+    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.3);
+  }
+}
+
+// ============================================
+// Primary Button Variant
+// ============================================
+.btn-primary {
+  background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+  color: #ffffff;
+  box-shadow: $shadow-sm;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $glow-primary, $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================
+// Ghost Button Variant
+// ============================================
+.btn-ghost {
+  background: transparent;
+  color: $color-text-primary;
+  border: 1px solid $color-border;
+  
+  &:hover:not(:disabled) {
+    background: $color-surface-elevated;
+    border-color: $color-border-hover;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.1);
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================
+// Outline Button Variant
+// ============================================
+.btn-outline {
+  background: transparent;
+  color: $color-primary-solid;
+  border: 2px solid $color-primary-solid;
+  
+  &:hover:not(:disabled) {
+    background: $color-primary-solid;
+    color: #ffffff;
+    box-shadow: $glow-primary;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// ============================================
+// Gradient Button Variant (CTA)
+// ============================================
+.btn-gradient {
+  background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
+  color: #ffffff;
+  box-shadow: $glow-primary, $shadow-md;
+  animation: pulse-glow 3s ease-in-out infinite;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 102, 255, 0.5), $shadow-lg;
+    animation: none;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    animation: none;
+  }
+}
+
+// ============================================
+// Semantic Button Variants (WCAG AA Compliant)
+// ============================================
+.btn-success {
+  background: $color-success-button;
+  color: #ffffff;
+  box-shadow: $shadow-sm;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $glow-success, $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-error,
+.btn-danger {
+  background: $color-error-button;
+  color: #ffffff;
+  box-shadow: $shadow-sm;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $glow-error, $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-warning {
+  background: $color-warning-button;
+  color: #ffffff;
+  box-shadow: $shadow-sm;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $glow-warning, $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  background: $color-secondary-button;
+  color: #ffffff;
+  box-shadow: $shadow-sm;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: $glow-secondary, $shadow-md;
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Pulse animation for gradient button
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: $glow-primary, $shadow-md;
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 102, 255, 0.4), $shadow-md;
+  }
+}
+
+// ============================================
+// Loading State
+// ============================================
+.btn-loading {
+  position: relative;
+  color: transparent !important;
+  pointer-events: none;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// ============================================
+// Button Sizes
+// ============================================
+.btn-sm {
+  padding: $spacing-1 $spacing-3;
+  font-size: $font-size-sm;
+}
+
+.btn-lg {
+  padding: $spacing-3 $spacing-6;
+  font-size: $font-size-lg;
+}
+
+// ============================================
+// Full Width Button
+// ============================================
+.btn-block {
+  display: flex;
+  width: 100%;
+}
+
+// ============================================
+// Button Group
+// ============================================
+.btn-group {
+  display: inline-flex;
+  gap: $spacing-2;
+  
+  &.btn-group-vertical {
+    flex-direction: column;
+  }
+}

@@ -1,0 +1,296 @@
+{% extends 'resumes/resume_wizard.html' %}
+
+{% block wizard_step %}
+<div class="form-step">
+    <h2 class="form-step__title">Professional Summary</h2>
+    <p class="form-step__description">Write a brief summary that highlights your key qualifications and career goals. This appears at the top of your resume.</p>
+
+    <form method="post" id="wizardForm">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.summary.id_for_label }}" class="form-label">Professional Summary</label>
+            <div class="form-input-wrapper">
+                {{ form.summary }}
+            </div>
+            <div class="form-meta">
+                <small class="form-help">2-4 sentences that capture your professional identity and value proposition</small>
+                <span class="char-count" id="charCount">0 / 500</span>
+            </div>
+            {% if form.summary.errors %}
+                <div class="form-error">{{ form.summary.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <!-- AI Suggestion Feature -->
+        <div class="ai-suggestion-card">
+            <div class="ai-suggestion-card__header">
+                <div class="ai-suggestion-card__icon">
+                    <i class="bi bi-stars"></i>
+                </div>
+                <div>
+                    <h4 class="ai-suggestion-card__title">AI-Powered Summary</h4>
+                    <p class="ai-suggestion-card__description">Generate a professional summary based on your experience and skills</p>
+                </div>
+            </div>
+            
+            <button type="button" class="btn btn-gradient" id="generateSummaryBtn" onclick="generateSummary()">
+                <i class="bi bi-magic"></i>
+                <span>Generate Summary</span>
+            </button>
+
+            <div class="ai-suggestion-card__result" id="aiSuggestion" style="display: none;">
+                <div class="ai-suggestion-card__result-header">
+                    <span class="ai-suggestion-card__result-label">AI Suggestion:</span>
+                    <button type="button" class="btn-text" onclick="useSuggestion()">
+                        <i class="bi bi-check-circle"></i>
+                        Use This
+                    </button>
+                </div>
+                <p class="ai-suggestion-card__result-text" id="suggestionText"></p>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="tips-card">
+            <div class="tips-card__header">
+                <i class="bi bi-lightbulb"></i>
+                <span>Tips for a Great Summary</span>
+            </div>
+            <ul class="tips-card__list">
+                <li>Start with your professional title and years of experience</li>
+                <li>Highlight 2-3 key skills or achievements</li>
+                <li>Mention your career goals or what you're looking for</li>
+                <li>Keep it concise - aim for 2-4 sentences</li>
+                <li>Use action words and quantify achievements when possible</li>
+            </ul>
+        </div>
+    </form>
+</div>
+
+<style>
+    .form-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var(--spacing-1);
+    }
+
+    .char-count {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-tertiary);
+    }
+
+    .ai-suggestion-card {
+        background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+        border: 1px solid rgba(0, 102, 255, 0.3);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-5);
+        margin: var(--spacing-5) 0;
+    }
+
+    .ai-suggestion-card__header {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--spacing-3);
+        margin-bottom: var(--spacing-4);
+    }
+
+    .ai-suggestion-card__icon {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--color-primary-solid) 0%, var(--color-secondary) 100%);
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--font-size-2xl);
+        color: white;
+        box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);
+    }
+
+    .ai-suggestion-card__title {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-1);
+    }
+
+    .ai-suggestion-card__description {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+
+    .ai-suggestion-card__result {
+        margin-top: var(--spacing-4);
+        padding-top: var(--spacing-4);
+        border-top: 1px solid rgba(0, 102, 255, 0.2);
+    }
+
+    .ai-suggestion-card__result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-2);
+    }
+
+    .ai-suggestion-card__result-label {
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-primary-solid);
+    }
+
+    .ai-suggestion-card__result-text {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--spacing-3);
+        color: var(--color-text-primary);
+        line-height: 1.6;
+    }
+
+    .btn-text {
+        background: transparent;
+        border: none;
+        color: var(--color-primary-solid);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-1);
+        transition: all 250ms var(--easing-default);
+    }
+
+    .btn-text:hover {
+        color: var(--color-secondary);
+    }
+
+    .tips-card {
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-4);
+        margin-top: var(--spacing-5);
+    }
+
+    .tips-card__header {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2);
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-3);
+    }
+
+    .tips-card__list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .tips-card__list li {
+        padding-left: var(--spacing-4);
+        margin-bottom: var(--spacing-2);
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        position: relative;
+    }
+
+    .tips-card__list li:before {
+        content: "•";
+        position: absolute;
+        left: 0;
+        color: var(--color-primary-solid);
+        font-weight: bold;
+    }
+</style>
+
+<script>
+    // Character counter
+    const summaryField = document.getElementById('{{ form.summary.id_for_label }}');
+    const charCount = document.getElementById('charCount');
+
+    if (summaryField) {
+        summaryField.addEventListener('input', () => {
+            const length = summaryField.value.length;
+            charCount.textContent = `${length} / 500`;
+            
+            if (length > 500) {
+                charCount.style.color = 'var(--color-error)';
+            } else if (length > 450) {
+                charCount.style.color = 'var(--color-warning)';
+            } else {
+                charCount.style.color = 'var(--color-text-tertiary)';
+            }
+        });
+
+        // Initialize count
+        charCount.textContent = `${summaryField.value.length} / 500`;
+    }
+
+    // AI Summary Generation
+    function generateSummary() {
+        const btn = document.getElementById('generateSummaryBtn');
+        const aiSuggestion = document.getElementById('aiSuggestion');
+        const suggestionText = document.getElementById('suggestionText');
+
+        // Show loading state
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation: spin 1s linear infinite;"></i><span>Generating...</span>';
+
+        // Make AJAX request to generate summary
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: 'action=generate_summary'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.summary) {
+                suggestionText.textContent = data.summary;
+                aiSuggestion.style.display = 'block';
+            } else {
+                alert('Failed to generate summary. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error generating summary:', error);
+            alert('An error occurred. Please try again.');
+        })
+        .finally(() => {
+            // Reset button
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-magic"></i><span>Generate Summary</span>';
+        });
+    }
+
+    function useSuggestion() {
+        const suggestionText = document.getElementById('suggestionText').textContent;
+        summaryField.value = suggestionText;
+        
+        // Trigger input event to update character count
+        summaryField.dispatchEvent(new Event('input'));
+        
+        // Trigger autosave
+        if (typeof triggerAutosave === 'function') {
+            triggerAutosave();
+        }
+    }
+
+    // Add spin animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

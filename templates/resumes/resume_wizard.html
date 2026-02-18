@@ -1,0 +1,443 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% load resume_filters %}
+
+{% block title %}{% if wizard_data.title %}{{ wizard_data.title }}{% else %}Create Resume{% endif %} - NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Wizard-specific styles */
+    .wizard-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 64px); /* Full height minus topbar */
+        overflow: hidden;
+    }
+
+    .wizard-progress {
+        background: var(--color-surface);
+        border-bottom: 1px solid var(--color-border);
+        padding: var(--spacing-4) var(--spacing-6);
+    }
+
+    .wizard-progress__steps {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        max-width: 900px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .wizard-progress__line {
+        position: absolute;
+        top: 20px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--color-surface-elevated);
+        z-index: 0;
+    }
+
+    .wizard-progress__line-fill {
+        height: 100%;
+        background: linear-gradient(135deg, var(--color-primary-solid) 0%, var(--color-secondary) 100%);
+        transition: width 350ms var(--easing-default);
+    }
+
+    .wizard-progress__step {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--spacing-2);
+        flex: 1;
+    }
+
+    .wizard-progress__step-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--color-surface-elevated);
+        border: 2px solid var(--color-border);
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-semibold);
+        transition: all 250ms var(--easing-default);
+    }
+
+    .wizard-progress__step--completed .wizard-progress__step-circle {
+        background: var(--color-success);
+        border-color: var(--color-success);
+        color: white;
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .wizard-progress__step--active .wizard-progress__step-circle {
+        background: var(--color-primary-solid);
+        border-color: var(--color-primary-solid);
+        color: white;
+        box-shadow: 0 0 20px rgba(0, 102, 255, 0.4);
+        transform: scale(1.1);
+    }
+
+    .wizard-progress__step-label {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        text-align: center;
+        transition: color 250ms var(--easing-default);
+    }
+
+    .wizard-progress__step--active .wizard-progress__step-label {
+        color: var(--color-primary-solid);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    .wizard-progress__step--completed .wizard-progress__step-label {
+        color: var(--color-text-primary);
+    }
+
+    .wizard-body {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+    }
+
+    .wizard-form {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--spacing-6);
+        background: var(--color-base-bg);
+    }
+
+    .wizard-form__content {
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .wizard-preview {
+        width: 40%;
+        background: var(--color-surface);
+        border-left: 1px solid var(--color-border);
+        overflow-y: auto;
+        padding: var(--spacing-6);
+        position: sticky;
+        top: 0;
+    }
+
+    .wizard-preview__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-4);
+    }
+
+    .wizard-preview__title {
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+    }
+
+    .wizard-preview__autosave {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-1);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+
+    .wizard-preview__autosave--saving {
+        color: var(--color-warning);
+    }
+
+    .wizard-preview__autosave--saved {
+        color: var(--color-success);
+    }
+
+    .wizard-preview__content {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-5);
+        min-height: 400px;
+    }
+
+    .wizard-navigation {
+        background: var(--color-surface);
+        border-top: 1px solid var(--color-border);
+        padding: var(--spacing-4) var(--spacing-6);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .wizard-navigation__left,
+    .wizard-navigation__right {
+        display: flex;
+        gap: var(--spacing-3);
+    }
+
+    /* Form step styles */
+    .form-step {
+        animation: fadeInUp 350ms var(--easing-default);
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .form-step__title {
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--spacing-2);
+    }
+
+    .form-step__description {
+        font-size: var(--font-size-base);
+        color: var(--color-text-secondary);
+        margin-bottom: var(--spacing-6);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .wizard-body {
+            flex-direction: column;
+        }
+
+        .wizard-preview {
+            width: 100%;
+            border-left: none;
+            border-top: 1px solid var(--color-border);
+            max-height: 300px;
+        }
+
+        .wizard-progress__step-label {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .wizard-progress {
+            padding: var(--spacing-3);
+        }
+
+        .wizard-form,
+        .wizard-preview {
+            padding: var(--spacing-4);
+        }
+
+        .wizard-navigation {
+            padding: var(--spacing-3);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-container">
+    <!-- Progress Indicator -->
+    <div class="wizard-progress">
+        <div class="wizard-progress__steps">
+            <div class="wizard-progress__line">
+                <div class="wizard-progress__line-fill" style="width: {{ step|add:'-1'|multiply:20 }}%;"></div>
+            </div>
+
+            <div class="wizard-progress__step {% if step >= 1 %}wizard-progress__step--completed{% endif %} {% if step == 1 %}wizard-progress__step--active{% endif %}">
+                <div class="wizard-progress__step-circle">
+                    {% if step > 1 %}<i class="bi bi-check"></i>{% else %}1{% endif %}
+                </div>
+                <span class="wizard-progress__step-label">Personal Info</span>
+            </div>
+
+            <div class="wizard-progress__step {% if step >= 2 %}wizard-progress__step--completed{% endif %} {% if step == 2 %}wizard-progress__step--active{% endif %}">
+                <div class="wizard-progress__step-circle">
+                    {% if step > 2 %}<i class="bi bi-check"></i>{% else %}2{% endif %}
+                </div>
+                <span class="wizard-progress__step-label">Experience</span>
+            </div>
+
+            <div class="wizard-progress__step {% if step >= 3 %}wizard-progress__step--completed{% endif %} {% if step == 3 %}wizard-progress__step--active{% endif %}">
+                <div class="wizard-progress__step-circle">
+                    {% if step > 3 %}<i class="bi bi-check"></i>{% else %}3{% endif %}
+                </div>
+                <span class="wizard-progress__step-label">Education</span>
+            </div>
+
+            <div class="wizard-progress__step {% if step >= 4 %}wizard-progress__step--completed{% endif %} {% if step == 4 %}wizard-progress__step--active{% endif %}">
+                <div class="wizard-progress__step-circle">
+                    {% if step > 4 %}<i class="bi bi-check"></i>{% else %}4{% endif %}
+                </div>
+                <span class="wizard-progress__step-label">Skills</span>
+            </div>
+
+            <div class="wizard-progress__step {% if step >= 5 %}wizard-progress__step--completed{% endif %} {% if step == 5 %}wizard-progress__step--active{% endif %}">
+                <div class="wizard-progress__step-circle">
+                    {% if step > 5 %}<i class="bi bi-check"></i>{% else %}5{% endif %}
+                </div>
+                <span class="wizard-progress__step-label">Summary</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wizard Body -->
+    <div class="wizard-body">
+        <!-- Form Section -->
+        <div class="wizard-form">
+            <div class="wizard-form__content">
+                {% block wizard_step %}{% endblock %}
+            </div>
+        </div>
+
+        <!-- Live Preview Panel -->
+        <div class="wizard-preview">
+            <div class="wizard-preview__header">
+                <h3 class="wizard-preview__title">Live Preview</h3>
+                <div class="wizard-preview__autosave wizard-preview__autosave--saved" id="autosaveIndicator">
+                    <i class="bi bi-check-circle"></i>
+                    <span>Saved</span>
+                </div>
+            </div>
+            <div class="wizard-preview__content" id="previewContent">
+                {% include 'resumes/partials/preview_content.html' %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="wizard-navigation">
+        <div class="wizard-navigation__left">
+            {% if step > 1 %}
+                <a href="?back=1" class="btn btn-ghost">
+                    <i class="bi bi-arrow-left"></i>
+                    <span>Back</span>
+                </a>
+            {% else %}
+                <a href="{% url 'resume_list' %}" class="btn btn-ghost">
+                    <i class="bi bi-x"></i>
+                    <span>Cancel</span>
+                </a>
+            {% endif %}
+            
+            <button type="button" class="btn btn-outline" id="saveDraftBtn">
+                <i class="bi bi-save"></i>
+                <span>Save Draft</span>
+            </button>
+        </div>
+
+        <div class="wizard-navigation__right">
+            <button type="submit" form="wizardForm" class="btn btn-primary">
+                {% if step == 5 %}
+                    <span>Finish</span>
+                    <i class="bi bi-check-circle"></i>
+                {% else %}
+                    <span>Next</span>
+                    <i class="bi bi-arrow-right"></i>
+                {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Autosave functionality
+    let autosaveTimeout;
+    const autosaveIndicator = document.getElementById('autosaveIndicator');
+    const form = document.getElementById('wizardForm');
+
+    function showAutosaveStatus(status) {
+        autosaveIndicator.className = 'wizard-preview__autosave';
+        
+        if (status === 'saving') {
+            autosaveIndicator.classList.add('wizard-preview__autosave--saving');
+            autosaveIndicator.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Saving...</span>';
+        } else if (status === 'saved') {
+            autosaveIndicator.classList.add('wizard-preview__autosave--saved');
+            autosaveIndicator.innerHTML = '<i class="bi bi-check-circle"></i><span>Saved</span>';
+        }
+    }
+
+    function triggerAutosave() {
+        clearTimeout(autosaveTimeout);
+        showAutosaveStatus('saving');
+        
+        autosaveTimeout = setTimeout(() => {
+            // Save form data to session via AJAX
+            const formData = new FormData(form);
+            formData.append('autosave', 'true');
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                showAutosaveStatus('saved');
+                // Update preview if needed
+                if (data.preview_html) {
+                    document.getElementById('previewContent').innerHTML = data.preview_html;
+                }
+            })
+            .catch(error => {
+                console.error('Autosave failed:', error);
+            });
+        }, 1000); // Debounce for 1 second
+    }
+
+    // Attach autosave to form inputs
+    if (form) {
+        form.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('input', triggerAutosave);
+            input.addEventListener('change', triggerAutosave);
+        });
+    }
+
+    // Save draft button
+    document.getElementById('saveDraftBtn').addEventListener('click', () => {
+        showAutosaveStatus('saving');
+        const formData = new FormData(form);
+        formData.append('save_draft', 'true');
+        
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            showAutosaveStatus('saved');
+            if (data.success) {
+                // Show success message
+                const alert = document.createElement('div');
+                alert.className = 'alert alert--success';
+                alert.innerHTML = `
+                    <div class="alert__icon"><i class="bi bi-check-circle"></i></div>
+                    <div class="alert__content">Draft saved successfully!</div>
+                `;
+                document.querySelector('.content-wrapper').prepend(alert);
+                
+                setTimeout(() => alert.remove(), 3000);
+            }
+        })
+        .catch(error => {
+            console.error('Save draft failed:', error);
+        });
+    });
+</script>
+{% endblock %}

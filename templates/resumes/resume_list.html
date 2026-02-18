@@ -1,75 +1,207 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
 
-{% block title %}My Resumes - ATS Resume Builder{% endblock %}
+{% block title %}My Resumes - NextGenCV{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">My Resumes</h2>
-            <a href="{% url 'resume_create' %}" class="btn btn-primary">
-                <i class="bi bi-plus-circle"></i> Create New Resume
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header__content">
+        <div class="page-header__title-section">
+            <h1 class="page-header__title">My Resumes</h1>
+            <p class="page-header__subtitle">Manage and optimize your professional resumes</p>
+        </div>
+        <div class="page-header__actions">
+            <a href="{% url 'resume_create' %}" class="btn btn-gradient">
+                <i class="bi bi-plus-circle"></i>
+                <span>Create New Resume</span>
             </a>
         </div>
-
-        {% if resumes %}
-            <div class="row">
-                {% for resume in resumes %}
-                <div class="col-md-6 col-lg-4 mb-4">
-                    <div class="card h-100 shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title">{{ resume.title }}</h5>
-                            <p class="card-text text-muted">
-                                <small>
-                                    <strong>Template:</strong> {{ resume.template|title }}<br>
-                                    <strong>Last Updated:</strong> {{ resume.updated_at|date:"M d, Y g:i A" }}
-                                </small>
-                            </p>
-                        </div>
-                        <div class="card-footer bg-white">
-                            <div class="btn-group w-100" role="group">
-                                <a href="{% url 'resume_detail' resume.id %}" class="btn btn-sm btn-outline-primary" title="View">
-                                    View
-                                </a>
-                                <a href="{% url 'resume_update' resume.id %}" class="btn btn-sm btn-outline-secondary" title="Edit">
-                                    Edit
-                                </a>
-                                <a href="{% url 'resume_duplicate' resume.id %}" class="btn btn-sm btn-outline-info" title="Duplicate">
-                                    Copy
-                                </a>
-                            </div>
-                            <div class="btn-group w-100 mt-2" role="group">
-                                <a href="#" class="btn btn-sm btn-outline-success" title="Analyze">
-                                    Analyze
-                                </a>
-                                <a href="{% url 'resume_export' resume.id %}" class="btn btn-sm btn-outline-warning" title="Export">
-                                    Export
-                                </a>
-                                <a href="{% url 'resume_delete' resume.id %}" class="btn btn-sm btn-outline-danger" title="Delete">
-                                    Delete
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <!-- Empty state -->
-            <div class="text-center py-5">
-                <div class="mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-file-earmark-text text-muted" viewBox="0 0 16 16">
-                        <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5z"/>
-                        <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5L9.5 0zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5z"/>
-                    </svg>
-                </div>
-                <h3 class="text-muted">No Resumes Yet</h3>
-                <p class="text-muted mb-4">Get started by creating your first ATS-optimized resume!</p>
-                <a href="{% url 'resume_create' %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-plus-circle"></i> Create Your First Resume
-                </a>
-            </div>
-        {% endif %}
+    </div>
+    
+    <!-- Search and Filter Bar -->
+    <div class="page-header__toolbar">
+        <div class="search-bar">
+            <i class="bi bi-search search-bar__icon"></i>
+            <input 
+                type="text" 
+                class="search-bar__input" 
+                placeholder="Search resumes by title..."
+                aria-label="Search resumes"
+                id="resumeSearch"
+            >
+        </div>
+        <div class="filter-group">
+            <select class="filter-select" aria-label="Sort resumes" id="sortFilter">
+                <option value="date">Sort by: Date Modified</option>
+                <option value="name">Sort by: Name</option>
+                <option value="template">Sort by: Template</option>
+            </select>
+        </div>
     </div>
 </div>
+
+{% if resumes %}
+    <!-- Resume Grid -->
+    <div class="resume-grid" id="resumeGrid">
+        {% for resume in resumes %}
+        <div class="resume-card card-elevated card-interactive" data-resume-title="{{ resume.title|lower }}" data-resume-date="{{ resume.updated_at|date:'Y-m-d' }}" data-resume-template="{{ resume.template }}">
+            <!-- Resume Preview Thumbnail -->
+            <div class="resume-card__preview">
+                <div class="resume-card__preview-placeholder">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+                <!-- Template Badge -->
+                <div class="resume-card__badge badge badge-primary">
+                    {{ resume.template|title }}
+                </div>
+            </div>
+            
+            <!-- Resume Info -->
+            <div class="resume-card__content">
+                <h3 class="resume-card__title">{{ resume.title }}</h3>
+                <div class="resume-card__meta">
+                    <span class="resume-card__meta-item">
+                        <i class="bi bi-clock"></i>
+                        <span>{{ resume.updated_at|date:"M d, Y" }}</span>
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Resume Actions (shown on hover) -->
+            <div class="resume-card__actions">
+                <div class="resume-card__actions-row">
+                    <a href="{% url 'resume_detail' resume.id %}" class="btn btn-sm btn-ghost" title="View Resume" aria-label="View {{ resume.title }}">
+                        <i class="bi bi-eye"></i>
+                        <span>View</span>
+                    </a>
+                    <a href="{% url 'resume_update' resume.id %}" class="btn btn-sm btn-primary" title="Edit Resume" aria-label="Edit {{ resume.title }}">
+                        <i class="bi bi-pencil"></i>
+                        <span>Edit</span>
+                    </a>
+                </div>
+                <div class="resume-card__actions-row">
+                    <a href="{% url 'resume_duplicate' resume.id %}" class="btn btn-sm btn-ghost" title="Duplicate Resume" aria-label="Duplicate {{ resume.title }}">
+                        <i class="bi bi-files"></i>
+                        <span>Duplicate</span>
+                    </a>
+                    <a href="{% url 'resume_export' resume.id %}" class="btn btn-sm btn-ghost" title="Download Resume" aria-label="Download {{ resume.title }}">
+                        <i class="bi bi-download"></i>
+                        <span>Download</span>
+                    </a>
+                </div>
+                <div class="resume-card__actions-row">
+                    <a href="{% url 'resume_delete' resume.id %}" class="btn btn-sm btn-outline" title="Delete Resume" aria-label="Delete {{ resume.title }}" style="border-color: var(--color-error); color: var(--color-error);">
+                        <i class="bi bi-trash"></i>
+                        <span>Delete</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination (if needed in future) -->
+    {% if is_paginated %}
+    <div class="pagination-container">
+        <nav class="pagination" role="navigation" aria-label="Resume pagination">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="pagination-item" aria-label="First page">
+                    <i class="bi bi-chevron-double-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="pagination-item" aria-label="Previous page">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            {% else %}
+                <button class="pagination-item" disabled aria-label="First page">
+                    <i class="bi bi-chevron-double-left"></i>
+                </button>
+                <button class="pagination-item" disabled aria-label="Previous page">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            {% endif %}
+            
+            <span class="pagination-info">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="pagination-item" aria-label="Next page">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="pagination-item" aria-label="Last page">
+                    <i class="bi bi-chevron-double-right"></i>
+                </a>
+            {% else %}
+                <button class="pagination-item" disabled aria-label="Next page">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <button class="pagination-item" disabled aria-label="Last page">
+                    <i class="bi bi-chevron-double-right"></i>
+                </button>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    
+{% else %}
+    <!-- Empty State -->
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-file-earmark-text"></i>
+        </div>
+        <h2 class="empty-state-title">No resumes yet</h2>
+        <p class="empty-state-description">
+            Create your first ATS-optimized resume to get started with your job search journey.
+        </p>
+        <div class="empty-state-action">
+            <a href="{% url 'resume_create' %}" class="btn btn-gradient btn-lg">
+                <i class="bi bi-plus-circle"></i>
+                <span>Create Your First Resume</span>
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Search functionality
+    const searchInput = document.getElementById('resumeSearch');
+    const sortFilter = document.getElementById('sortFilter');
+    const resumeGrid = document.getElementById('resumeGrid');
+    const resumeCards = resumeGrid ? Array.from(resumeGrid.querySelectorAll('.resume-card')) : [];
+    
+    if (searchInput && resumeCards.length > 0) {
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            resumeCards.forEach(card => {
+                const title = card.dataset.resumeTitle;
+                const matches = title.includes(searchTerm);
+                card.style.display = matches ? '' : 'none';
+            });
+        });
+    }
+    
+    // Sort functionality
+    if (sortFilter && resumeCards.length > 0) {
+        sortFilter.addEventListener('change', (e) => {
+            const sortBy = e.target.value;
+            
+            const sortedCards = [...resumeCards].sort((a, b) => {
+                if (sortBy === 'name') {
+                    return a.dataset.resumeTitle.localeCompare(b.dataset.resumeTitle);
+                } else if (sortBy === 'date') {
+                    return new Date(b.dataset.resumeDate) - new Date(a.dataset.resumeDate);
+                } else if (sortBy === 'template') {
+                    return a.dataset.resumeTemplate.localeCompare(b.dataset.resumeTemplate);
+                }
+                return 0;
+            });
+            
+            // Re-append cards in sorted order
+            sortedCards.forEach(card => resumeGrid.appendChild(card));
+        });
+    }
+</script>
 {% endblock %}

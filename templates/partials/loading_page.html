@@ -1,0 +1,18 @@
+<!-- Page Loading Overlay -->
+<div class="loading-overlay" id="pageLoadingOverlay">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">{{ loading_text|default:"Loading..." }}</p>
+</div>
+
+<script>
+// Auto-hide loading overlay when page is fully loaded
+window.addEventListener('load', function() {
+    const overlay = document.getElementById('pageLoadingOverlay');
+    if (overlay) {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+            overlay.style.display = 'none';
+        }, 300);
+    }
+});
+</script>

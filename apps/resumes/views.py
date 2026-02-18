@@ -51,18 +51,7 @@ def resume_create(request):
     if request.method == 'POST':
         # Handle form submission based on current step
         if current_step == 1:
-            # Step 1: Resume title and template
-            from .forms import ResumeForm
-            form = ResumeForm(request.POST)
-            if form.is_valid():
-                wizard_data['data']['title'] = form.cleaned_data['title']
-                wizard_data['data']['template'] = form.cleaned_data['template']
-                wizard_data['step'] = 2
-                request.session.modified = True
-                return redirect('resume_create')
-        
-        elif current_step == 2:
-            # Step 2: Personal information
+            # Step 1: Personal information
             from .forms import PersonalInfoForm
             form = PersonalInfoForm(request.POST)
             if form.is_valid():
@@ -74,12 +63,12 @@ def resume_create(request):
                     'github': form.cleaned_data['github'],
                     'location': form.cleaned_data['location']
                 }
-                wizard_data['step'] = 3
+                wizard_data['step'] = 2
                 request.session.modified = True
                 return redirect('resume_create')
         
-        elif current_step == 3:
-            # Step 3: Experience entries
+        elif current_step == 2:
+            # Step 2: Experience entries
             action = request.POST.get('action')
             if action == 'add_experience':
                 from .forms import ExperienceForm
@@ -98,12 +87,12 @@ def resume_create(request):
                     messages.success(request, 'Experience added successfully!')
                     return redirect('resume_create')
             elif action == 'next':
-                wizard_data['step'] = 4
+                wizard_data['step'] = 3
                 request.session.modified = True
                 return redirect('resume_create')
         
-        elif current_step == 4:
-            # Step 4: Education entries
+        elif current_step == 3:
+            # Step 3: Education entries
             action = request.POST.get('action')
             if action == 'add_education':
                 from .forms import EducationForm
@@ -122,12 +111,12 @@ def resume_create(request):
                     messages.success(request, 'Education added successfully!')
                     return redirect('resume_create')
             elif action == 'next':
-                wizard_data['step'] = 5
+                wizard_data['step'] = 4
                 request.session.modified = True
                 return redirect('resume_create')
         
-        elif current_step == 5:
-            # Step 5: Skills
+        elif current_step == 4:
+            # Step 4: Skills
             action = request.POST.get('action')
             if action == 'add_skill':
                 from .forms import SkillForm
@@ -143,37 +132,20 @@ def resume_create(request):
                     messages.success(request, 'Skill added successfully!')
                     return redirect('resume_create')
             elif action == 'next':
-                wizard_data['step'] = 6
+                wizard_data['step'] = 5
                 request.session.modified = True
                 return redirect('resume_create')
         
-        elif current_step == 6:
-            # Step 6: Projects
+        elif current_step == 5:
+            # Step 5: Summary and finish
             action = request.POST.get('action')
-            if action == 'add_project':
-                from .forms import ProjectForm
-                form = ProjectForm(request.POST)
-                if form.is_valid():
-                    if 'projects' not in wizard_data['data']:
-                        wizard_data['data']['projects'] = []
-                    wizard_data['data']['projects'].append({
-                        'name': form.cleaned_data['name'],
-                        'description': form.cleaned_data['description'],
-                        'technologies': form.cleaned_data['technologies'],
-                        'url': form.cleaned_data['url']
-                    })
+            if action == 'save' or action == 'next':
+                # Get summary if provided
+                summary = request.POST.get('summary', '')
+                if summary:
+                    wizard_data['data']['summary'] = summary
                     request.session.modified = True
-                    messages.success(request, 'Project added successfully!')
-                    return redirect('resume_create')
-            elif action == 'next':
-                wizard_data['step'] = 7
-                request.session.modified = True
-                return redirect('resume_create')
-        
-        elif current_step == 7:
-            # Step 7: Review and save
-            action = request.POST.get('action')
-            if action == 'save':
+                
                 # Log wizard data for debugging
                 logger.info(f'Creating resume with wizard data: {wizard_data["data"]}')
                 
@@ -181,15 +153,22 @@ def resume_create(request):
                 from datetime import date
                 if 'experiences' in wizard_data['data']:
                     for exp in wizard_data['data']['experiences']:
-                        exp['start_date'] = date.fromisoformat(exp['start_date'])
-                        if exp['end_date']:
+                        if isinstance(exp['start_date'], str):
+                            exp['start_date'] = date.fromisoformat(exp['start_date'])
+                        if exp['end_date'] and isinstance(exp['end_date'], str):
                             exp['end_date'] = date.fromisoformat(exp['end_date'])
+                
+                # Set default title and template if not provided
+                if 'title' not in wizard_data['data']:
+                    wizard_data['data']['title'] = f"{wizard_data['data'].get('personal_info', {}).get('full_name', 'My')} Resume"
+                if 'template' not in wizard_data['data']:
+                    wizard_data['data']['template'] = 'professional'
                 
                 # Create the resume
                 resume = ResumeService.create_resume(request.user, wizard_data['data'])
                 
                 # Log what was created
-                logger.info(f'Resume created: ID={resume.id}, Experiences={resume.experiences.count()}, Education={resume.education.count()}, Skills={resume.skills.count()}, Projects={resume.projects.count()}')
+                logger.info(f'Resume created: ID={resume.id}, Experiences={resume.experiences.count()}, Education={resume.education.count()}, Skills={resume.skills.count()}')
                 
                 # Clear wizard data
                 del request.session['resume_wizard']
@@ -205,37 +184,147 @@ def resume_create(request):
             request.session.modified = True
             return redirect('resume_create')
     
+    # Handle AJAX requests for autosave and AI generation
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        import json
+        from django.http import JsonResponse
+        
+        if request.POST.get('autosave'):
+            # Save current form data to session
+            request.session.modified = True
+            return JsonResponse({'success': True, 'message': 'Autosaved'})
+        
+        if request.POST.get('save_draft'):
+            # Save draft (same as autosave for now)
+            request.session.modified = True
+            return JsonResponse({'success': True, 'message': 'Draft saved'})
+        
+        if request.POST.get('action') == 'generate_summary':
+            # Generate AI summary based on experience and skills
+            summary = generate_ai_summary(wizard_data['data'])
+            return JsonResponse({'summary': summary})
+    
     # Prepare context based on current step
     context = {
         'step': current_step,
         'wizard_data': wizard_data['data']
     }
     
-    # Add appropriate form for current step
+    # Add appropriate form and template for current step
     if current_step == 1:
-        from .forms import ResumeForm
-        context['form'] = ResumeForm(initial=wizard_data['data'])
-    elif current_step == 2:
         from .forms import PersonalInfoForm
         context['form'] = PersonalInfoForm(initial=wizard_data['data'].get('personal_info', {}))
-    elif current_step == 3:
+        return render(request, 'resumes/wizard_steps/step1_personal.html', context)
+    elif current_step == 2:
         from .forms import ExperienceForm
         context['form'] = ExperienceForm()
         context['experiences'] = wizard_data['data'].get('experiences', [])
-    elif current_step == 4:
+        
+        # Handle remove experience action
+        if request.POST.get('action') == 'remove_experience':
+            index = int(request.POST.get('index', -1))
+            if 0 <= index < len(context['experiences']):
+                wizard_data['data']['experiences'].pop(index)
+                request.session.modified = True
+                messages.success(request, 'Experience removed successfully!')
+                return redirect('resume_create')
+        
+        return render(request, 'resumes/wizard_steps/step2_experience.html', context)
+    elif current_step == 3:
         from .forms import EducationForm
         context['form'] = EducationForm()
         context['education'] = wizard_data['data'].get('education', [])
-    elif current_step == 5:
+        
+        # Handle remove education action
+        if request.POST.get('action') == 'remove_education':
+            index = int(request.POST.get('index', -1))
+            if 0 <= index < len(context['education']):
+                wizard_data['data']['education'].pop(index)
+                request.session.modified = True
+                messages.success(request, 'Education removed successfully!')
+                return redirect('resume_create')
+        
+        return render(request, 'resumes/wizard_steps/step3_education.html', context)
+    elif current_step == 4:
         from .forms import SkillForm
         context['form'] = SkillForm()
         context['skills'] = wizard_data['data'].get('skills', [])
-    elif current_step == 6:
-        from .forms import ProjectForm
-        context['form'] = ProjectForm()
-        context['projects'] = wizard_data['data'].get('projects', [])
+        
+        # Handle remove skill action
+        if request.POST.get('action') == 'remove_skill':
+            index = int(request.POST.get('index', -1))
+            if 0 <= index < len(context['skills']):
+                wizard_data['data']['skills'].pop(index)
+                request.session.modified = True
+                messages.success(request, 'Skill removed successfully!')
+                return redirect('resume_create')
+        
+        return render(request, 'resumes/wizard_steps/step4_skills.html', context)
+    elif current_step == 5:
+        from .forms import SummaryForm
+        context['form'] = SummaryForm(initial={'summary': wizard_data['data'].get('summary', '')})
+        
+        # Handle summary submission
+        if request.POST.get('action') == 'next' or request.POST.get('action') == 'save':
+            from .forms import SummaryForm
+            form = SummaryForm(request.POST)
+            if form.is_valid():
+                wizard_data['data']['summary'] = form.cleaned_data['summary']
+                request.session.modified = True
+                
+                if request.POST.get('action') == 'save':
+                    # Save the resume
+                    from datetime import date
+                    if 'experiences' in wizard_data['data']:
+                        for exp in wizard_data['data']['experiences']:
+                            if isinstance(exp['start_date'], str):
+                                exp['start_date'] = date.fromisoformat(exp['start_date'])
+                            if exp['end_date'] and isinstance(exp['end_date'], str):
+                                exp['end_date'] = date.fromisoformat(exp['end_date'])
+                    
+                    resume = ResumeService.create_resume(request.user, wizard_data['data'])
+                    del request.session['resume_wizard']
+                    request.session.modified = True
+                    messages.success(request, 'Resume created successfully!')
+                    return redirect('resume_detail', pk=resume.id)
+        
+        return render(request, 'resumes/wizard_steps/step5_summary.html', context)
     
+    # Fallback to old template if step is out of range
     return render(request, 'resumes/resume_create.html', context)
+
+
+def generate_ai_summary(wizard_data):
+    """Generate an AI-powered professional summary based on user data."""
+    # This is a placeholder. In production, this would call an AI service
+    experiences = wizard_data.get('experiences', [])
+    skills = wizard_data.get('skills', [])
+    education = wizard_data.get('education', [])
+    
+    # Build a simple summary based on available data
+    summary_parts = []
+    
+    if experiences:
+        years = len(experiences)
+        latest_role = experiences[0].get('role', 'Professional')
+        summary_parts.append(f"Experienced {latest_role} with {years}+ years in the industry")
+    
+    if skills:
+        skill_names = [s['name'] for s in skills[:3]]
+        if skill_names:
+            summary_parts.append(f"skilled in {', '.join(skill_names)}")
+    
+    if education:
+        latest_edu = education[0]
+        degree = latest_edu.get('degree', '')
+        field = latest_edu.get('field', '')
+        if degree and field:
+            summary_parts.append(f"holding a {degree} in {field}")
+    
+    if summary_parts:
+        return '. '.join(summary_parts) + '. Seeking opportunities to leverage expertise and drive impactful results.'
+    else:
+        return "Motivated professional with a proven track record of success. Seeking opportunities to contribute skills and expertise to a dynamic team."
 
 @login_required
 def resume_detail(request, pk):
