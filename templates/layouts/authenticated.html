@@ -54,12 +54,6 @@
                     </a>
                 </li>
                 <li class="sidebar__menu-item">
-                    <a href="#" class="sidebar__link {% if 'analyze' in request.path %}sidebar__link--active{% endif %}">
-                        <i class="bi bi-search"></i>
-                        <span class="sidebar__link-text">ATS Analyzer</span>
-                    </a>
-                </li>
-                <li class="sidebar__menu-item">
                     <a href="{% url 'analytics_dashboard' %}" class="sidebar__link {% if 'analytics' in request.path %}sidebar__link--active{% endif %}">
                         <i class="bi bi-graph-up"></i>
                         <span class="sidebar__link-text">Analytics</span>
@@ -83,7 +77,7 @@
                     </a>
                 </li>
                 <li class="sidebar__menu-item">
-                    <a href="#" class="sidebar__link">
+                    <a href="{% url 'settings' %}" class="sidebar__link">
                         <i class="bi bi-gear"></i>
                         <span class="sidebar__link-text">Settings</span>
                     </a>
@@ -129,11 +123,11 @@
                         </button>
                         
                         <div class="topbar__dropdown" role="menu" aria-label="User menu">
-                            <a href="#" class="topbar__dropdown-item" role="menuitem">
+                            <a href="{% url 'profile' %}" class="topbar__dropdown-item" role="menuitem">
                                 <i class="bi bi-person"></i>
                                 <span>Profile</span>
                             </a>
-                            <a href="#" class="topbar__dropdown-item" role="menuitem">
+                            <a href="{% url 'settings' %}" class="topbar__dropdown-item" role="menuitem">
                                 <i class="bi bi-gear"></i>
                                 <span>Settings</span>
                             </a>

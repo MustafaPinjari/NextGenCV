@@ -38,11 +38,11 @@ class PersonalInfo(models.Model):
     """
     resume = models.OneToOneField(Resume, on_delete=models.CASCADE, related_name='personal_info')
     full_name = models.CharField(max_length=200)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(validators=[EmailValidator()])
-    linkedin = models.URLField(blank=True, validators=[URLValidator()])
-    github = models.URLField(blank=True, validators=[URLValidator()])
-    location = models.CharField(max_length=200)
+    linkedin = models.URLField(blank=True, null=True, validators=[URLValidator()])
+    github = models.URLField(blank=True, null=True, validators=[URLValidator()])
+    location = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return f"Personal Info - {self.full_name}"
@@ -58,7 +58,7 @@ class Experience(models.Model):
     role = models.CharField(max_length=200)
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    description = models.TextField()
+    description = models.TextField(blank=True, default='')
     order = models.IntegerField(default=0)
 
     class Meta:
@@ -86,7 +86,7 @@ class Education(models.Model):
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='education')
     institution = models.CharField(max_length=200)
     degree = models.CharField(max_length=200)
-    field = models.CharField(max_length=200)
+    field = models.CharField(max_length=200, blank=True, null=True, default='')
     start_year = models.IntegerField()
     end_year = models.IntegerField(null=True, blank=True)
     order = models.IntegerField(default=0)
@@ -135,8 +135,8 @@ class Project(models.Model):
     """
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='projects')
     name = models.CharField(max_length=200)
-    description = models.TextField()
-    technologies = models.CharField(max_length=500)
+    description = models.TextField(blank=True, default='')
+    technologies = models.CharField(max_length=500, blank=True, default='')
     url = models.URLField(blank=True, validators=[URLValidator()])
     order = models.IntegerField(default=0)
 

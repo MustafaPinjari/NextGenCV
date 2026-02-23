@@ -1,446 +1,409 @@
-# NextGenCV v2.0 - Advanced ATS Resume Builder
-
-A comprehensive Django-based web application for creating, managing, and optimizing resumes for Applicant Tracking Systems (ATS). Version 2.0 introduces advanced features including PDF upload/parsing, AI-powered optimization, version control, and comprehensive analytics.
-
-## Features
-
-### Core Features (v1.0)
-- User authentication and registration
-- Create and manage multiple resumes
-- ATS analysis against job descriptions
-- PDF export with ATS-compatible formatting
-- Professional resume templates
-- Keyword matching and optimization suggestions
-
-### Advanced Features (v2.0)
-- **PDF Upload & Parsing**: Upload existing resume PDFs and automatically extract structured data
-- **AI-Powered Resume Optimization**: "Fix My Resume" feature that automatically improves content
-- **Version Control**: Track all resume changes with full version history and comparison
-- **Comprehensive Analytics**: Dashboard with resume health metrics, score trends, and insights
-- **Advanced ATS Scoring**: Multi-factor scoring algorithm (keyword match, skills, quantification, action verbs)
-- **Template Management**: Multiple professional templates with customization options
-- **Enhanced Export**: Export to PDF, DOCX, and plain text formats
-- **Batch Operations**: Perform operations on multiple resumes simultaneously
-- **Security Enhancements**: Robust file validation, data isolation, and XSS protection
-
-## Technology Stack
-
-- **Backend**: Django 4.2.7
-- **Database**: SQLite (PostgreSQL-ready architecture)
-- **Frontend**: Bootstrap 5.3.2, Chart.js (for analytics)
-- **PDF Generation**: WeasyPrint 60.1
-- **PDF Parsing**: pdfplumber
-- **NLP Processing**: spaCy (en_core_web_sm model)
-- **Document Export**: python-docx
-- **Testing**: Hypothesis 6.92.1 (Property-based testing)
-- **Security**: bleach (HTML sanitization)
-
-## Project Structure
-
-```
-nextgencv-v2/
-├── apps/
-│   ├── authentication/       # User authentication
-│   ├── resumes/             # Resume management
-│   │   ├── services/        # Business logic layer
-│   │   │   ├── pdf_parser.py
-│   │   │   ├── section_parser.py
-│   │   │   ├── resume_optimizer.py
-│   │   │   ├── version_service.py
-│   │   │   └── ...
-│   │   └── utils/           # Utility functions
-│   ├── analyzer/            # ATS analysis
-│   │   └── services/        # Scoring and analysis services
-│   │       ├── keyword_extractor.py
-│   │       ├── scoring_engine.py
-│   │       ├── action_verb_analyzer.py
-│   │       └── quantification_detector.py
-│   ├── analytics/           # Analytics and dashboard
-│   │   └── services/        # Analytics services
-│   └── templates_mgmt/      # Template management
-│       └── services/        # Template services
-├── config/                  # Django settings
-├── templates/               # HTML templates
-├── static/                  # CSS, JS, images
-├── media/                   # User uploads
-├── Docs/                    # Documentation
-├── manage.py
-└── requirements.txt
-```
-
-## Setup Instructions
-
-### Prerequisites
-- Python 3.8 or higher
-- pip (Python package manager)
-- Virtual environment tool (venv or virtualenv)
-
-### Installation
-
-1. **Clone the repository**:
-```bash
-git clone <repository-url>
-cd nextgencv-v2
-```
-
-2. **Create a virtual environment**:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-3. **Install dependencies**:
-```bash
-pip install -r requirements.txt
-```
-
-4. **Download spaCy language model**:
-```bash
-python -m spacy download en_core_web_sm
-```
-
-5. **Run migrations**:
-```bash
-python manage.py migrate
-```
-
-6. **Populate resume templates** (optional):
-```bash
-python manage.py populate_templates
-```
-
-7. **Create a superuser** (optional):
-```bash
-python manage.py createsuperuser
-```
-
-8. **Run the development server**:
-```bash
-python manage.py runserver
-```
-
-9. **Access the application** at `http://localhost:8000`
-
-## Development
-
-### Running Tests
-```bash
-# Run all tests
-python manage.py test
-
-# Run specific app tests
-python manage.py test apps.resumes
-python manage.py test apps.analyzer
-python manage.py test apps.analytics
-
-# Run with coverage
-coverage run --source='.' manage.py test
-coverage report
-```
-
-### Creating Migrations
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-### Collecting Static Files
-```bash
-python manage.py collectstatic
-```
-
-### Performance Monitoring
-```bash
-# Collect static files with optimization
-python manage.py collectstatic_optimized
-```
-
-## Usage Guide
-
-### 1. PDF Upload & Parsing
-1. Navigate to "Upload Resume" from the dashboard
-2. Select a PDF file (max 10MB)
-3. System automatically extracts and structures the content
-4. Review parsed data and make corrections if needed
-5. Confirm to create a new resume from the parsed data
-
-### 2. Resume Optimization ("Fix My Resume")
-1. Open any resume
-2. Click "Fix My Resume"
-3. Paste the job description you're targeting
-4. System analyzes and optimizes your resume:
-   - Replaces weak action verbs with strong ones
-   - Inserts missing keywords naturally
-   - Suggests quantification for achievements
-   - Standardizes formatting
-5. Review side-by-side comparison
-6. Accept or reject changes
-
-### 3. Version Management
-1. View version history from resume detail page
-2. Compare any two versions to see differences
-3. Restore previous versions (creates new version)
-4. Track ATS score changes across versions
-
-### 4. Analytics Dashboard
-1. Access from main navigation
-2. View resume health meter (0-100 score)
-3. Track ATS score trends over time
-4. Identify top missing keywords
-5. Review optimization history and improvements
-
-### 5. Template Customization
-1. Browse template gallery
-2. Preview templates with sample data
-3. Select a template for your resume
-4. Customize colors and fonts
-5. Add custom CSS if needed
-
-### 6. Export Options
-- **PDF**: ATS-compatible format
-- **DOCX**: Editable Word document
-- **Plain Text**: For ATS parsing
-- Export any version of your resume
-
-## API Endpoints
-
-### Authentication
-- `POST /auth/register/` - User registration
-- `POST /auth/login/` - User login
-- `POST /auth/logout/` - User logout
-
-### Resume Management
-- `GET /resumes/` - List all user resumes
-- `POST /resumes/create/` - Create new resume
-- `GET /resumes/<id>/` - View resume details
-- `POST /resumes/<id>/update/` - Update resume
-- `POST /resumes/<id>/delete/` - Delete resume
-
-### PDF Upload & Parsing
-- `POST /resumes/upload/` - Upload PDF file
-- `GET /resumes/upload/<id>/review/` - Review parsed data
-- `POST /resumes/upload/<id>/confirm/` - Confirm and import
-
-### Resume Optimization
-- `POST /resumes/<id>/fix/` - Start optimization
-- `GET /resumes/<id>/fix/preview/` - Preview optimized version
-- `POST /resumes/<id>/fix/accept/` - Accept changes
-- `POST /resumes/<id>/fix/reject/` - Reject changes
-
-### Version Management
-- `GET /resumes/<id>/versions/` - List all versions
-- `GET /resumes/<id>/versions/<version_id>/` - View specific version
-- `GET /resumes/<id>/versions/compare/` - Compare two versions
-- `POST /resumes/<id>/versions/<version_id>/restore/` - Restore version
-
-### Analytics
-- `GET /analytics/dashboard/` - Main analytics dashboard
-- `GET /analytics/trends/` - Detailed trend analysis
-- `GET /analytics/improvement-report/` - Comprehensive report
-
-### Template Management
-- `GET /templates/gallery/` - Browse templates
-- `GET /templates/<id>/preview/` - Preview template
-- `POST /templates/<id>/customize/` - Customize template
-
-### Export
-- `GET /resumes/<id>/export/pdf/` - Export as PDF
-- `GET /resumes/<id>/export/docx/` - Export as DOCX
-- `GET /resumes/<id>/export/text/` - Export as plain text
-- `GET /resumes/<id>/versions/<version_id>/export/<format>/` - Export specific version
-
-## Architecture
-
-### Service Layer Pattern
-The application uses a service layer architecture to separate business logic from views:
-
-```python
-# Example: Using services in views
-from apps.resumes.services.resume_optimizer import ResumeOptimizerService
-
-def fix_preview(request, resume_id):
-    resume = get_object_or_404(Resume, id=resume_id, user=request.user)
-    job_description = request.session.get('job_description')
-    
-    # Business logic in service layer
-    optimizer = ResumeOptimizerService()
-    optimized_data = optimizer.optimize_resume(resume, job_description)
-    
-    return render(request, 'resumes/fix_comparison.html', {
-        'original': resume,
-        'optimized': optimized_data
-    })
-```
-
-### Key Services
-
-**PDF Processing**:
-- `PDFParserService`: Extracts text from PDF files
-- `SectionParserService`: Identifies and parses resume sections using NLP
-
-**ATS Analysis**:
-- `KeywordExtractorService`: Extracts keywords using spaCy
-- `ScoringEngineService`: Calculates multi-factor ATS scores
-- `ActionVerbAnalyzerService`: Evaluates action verb strength
-- `QuantificationDetectorService`: Identifies quantified achievements
-
-**Resume Optimization**:
-- `ResumeOptimizerService`: Orchestrates optimization process
-- `BulletPointRewriterService`: Improves achievement statements
-- `KeywordInjectorService`: Naturally inserts missing keywords
-- `QuantificationSuggesterService`: Suggests metrics
-- `FormattingStandardizerService`: Fixes ATS-unfriendly formatting
-
-**Version Management**:
-- `VersionService`: Handles version creation, comparison, and restoration
-
-**Analytics**:
-- `AnalyticsService`: Computes resume health and trends
-- `TrendAnalysisService`: Analyzes score improvements over time
-
-### Database Schema
-
-The application uses the following main models:
-
-- **Resume**: Core resume data
-- **ResumeVersion**: Version history with snapshots
-- **UploadedResume**: Uploaded PDF files and parsed data
-- **ResumeAnalysis**: ATS analysis results
-- **OptimizationHistory**: Optimization session records
-- **ResumeTemplate**: Template definitions
-- **TemplateCustomization**: User template customizations
-
-See `Docs/DATABASE_DESIGN.md` for detailed schema documentation.
-
-## Security Features
-
-- **File Upload Validation**: Type, size, and MIME type verification
-- **Embedded Script Detection**: Scans PDFs for malicious content
-- **Text Sanitization**: All extracted text is sanitized to prevent XSS
-- **Data Isolation**: Users can only access their own data
-- **CSRF Protection**: All forms protected against CSRF attacks
-- **Secure File Storage**: Files stored with random names outside web root
-- **Authorization Checks**: All views verify user ownership
-
-## Performance Optimizations
-
-- **Database Indexing**: Optimized indexes on frequently queried fields
-- **Query Optimization**: Uses `select_related` and `prefetch_related`
-- **Caching**: Analytics data cached for 5 minutes
-- **Async-Ready**: Service layer designed for future async operations
-- **Efficient PDF Processing**: Streaming for large files
-
-## Testing
-
-The application includes comprehensive test coverage:
-
-- **Unit Tests**: Test individual services and utilities
-- **Integration Tests**: Test complete workflows
-- **Property-Based Tests**: Test correctness properties using Hypothesis
-- **Security Tests**: Validate file upload security and data isolation
-- **Performance Tests**: Measure response times and scalability
-
-Run specific test suites:
-```bash
-# Service layer tests
-python manage.py test apps.resumes.services
-python manage.py test apps.analyzer.services
-
-# Integration tests
-python manage.py test apps.resumes.test_integration_flows
-
-# Property-based tests
-python manage.py test apps.resumes.test_property_based
-
-# Security tests
-python manage.py test apps.resumes.test_security
-```
-
-## Troubleshooting
-
-### Common Issues
-
-**spaCy model not found**:
-```bash
-python -m spacy download en_core_web_sm
-```
-
-**PDF parsing fails**:
-- Ensure PDF is not password-protected
-- Check file size is under 10MB
-- Verify PDF contains extractable text (not scanned images)
-
-**WeasyPrint installation issues**:
-- On Ubuntu/Debian: `sudo apt-get install python3-dev python3-pip python3-cffi libcairo2 libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 libffi-dev shared-mime-info`
-- On macOS: `brew install cairo pango gdk-pixbuf libffi`
-
-**Database migration conflicts**:
-```bash
-python manage.py migrate --fake-initial
-```
-
-### Performance Issues
-
-If experiencing slow performance:
-1. Check database indexes are created: `python manage.py sqlmigrate resumes 0002`
-2. Clear cache: Delete `.hypothesis` directory
-3. Optimize static files: `python manage.py collectstatic_optimized`
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Run tests: `python manage.py test`
-5. Commit changes: `git commit -am 'Add feature'`
-6. Push to branch: `git push origin feature-name`
-7. Submit a pull request
-
-### Code Style
-- Follow PEP 8 guidelines
-- Use type hints where appropriate
-- Write docstrings for all public methods
-- Keep service layer methods focused and testable
-
-## Documentation
-
-Additional documentation available in the `Docs/` directory:
-
-- **ARCHITECTURE.md**: Detailed system architecture
-- **DATABASE_DESIGN.md**: Complete database schema
-- **SYSTEM_DESIGN.md**: System design decisions
-- **USER_FLOW.md**: User interaction flows
-- **DEVELOPMENT_ROADMAP.md**: Future enhancements
-
-## Deployment
-
-See `DEPLOYMENT.md` for production deployment instructions including:
-- Environment configuration
-- Database setup (PostgreSQL migration)
-- Static file serving
-- Security checklist
-- Performance tuning
-
-## Version History
-
-### v2.0.0 (Current)
-- PDF upload and parsing with NLP
-- AI-powered resume optimization
-- Version control system
-- Comprehensive analytics dashboard
-- Advanced ATS scoring (6 factors)
-- Template management and customization
-- Enhanced export options (PDF, DOCX, text)
-- Security enhancements
-- Performance optimizations
-
-### v1.0.0
-- Basic resume creation and management
-- Simple ATS analysis
-- PDF export
-- User authentication
-- Template system
-
-## License
-
-This project is for educational purposes.
+# PROJECT REPORT
+# NextGenCV - Advanced ATS Resume Builder
+
+---
+
+## 1. INTRODUCTION
+
+### 1.1 Client/Organization Profile
+
+The NextGenCV project represents a comprehensive solution designed to address the evolving needs of modern job seekers in an increasingly competitive employment landscape. This advanced ATS (Applicant Tracking System) Resume Builder has been developed as a sophisticated web-based platform that bridges the gap between traditional resume creation tools and the technical requirements of modern recruitment systems.
+
+The organization behind this initiative recognizes that in today's digital-first hiring environment, approximately 75% of resumes are filtered out by Applicant Tracking Systems before they ever reach human recruiters. This staggering statistic highlights a critical challenge faced by job seekers worldwide: creating resumes that are not only professionally compelling but also technically optimized to pass through automated screening systems. The client organization identified this market gap and envisioned a solution that would democratize access to professional-grade resume optimization tools, previously available only through expensive career counseling services or premium software subscriptions.
+
+The organizational mission centers on empowering job seekers with intelligent, data-driven tools that level the playing field in the job application process. The client base spans diverse demographics, including recent graduates entering the job market for the first time, mid-career professionals seeking advancement opportunities, career changers transitioning between industries, and senior executives requiring sophisticated personal branding tools. Each user segment faces unique challenges in resume creation, from understanding industry-specific keywords to quantifying achievements effectively, and the platform has been designed with the flexibility to address these varied needs.
+
+The organization operates with a user-centric philosophy, recognizing that job searching is often a stressful and time-consuming process. By providing an intuitive, feature-rich platform that automates many of the technical aspects of resume optimization, the organization aims to reduce the cognitive load on users and allow them to focus on what truly matters: presenting their unique value proposition to potential employers. The platform's development has been guided by extensive user research, including interviews with recruiters, HR professionals, and job seekers across multiple industries, ensuring that the solution addresses real-world pain points rather than theoretical problems.
+
+From a technical perspective, the organization has committed to building a robust, scalable platform using modern web technologies and best practices in software engineering. The choice of Django as the primary framework reflects a commitment to rapid development without sacrificing code quality, security, or maintainability. The organization's technical team comprises experienced full-stack developers, UX designers, and data scientists who collaborate to deliver a seamless user experience backed by sophisticated algorithms for resume analysis and optimization.
+
+The business model emphasizes accessibility and value creation. While the platform offers premium features for power users, the core functionality remains accessible to ensure that financial constraints do not prevent job seekers from accessing essential tools. This approach aligns with the organization's broader social mission of reducing barriers to employment and promoting economic mobility. The organization also maintains partnerships with educational institutions, career centers, and workforce development programs to extend the platform's reach to underserved communities.
+
+Looking forward, the organization envisions NextGenCV as more than just a resume builder—it aims to create a comprehensive career development ecosystem. Future roadmap items include integration with job boards, networking features to connect users with mentors and industry professionals, skill assessment tools, and personalized career path recommendations based on market trends and individual profiles. The organization is committed to continuous innovation, regularly incorporating user feedback and staying ahead of evolving ATS technologies to ensure users always have access to cutting-edge optimization capabilities.
+
+### 1.2 Need for System
+
+The contemporary job market has undergone a fundamental transformation in how candidates are evaluated and selected, creating an urgent need for sophisticated resume optimization tools. The proliferation of Applicant Tracking Systems across organizations of all sizes has fundamentally altered the resume screening process, introducing technical barriers that many qualified candidates struggle to overcome. Research indicates that even highly qualified professionals with impressive credentials often fail to secure interviews simply because their resumes are not formatted or optimized for ATS compatibility. This technological gatekeeping has created a critical need for tools that can help candidates navigate these systems effectively.
+
+Traditional resume creation methods, whether using basic word processors or generic templates, fail to address the specific technical requirements of modern ATS platforms. These systems employ complex algorithms to parse resume content, extract relevant information, and score candidates based on keyword matching, formatting consistency, and structural clarity. Resumes that use incompatible formatting elements such as tables, text boxes, headers, footers, or unusual fonts often confuse ATS parsers, resulting in garbled or incomplete data extraction. Even when content is strong, poor technical implementation can lead to automatic rejection. This disconnect between candidate qualifications and ATS compatibility represents a significant market failure that our system addresses.
+
+The need for this system extends beyond mere ATS compatibility to encompass broader challenges in resume creation and optimization. Many job seekers lack the expertise to effectively articulate their achievements using action-oriented language, quantify their impact with meaningful metrics, or tailor their resumes to specific job descriptions. Professional resume writing services can cost hundreds or even thousands of dollars, placing them out of reach for many job seekers, particularly those who are unemployed or underemployed. This creates an inequitable situation where access to quality resume optimization correlates strongly with financial resources rather than actual qualifications or potential.
+
+The system addresses several critical pain points identified through extensive user research and market analysis. First, the time-intensive nature of resume creation and customization discourages many candidates from tailoring their applications to specific positions, reducing their chances of success. Our system's automation features dramatically reduce the time required to create optimized, targeted resumes, enabling users to apply to more positions with higher-quality applications. Second, the lack of objective feedback on resume quality leaves many job seekers uncertain about whether their resumes are effective. Our comprehensive ATS scoring and analysis features provide actionable, data-driven insights that remove guesswork from the optimization process.
+
+Another significant need addressed by the system is version management and iteration. Job seekers often create multiple versions of their resumes for different positions or industries but struggle to track changes, compare versions, and understand which modifications improve their ATS scores. Our version control system brings software development best practices to resume management, allowing users to experiment with different approaches while maintaining a clear history of changes and their impacts. This iterative approach to resume optimization, supported by analytics and trend analysis, enables continuous improvement based on empirical data rather than intuition.
+
+The system also responds to the growing complexity of modern career paths. Unlike previous generations who might have worked for a single employer or in a single industry throughout their careers, today's professionals frequently change roles, industries, and even career paths entirely. This fluidity requires resume tools that can accommodate diverse experiences, highlight transferable skills, and present non-linear career progressions in compelling ways. Our flexible section management and intelligent keyword optimization help users frame their varied experiences effectively for different target positions.
+
+From an organizational perspective, the need for this system reflects broader trends in digital transformation and automation. As more aspects of the hiring process become automated, candidates must adapt their strategies accordingly. However, this adaptation should not require technical expertise or expensive professional services. Our system democratizes access to sophisticated optimization tools, ensuring that technological change in hiring practices does not exacerbate existing inequalities in employment access. The platform serves as an equalizer, providing all users with enterprise-grade resume optimization capabilities regardless of their background or resources.
+
+The COVID-19 pandemic has further intensified the need for effective digital job search tools. With remote work becoming normalized and geographic barriers to employment diminishing, competition for positions has increased dramatically. Job seekers now compete in national or even global talent pools rather than local markets. In this environment, having a technically optimized, professionally presented resume is not merely advantageous—it is essential for securing consideration. Our system equips users with the tools they need to compete effectively in this expanded, more competitive landscape.
+
+Finally, the system addresses the psychological and emotional needs of job seekers. Job searching is inherently stressful, often involving repeated rejection and uncertainty. By providing clear, actionable feedback and demonstrating measurable improvements in resume quality, our system helps users feel more confident and in control of their job search process. The analytics dashboard transforms abstract concerns about resume quality into concrete metrics that users can understand and improve, reducing anxiety and increasing motivation. This psychological dimension, while often overlooked in technical system design, is crucial for user engagement and ultimate success.
+
+
+### 1.3 Scope & Feasibility of Work
+
+The scope of the NextGenCV project encompasses a comprehensive suite of features designed to address the complete lifecycle of resume creation, optimization, and management. The project scope has been carefully defined to balance ambition with feasibility, ensuring that all planned features can be delivered within reasonable timeframes while maintaining high quality standards. The system's scope extends across multiple functional domains, each contributing to the overarching goal of helping users create ATS-optimized resumes that effectively showcase their qualifications.
+
+At the core of the system's scope is the resume creation and management functionality. This includes a flexible, section-based resume builder that allows users to create structured resumes with standard sections such as personal information, professional summary, work experience, education, skills, projects, and certifications. The system supports multiple resume creation workflows to accommodate different user preferences and scenarios. Users can build resumes from scratch using guided forms, upload existing PDF resumes for automatic parsing and data extraction, or import data from external sources. This multi-modal approach ensures that the system can serve users at different stages of their resume development journey, from complete beginners to experienced professionals with existing materials.
+
+The ATS analysis and optimization features represent a significant portion of the project scope. The system implements sophisticated algorithms for analyzing resume content against job descriptions, extracting relevant keywords using natural language processing, and calculating multi-factor ATS compatibility scores. The scoring engine evaluates resumes across six distinct dimensions: keyword matching, skills alignment, quantification of achievements, action verb strength, formatting consistency, and structural clarity. This comprehensive scoring approach provides users with nuanced feedback that goes beyond simple keyword counting to address the multiple factors that influence ATS performance. The optimization features include automated resume enhancement capabilities that can rewrite bullet points with stronger action verbs, inject missing keywords naturally into existing content, suggest quantification opportunities, and standardize formatting for maximum ATS compatibility.
+
+Version control and change tracking functionality forms another critical component of the system scope. Recognizing that resume optimization is an iterative process, the system maintains complete version history for all resumes, allowing users to track changes over time, compare different versions side-by-side, and restore previous versions if needed. Each version is associated with metadata including creation timestamp, ATS score, and change summary, enabling users to understand how their resumes have evolved and which modifications have been most effective. This version control system brings software development best practices to resume management, providing users with confidence to experiment with different approaches knowing they can always revert to previous versions.
+
+The analytics and insights features provide users with data-driven understanding of their resume performance. The analytics dashboard presents key metrics including overall resume health scores, ATS score trends over time, top missing keywords, optimization history, and improvement recommendations. These analytics transform abstract concerns about resume quality into concrete, actionable metrics that users can track and improve. The trend analysis features help users understand whether their optimization efforts are yielding results and identify areas requiring additional attention. By making resume quality measurable and trackable, the analytics features enable a more systematic, evidence-based approach to resume development.
+
+Template management and customization capabilities allow users to present their information in professionally designed formats that maintain ATS compatibility. The system includes a gallery of pre-designed templates covering various industries and career levels, from entry-level positions to executive roles. Users can preview templates with their own data, customize colors and fonts to match personal branding preferences, and even add custom CSS for advanced styling. The template system balances aesthetic appeal with technical requirements, ensuring that all templates maintain ATS-friendly formatting while providing visual differentiation. This approach recognizes that while ATS compatibility is crucial, resumes must also appeal to human readers once they pass automated screening.
+
+Export functionality enables users to generate their resumes in multiple formats suitable for different submission channels. The system supports PDF export with ATS-compatible formatting, DOCX export for situations requiring editable documents, and plain text export for maximum ATS compatibility. Each export format is optimized for its intended use case, with PDF exports prioritizing visual presentation, DOCX exports maintaining editability, and text exports ensuring perfect parsing by even the most basic ATS systems. Users can export any version of their resumes, not just the current version, facilitating A/B testing of different resume variants for different applications.
+
+From a feasibility perspective, the project leverages proven technologies and established architectural patterns to ensure successful delivery. The choice of Django as the primary framework provides a solid foundation with built-in features for authentication, database management, form handling, and security. Django's "batteries included" philosophy accelerates development by providing robust solutions for common web application requirements, allowing the development team to focus on domain-specific features rather than reinventing basic functionality. The framework's extensive documentation, large community, and mature ecosystem of third-party packages further enhance feasibility by providing solutions and support for virtually any technical challenge.
+
+The technical feasibility of the NLP-based features is supported by the spaCy library, a production-ready natural language processing framework with excellent performance characteristics and comprehensive language models. SpaCy's efficient implementation enables real-time text analysis without requiring expensive computational resources, making the system economically feasible to operate at scale. The library's pre-trained models provide sophisticated linguistic analysis capabilities including tokenization, part-of-speech tagging, named entity recognition, and dependency parsing, which form the foundation of our keyword extraction and content analysis features.
+
+PDF processing feasibility is ensured through the combination of pdfplumber for parsing and WeasyPrint for generation. Pdfplumber provides reliable text extraction from PDF files with good handling of various PDF formats and layouts, while WeasyPrint generates high-quality, ATS-compatible PDFs from HTML templates. Both libraries are mature, well-maintained, and widely used in production environments, reducing technical risk. The parsing algorithms have been designed to handle common PDF formatting variations and extract structured data even from imperfectly formatted source documents, ensuring broad compatibility with user-uploaded files.
+
+The database design using SQLite for development and PostgreSQL-ready architecture for production demonstrates feasibility through progressive enhancement. SQLite enables rapid development and testing without infrastructure overhead, while the abstraction provided by Django's ORM ensures that migration to PostgreSQL for production deployment requires minimal code changes. This approach balances development velocity with production scalability, allowing the team to iterate quickly during development while maintaining a clear path to production-grade infrastructure.
+
+Security feasibility is addressed through Django's built-in security features including CSRF protection, SQL injection prevention, XSS protection, and secure password hashing. The framework's security-first design philosophy means that many security best practices are implemented by default, reducing the risk of common vulnerabilities. Additional security measures specific to this application, such as file upload validation, content sanitization, and data isolation, have been implemented using established patterns and libraries, ensuring that security requirements can be met without extensive custom development.
+
+Performance feasibility has been validated through careful architectural decisions including service layer abstraction, database query optimization, strategic caching, and efficient algorithm implementation. The service layer pattern ensures that business logic is isolated from presentation concerns, facilitating testing and optimization. Database queries use Django's select_related and prefetch_related features to minimize query counts and avoid N+1 problems. Analytics data is cached to reduce computational overhead for frequently accessed metrics. These optimizations ensure that the system can deliver responsive performance even as data volumes grow.
+
+The project timeline and resource allocation further support feasibility. The development has been structured in phases, with v1.0 delivering core functionality and v2.0 adding advanced features. This phased approach allows for iterative development, user feedback incorporation, and risk mitigation. The development team possesses the necessary skills across full-stack web development, natural language processing, UI/UX design, and DevOps, ensuring that all aspects of the project can be executed competently. Regular sprint planning, code reviews, and testing ensure that quality standards are maintained throughout development.
+
+Economic feasibility is supported by the relatively low infrastructure costs associated with Django applications and the availability of cost-effective hosting options. The system's architecture allows for deployment on various platforms ranging from traditional VPS hosting to modern platform-as-a-service offerings, providing flexibility in cost optimization. The use of open-source technologies throughout the stack eliminates licensing costs, making the project economically sustainable. The potential for monetization through premium features, while maintaining free access to core functionality, provides a viable business model that aligns with the organization's social mission while ensuring long-term sustainability.
+
+
+### 1.4 Operating Environment – Hardware & Software
+
+The NextGenCV system has been designed to operate efficiently across a diverse range of hardware and software environments, ensuring broad accessibility and optimal performance for users with varying technical resources. The operating environment encompasses both the server-side infrastructure required to host and run the application, as well as the client-side requirements for users accessing the system through web browsers. This comprehensive consideration of operating environments ensures that the system can be deployed reliably in production while remaining accessible to users regardless of their device capabilities or technical sophistication.
+
+From a server-side hardware perspective, the system has been architected to run efficiently on modest hardware configurations, making it suitable for deployment on various hosting platforms ranging from shared hosting environments to dedicated servers and cloud infrastructure. The minimum recommended server configuration includes a dual-core processor with at least 2.0 GHz clock speed, 4 GB of RAM, and 20 GB of available storage space. This modest hardware requirement ensures that the system can be deployed cost-effectively while maintaining responsive performance for typical workloads. For production deployments expecting higher traffic volumes, recommended specifications scale to quad-core or higher processors, 8-16 GB of RAM, and SSD storage for improved I/O performance. The system's efficient resource utilization means that even the recommended configuration can comfortably handle hundreds of concurrent users with proper optimization.
+
+The server-side software environment is built on a modern, open-source technology stack that provides reliability, security, and maintainability. The core application runs on Python 3.8 or higher, leveraging the language's extensive standard library and rich ecosystem of third-party packages. Python's interpreted nature and dynamic typing facilitate rapid development and debugging, while its strong community support ensures long-term viability. The system has been tested across Python versions 3.8 through 3.11, ensuring compatibility with both current stable releases and newer versions that may offer performance improvements or additional features.
+
+Django 4.2.7 serves as the primary web framework, providing a robust foundation for the application's architecture. Django's long-term support (LTS) release cycle ensures that the framework receives security updates and bug fixes for extended periods, reducing maintenance burden and security risks. The framework's comprehensive feature set includes an ORM for database abstraction, a template engine for HTML rendering, form handling with validation, authentication and authorization systems, CSRF protection, and an administrative interface. These built-in features accelerate development while ensuring adherence to web development best practices and security standards.
+
+The database layer supports multiple database management systems through Django's ORM abstraction. For development and testing environments, SQLite 3.31 or higher provides a lightweight, file-based database that requires no separate server process, simplifying setup and reducing infrastructure complexity. SQLite's ACID compliance and reliability make it suitable for development use, while its zero-configuration nature accelerates developer onboarding. For production deployments, the system is designed to seamlessly migrate to PostgreSQL 12 or higher, which offers superior performance, concurrency handling, and scalability. PostgreSQL's advanced features including full-text search, JSON support, and sophisticated query optimization make it ideal for production workloads. The system's database-agnostic design through Django's ORM means that migration between database systems requires only configuration changes, not code modifications.
+
+The web server environment supports multiple deployment configurations to accommodate different operational requirements and preferences. For development purposes, Django's built-in development server provides immediate functionality without additional configuration. For production deployments, the system supports deployment behind industry-standard web servers including Nginx and Apache, with application serving handled by WSGI servers such as Gunicorn or uWSGI. This flexible deployment architecture allows operations teams to leverage their existing infrastructure and expertise while ensuring optimal performance and reliability. The system also supports ASGI deployment for future async capabilities, providing a clear upgrade path as the framework and ecosystem evolve.
+
+Client-side hardware requirements are intentionally minimal to ensure broad accessibility across devices and user demographics. The system functions effectively on any device capable of running a modern web browser, including desktop computers, laptops, tablets, and smartphones. Minimum client-side specifications include a device with at least 2 GB of RAM and a screen resolution of 1024x768 pixels or higher for optimal user experience. The responsive design ensures that the interface adapts gracefully to smaller screens, making the system fully functional on mobile devices with screen sizes as small as 320 pixels wide. This mobile-first approach recognizes that many users may access the system from smartphones or tablets, particularly when reviewing resumes or making quick edits on the go.
+
+Client-side software requirements center on web browser compatibility. The system supports all modern, evergreen browsers including Google Chrome 90 and above, Mozilla Firefox 88 and above, Apple Safari 14 and above, and Microsoft Edge 90 and above. These browser versions provide comprehensive support for modern web standards including HTML5, CSS3, JavaScript ES6+, and Web APIs used throughout the application. The system gracefully degrades functionality for older browsers where possible, though users are encouraged to use current browser versions for optimal security and performance. JavaScript is required for enhanced interactivity and dynamic features, though core functionality remains accessible even with JavaScript disabled, ensuring compliance with accessibility guidelines.
+
+The system's dependency on external libraries and services has been carefully managed to balance functionality with reliability and maintainability. Key Python dependencies include WeasyPrint 60.1 for PDF generation, which requires system-level dependencies including Cairo, Pango, and GDK-PixBuf for rendering. These dependencies are available through standard package managers on all major operating systems, with detailed installation instructions provided for Linux, macOS, and Windows environments. The pdfplumber library handles PDF parsing without requiring external dependencies beyond Python packages, simplifying deployment. The spaCy library for natural language processing requires downloading language models, with the en_core_web_sm model (approximately 12 MB) providing the necessary linguistic analysis capabilities.
+
+Frontend dependencies are managed through CDN delivery for simplicity and performance. Bootstrap 5.3.2 provides the CSS framework and component library, delivered via CDN to leverage browser caching and reduce server bandwidth requirements. Chart.js enables the analytics visualizations, also delivered via CDN for optimal performance. This CDN-based approach for frontend dependencies eliminates the need for complex build processes while ensuring that users benefit from browser caching when these popular libraries are used across multiple websites. For production deployments requiring greater control or offline capability, these dependencies can be self-hosted with minimal configuration changes.
+
+Operating system compatibility spans all major platforms. The server-side application runs on Linux distributions including Ubuntu 20.04 LTS and above, Debian 10 and above, CentOS 8 and above, and other modern Linux distributions. macOS 10.15 (Catalina) and above is supported for development purposes, with all dependencies available through Homebrew package manager. Windows 10 and above is supported through Windows Subsystem for Linux (WSL) or native Python installation, though Linux or macOS is recommended for production deployments due to superior performance and tooling. This cross-platform compatibility ensures that developers can work in their preferred environments while production deployments can leverage the stability and performance of Linux servers.
+
+Network requirements are modest, with the system designed to function effectively over standard broadband connections. Minimum recommended bandwidth is 1 Mbps for acceptable performance, though 5 Mbps or higher is recommended for optimal user experience, particularly when uploading PDF files or generating exports. The system implements efficient data transfer practices including compression, caching headers, and incremental loading to minimize bandwidth consumption. For server deployments, a stable internet connection with at least 10 Mbps upload bandwidth is recommended to serve multiple concurrent users effectively.
+
+Security requirements at the operating system level include keeping all system packages updated with the latest security patches, configuring firewalls to restrict access to necessary ports only (typically 80 for HTTP and 443 for HTTPS), implementing SSL/TLS certificates for encrypted communication, and following principle of least privilege for user accounts and file permissions. The application itself implements multiple layers of security including input validation, output encoding, CSRF protection, secure session management, and SQL injection prevention through parameterized queries. These security measures operate across the entire stack from operating system through application layer, ensuring comprehensive protection of user data and system integrity.
+
+Monitoring and logging capabilities are built into the operating environment to facilitate troubleshooting and performance optimization. The system generates structured logs for application events, errors, and security-relevant activities, with configurable log levels to balance detail with storage requirements. Integration with standard logging infrastructure including syslog, log aggregation services, and monitoring platforms is supported through Django's flexible logging configuration. Performance monitoring can be implemented through application performance monitoring (APM) tools, with the system exposing metrics for response times, database query performance, and resource utilization.
+
+Backup and disaster recovery considerations are integral to the operating environment design. The system's data is primarily stored in the database and uploaded files directory, both of which can be backed up using standard tools and procedures. Database backups can be performed using native database tools (sqlite3 backup for SQLite, pg_dump for PostgreSQL) with minimal performance impact. File uploads are stored in a designated media directory that can be backed up using filesystem-level tools or synchronized to object storage services for redundancy. The system's stateless application design means that application servers can be quickly rebuilt from source code and configuration, with data restoration from backups completing the recovery process.
+
+
+### 1.5 Architecture of System
+
+The NextGenCV system employs a layered monolithic architecture that provides clear separation of concerns while maintaining simplicity and ease of deployment. This architectural approach has been carefully selected to balance the competing demands of maintainability, scalability, performance, and development velocity. The layered architecture organizes the system into distinct horizontal layers, each with specific responsibilities and well-defined interfaces for inter-layer communication. This separation enables independent evolution of different system aspects while maintaining overall coherence and integrity.
+
+The presentation layer forms the topmost tier of the architecture, responsible for all user-facing aspects of the system. This layer is implemented using Django's template engine combined with Bootstrap 5.3.2 for responsive, mobile-first user interface design. The presentation layer handles rendering HTML pages, processing user input through forms, displaying validation errors, and providing interactive feedback. Bootstrap's component library provides pre-built UI elements including navigation bars, forms, buttons, cards, and modals that ensure consistent visual design across the application. The responsive grid system automatically adapts layouts to different screen sizes, ensuring optimal user experience across desktop, tablet, and mobile devices. Custom CSS extends Bootstrap's default styling to implement the application's unique visual identity while maintaining accessibility standards.
+
+JavaScript enhances the presentation layer with dynamic interactivity, including form validation, asynchronous data loading, interactive charts for analytics visualization, and smooth transitions between application states. The Chart.js library powers the analytics dashboard, rendering interactive line charts for score trends, bar charts for keyword analysis, and gauge charts for resume health metrics. The presentation layer implements progressive enhancement principles, ensuring that core functionality remains accessible even when JavaScript is disabled, while providing enhanced experiences for users with modern browsers. This approach maximizes accessibility while leveraging modern web capabilities where available.
+
+The application layer constitutes the heart of the system's business logic, implementing all domain-specific functionality and orchestrating interactions between the presentation and data layers. This layer is structured using Django's Model-View-Template (MVT) pattern, which separates concerns into models for data representation, views for request handling and business logic, and templates for presentation. The application layer has been further refined through the introduction of a service layer pattern that extracts complex business logic from views into dedicated service classes. This service layer provides several critical benefits including improved testability through isolation of business logic, enhanced reusability of common operations across multiple views, clearer separation between HTTP concerns and domain logic, and easier maintenance through focused, single-responsibility classes.
+
+The service layer encompasses multiple specialized services, each addressing specific functional domains. The PDFParserService handles extraction of text and structure from uploaded PDF files, implementing sophisticated algorithms to identify resume sections, parse contact information, and extract work experience entries. The SectionParserService applies natural language processing techniques using spaCy to understand resume content semantically, identifying entities like company names, job titles, dates, and skills. The ResumeOptimizerService orchestrates the resume enhancement process, coordinating multiple sub-services to rewrite content, inject keywords, and improve formatting. The ScoringEngineService implements the multi-factor ATS scoring algorithm, evaluating resumes across keyword matching, skills alignment, quantification, action verbs, formatting, and structure dimensions.
+
+The VersionService manages resume version control, creating snapshots of resume state, computing differences between versions, and enabling restoration of previous versions. The AnalyticsService aggregates data across resumes and versions to compute health metrics, identify trends, and generate insights. Each service is designed as a cohesive unit with clear inputs and outputs, minimal dependencies on other services, and comprehensive error handling. This modular service architecture facilitates unit testing, as each service can be tested in isolation with mocked dependencies, and enables parallel development, as different team members can work on different services simultaneously without conflicts.
+
+The data layer provides persistence and retrieval capabilities, abstracting database operations behind Django's Object-Relational Mapping (ORM) system. The ORM translates Python object operations into SQL queries, enabling database-agnostic code that can run on SQLite during development and PostgreSQL in production without modifications. The data layer defines models representing core domain entities including User, Resume, ResumeVersion, UploadedResume, ResumeAnalysis, OptimizationHistory, ResumeTemplate, and TemplateCustomization. Each model specifies fields with appropriate data types, validation rules, and relationships to other models through foreign keys and many-to-many associations.
+
+Database schema design emphasizes normalization to eliminate redundancy while maintaining query performance through strategic denormalization where appropriate. Indexes are defined on frequently queried fields including user foreign keys, creation timestamps, and status fields to accelerate common query patterns. The schema supports soft deletion for critical entities, preserving data for audit purposes while hiding deleted records from normal queries. Database migrations managed through Django's migration system enable schema evolution over time, with each migration representing an incremental, reversible change to the database structure. This migration-based approach facilitates collaborative development and smooth deployment of schema changes to production environments.
+
+The request lifecycle in this architecture follows a well-defined path from user action to response. When a user interacts with the system, their browser sends an HTTP request to the web server, which forwards it to the Django application. Django's URL router examines the request path and method, matching it against defined URL patterns to identify the appropriate view function. The view function receives the request object containing all request data including parameters, form data, and session information. The view may instantiate service objects to perform business logic, passing data from the request and receiving processed results. Services interact with the data layer through model operations, querying existing data or creating new records as needed.
+
+After business logic execution, the view prepares a context dictionary containing all data needed for rendering the response. This context is passed to a template, which combines the data with HTML markup to generate the final response. The template engine processes template tags and filters, iterating over collections, conditionally including content, and formatting data for display. The rendered HTML is returned to the view, which wraps it in an HTTP response object with appropriate headers and status code. This response travels back through the middleware stack, where cross-cutting concerns like security headers, compression, and caching are applied, before being sent to the user's browser for display.
+
+The architecture incorporates several cross-cutting concerns through Django's middleware system. Authentication middleware verifies user identity on each request, populating request.user with the authenticated user object or an anonymous user instance. CSRF middleware validates that state-changing requests include valid CSRF tokens, preventing cross-site request forgery attacks. Security middleware adds security-related HTTP headers including X-Content-Type-Options, X-Frame-Options, and Content-Security-Policy to protect against various attack vectors. Session middleware manages user sessions, storing session data server-side and tracking sessions through secure cookies. These middleware components operate transparently, applying their functionality to all requests without requiring explicit invocation in view code.
+
+The architecture's scalability characteristics support growth from initial deployment through increasing user loads. The stateless nature of the application layer, where each request is processed independently without relying on server-side state beyond the database and session store, enables horizontal scaling through addition of application servers behind a load balancer. Database scalability is addressed through read replicas for query distribution, connection pooling to manage database connections efficiently, and query optimization to minimize database load. Caching strategies including page caching for static content, fragment caching for expensive template sections, and data caching for computed analytics reduce database queries and improve response times. These scalability mechanisms can be implemented incrementally as load increases, providing a clear growth path without requiring architectural redesign.
+
+
+### 1.6 Detail Description of Technology Used
+
+The NextGenCV system leverages a carefully curated technology stack that combines mature, production-proven frameworks with specialized libraries for domain-specific functionality. Each technology has been selected based on rigorous evaluation of factors including community support, documentation quality, performance characteristics, security track record, and alignment with project requirements. This section provides comprehensive coverage of the major technologies employed throughout the system, explaining not only what technologies are used but why they were chosen and how they contribute to the system's overall capabilities.
+
+Django 4.2.7 serves as the foundational web framework, providing the architectural backbone for the entire application. Django's "batteries included" philosophy aligns perfectly with the project's need for rapid development without sacrificing code quality or security. The framework includes a powerful Object-Relational Mapping (ORM) system that abstracts database operations, enabling developers to work with Python objects rather than writing raw SQL queries. This abstraction provides multiple benefits including database portability, automatic SQL injection prevention through parameterized queries, and simplified database schema evolution through migrations. Django's ORM supports complex queries including joins, aggregations, and subqueries while maintaining readable, Pythonic syntax. The framework's migration system tracks schema changes over time, generating migration files that can be version controlled and applied consistently across development, staging, and production environments.
+
+Django's authentication system provides robust user management capabilities out of the box, including user registration, login, logout, password reset, and permission management. The authentication system uses industry-standard password hashing with PBKDF2 algorithm by default, with support for alternative algorithms including Argon2 and bcrypt. Session management is handled securely through signed cookies or database-backed sessions, with configurable session expiration and security settings. The framework's permission system enables fine-grained access control, though the current application primarily uses simple authenticated/anonymous user distinction. Django's admin interface provides a powerful tool for system administration, automatically generating CRUD interfaces for all models with minimal configuration. This admin interface accelerates development by providing immediate data management capabilities and serves as a valuable troubleshooting tool in production.
+
+The template engine included with Django enables server-side rendering of HTML with a clean, designer-friendly syntax. Templates support inheritance, allowing base templates to define common structure while child templates override specific blocks, promoting DRY (Don't Repeat Yourself) principles. Template tags provide control flow constructs like loops and conditionals, while filters enable data transformation for display purposes. The template system automatically escapes output by default, preventing XSS (Cross-Site Scripting) attacks by converting potentially dangerous characters into safe HTML entities. Custom template tags and filters can be created to encapsulate complex presentation logic, keeping templates focused on structure and layout rather than business logic.
+
+Django's form system provides comprehensive support for HTML form generation, validation, and processing. Forms are defined as Python classes with fields corresponding to form inputs, each field specifying its data type, validation rules, and rendering widget. The form system handles the complete form lifecycle including rendering form HTML with appropriate input types and attributes, parsing submitted data from POST requests, validating data against field-level and form-level validation rules, and providing error messages for invalid submissions. Model forms automatically generate form classes from model definitions, reducing boilerplate code for common CRUD operations. The form system integrates seamlessly with the template engine, enabling easy rendering of forms with error messages and field values preserved across submissions.
+
+Python 3.8+ provides the programming language foundation, offering a balance of readability, expressiveness, and performance suitable for web application development. Python's extensive standard library includes modules for file I/O, regular expressions, date/time handling, JSON processing, and HTTP communication, reducing dependency on third-party packages for common tasks. The language's dynamic typing and duck typing enable rapid prototyping and flexible code, while type hints introduced in Python 3.5+ allow optional static type checking for improved code quality and IDE support. Python's strong community and ecosystem provide solutions for virtually any technical challenge, with the Python Package Index (PyPI) hosting hundreds of thousands of packages covering diverse functionality.
+
+Bootstrap 5.3.2 provides the CSS framework and component library for the user interface, enabling rapid development of responsive, mobile-first layouts. Bootstrap's grid system uses flexbox to create flexible, responsive layouts that adapt to different screen sizes through breakpoints. The framework includes pre-styled components for common UI elements including navigation bars, buttons, forms, cards, modals, alerts, and badges, ensuring visual consistency across the application. Bootstrap's utility classes enable rapid styling adjustments without writing custom CSS, covering spacing, colors, typography, display properties, and more. The framework's JavaScript components provide interactive functionality including dropdowns, modals, tooltips, and carousels, enhancing user experience with minimal custom code. Bootstrap's extensive documentation and large community ensure that solutions to common UI challenges are readily available.
+
+WeasyPrint 60.1 handles PDF generation, converting HTML and CSS into high-quality PDF documents. WeasyPrint's strength lies in its comprehensive CSS support, including CSS Paged Media specifications for controlling page breaks, headers, footers, and page numbering. This CSS-based approach to PDF generation enables designers to create PDF layouts using familiar web technologies rather than learning specialized PDF generation APIs. WeasyPrint produces ATS-compatible PDFs with proper text extraction, ensuring that generated resumes can be parsed correctly by Applicant Tracking Systems. The library supports embedding fonts, images, and vector graphics, enabling professional-quality output. WeasyPrint's rendering engine is based on Cairo graphics library, providing accurate, high-quality rendering of complex layouts.
+
+Pdfplumber provides PDF parsing capabilities, extracting text, tables, and metadata from uploaded PDF files. Unlike simpler PDF libraries that extract raw text without structure, pdfplumber maintains spatial information about text positioning, enabling more sophisticated parsing that can identify sections, columns, and tables. The library provides access to individual characters with their coordinates, fonts, and sizes, enabling custom parsing logic that can adapt to different resume formats. Pdfplumber handles various PDF encodings and formats, providing robust extraction even from PDFs created by different tools. The library's table extraction capabilities are particularly valuable for parsing structured information like work experience or education sections formatted as tables.
+
+SpaCy 3.x with the en_core_web_sm language model provides natural language processing capabilities essential for resume analysis and optimization. SpaCy's architecture emphasizes production readiness and performance, using Cython for performance-critical components to achieve processing speeds suitable for real-time applications. The library provides tokenization that intelligently splits text into words and punctuation, part-of-speech tagging that identifies grammatical roles of words, named entity recognition that identifies people, organizations, dates, and other entities, and dependency parsing that analyzes grammatical structure. The en_core_web_sm model is trained on web text and provides good general-purpose language understanding suitable for resume content. SpaCy's pipeline architecture allows custom components to be added for domain-specific processing, enabling extension of the base functionality with resume-specific analysis.
+
+SQLite serves as the development database, providing a lightweight, file-based relational database that requires no separate server process. SQLite's zero-configuration nature accelerates developer onboarding, as new developers can clone the repository and immediately run the application without setting up database servers. Despite its simplicity, SQLite provides full ACID compliance, ensuring data integrity even in the face of application crashes or power failures. The database supports most SQL features including transactions, indexes, views, and triggers, enabling sophisticated data operations. SQLite's single-file database format simplifies backup and version control, as the entire database can be copied or committed to version control for testing purposes.
+
+PostgreSQL readiness ensures that the application can scale to production workloads requiring higher concurrency and performance. PostgreSQL provides advanced features including full-text search for efficient keyword searching, JSON data types for flexible schema evolution, sophisticated query optimization for complex queries, and robust concurrency control for high-traffic scenarios. The database's extensibility through custom functions, operators, and data types enables domain-specific optimizations. PostgreSQL's replication capabilities support high availability and read scaling through streaming replication and logical replication. The database's mature ecosystem includes monitoring tools, backup solutions, and performance analysis utilities that facilitate production operations.
+
+Chart.js powers the analytics visualizations, providing a flexible, responsive charting library with excellent browser compatibility. The library supports multiple chart types including line charts for trend visualization, bar charts for comparative analysis, pie charts for composition display, and gauge charts for metric display. Chart.js charts are responsive by default, automatically resizing to fit their containers and adapting to different screen sizes. The library provides extensive customization options for colors, fonts, axes, legends, and tooltips, enabling charts to match the application's visual design. Chart.js uses HTML5 Canvas for rendering, providing good performance even with large datasets. The library's animation capabilities create smooth, engaging transitions when data updates, enhancing user experience.
+
+Python-docx enables DOCX export functionality, generating Microsoft Word documents from resume data. The library provides a high-level API for creating Word documents with paragraphs, runs, tables, and styles. Documents can include formatting like bold, italic, font sizes, colors, and alignment, enabling professional-quality output. The library supports document templates, allowing pre-designed Word documents to be populated with resume data, though the current implementation generates documents programmatically. Python-docx produces standard Office Open XML documents compatible with Microsoft Word, LibreOffice, and other word processors, ensuring broad compatibility.
+
+Bleach provides HTML sanitization, protecting against XSS attacks by removing or escaping potentially dangerous HTML tags and attributes. The library uses a whitelist approach, allowing only explicitly permitted tags and attributes while removing everything else. This approach is more secure than blacklist-based filtering, which attempts to identify and remove dangerous content but may miss novel attack vectors. Bleach is used to sanitize all user-generated content before storage and display, including resume text extracted from uploaded PDFs, ensuring that malicious content cannot be injected into the application.
+
+
+
+---
+
+## 2. PROPOSED SYSTEM
+
+### 2.1 Proposed System
+
+The proposed NextGenCV system represents a comprehensive solution to the challenges faced by modern job seekers in creating ATS-optimized resumes. This system goes beyond traditional resume builders by integrating advanced technologies including natural language processing, machine learning-inspired optimization algorithms, and sophisticated analytics to provide users with an intelligent, data-driven approach to resume development. The proposed system addresses the complete resume lifecycle from initial creation through iterative optimization, version management, and multi-format export, providing a unified platform that eliminates the need for multiple disconnected tools.
+
+At its core, the proposed system implements a flexible, section-based resume builder that accommodates diverse career backgrounds and presentation preferences. Unlike rigid template-based systems that force users into predefined structures, the proposed system allows dynamic addition, removal, and reordering of resume sections to match individual needs. Users can include standard sections like work experience, education, and skills, as well as optional sections for projects, certifications, publications, volunteer work, and custom content. Each section type has specialized input forms optimized for the type of information being captured, with work experience sections including fields for company, title, dates, and bullet points, education sections capturing institution, degree, field of study, and achievements, and skills sections supporting categorization and proficiency levels.
+
+The proposed system's PDF upload and parsing capability represents a significant innovation in resume management tools. Many users already have resumes in PDF format, whether created using word processors, downloaded from other platforms, or received from professional resume writers. The proposed system enables these users to import their existing resumes rather than manually re-entering all information. The parsing process uses sophisticated algorithms combining text extraction, spatial analysis, and natural language processing to identify resume sections, extract structured data, and populate the system's data model. The parser handles various resume formats and layouts, adapting to different structural conventions while maintaining high accuracy. After parsing, users review the extracted data in a side-by-side comparison interface, making corrections where needed before confirming the import. This workflow balances automation with user control, leveraging technology to eliminate tedious data entry while ensuring accuracy through human verification.
+
+The resume optimization feature, branded as "Fix My Resume," represents the system's most sophisticated capability. This feature analyzes resume content in the context of a specific job description, identifying opportunities for improvement across multiple dimensions. The optimization process begins with keyword extraction from the job description using natural language processing to identify important terms, skills, and qualifications. The system then analyzes the resume to determine which keywords are present and which are missing, calculating a keyword match score. Beyond simple keyword counting, the optimization engine evaluates the quality of resume content, identifying weak action verbs that could be replaced with stronger alternatives, achievements that lack quantification and could benefit from metrics, formatting inconsistencies that might confuse ATS parsers, and structural issues that reduce readability.
+
+The optimization engine then generates an improved version of the resume, automatically rewriting content to address identified issues. Weak action verbs like "responsible for" or "worked on" are replaced with strong action verbs like "led," "developed," "implemented," or "achieved." Missing keywords are naturally integrated into existing bullet points rather than awkwardly appended, maintaining readability while improving ATS scores. The system suggests quantification opportunities, prompting users to add metrics like percentages, dollar amounts, or time savings to achievement statements. Formatting is standardized to ensure ATS compatibility, removing problematic elements like tables, text boxes, or unusual fonts while maintaining visual appeal. The optimized resume is presented alongside the original in a comparison interface, highlighting changes and explaining the rationale behind each modification. Users can accept the optimized version, reject it and keep the original, or selectively accept individual changes, maintaining control over their resume content.
+
+The proposed system's version control capability brings software development best practices to resume management. Every time a resume is modified, whether through manual editing or automated optimization, the system creates a new version while preserving the previous version. Each version is stored with complete resume data, creation timestamp, ATS score, and change summary, enabling comprehensive version history. Users can view all versions of a resume in chronological order, compare any two versions to see exactly what changed, restore previous versions if recent changes prove ineffective, and track how ATS scores evolve across versions. This version control system enables an iterative, experimental approach to resume optimization, where users can try different strategies, measure their impact through ATS scores, and refine their approach based on empirical results rather than guesswork.
+
+The analytics dashboard provides users with actionable insights into their resume portfolio's health and effectiveness. The dashboard presents a resume health score calculated from multiple factors including ATS compatibility, keyword coverage, content quality, and formatting consistency. This aggregate score provides an at-a-glance assessment of resume quality, with detailed breakdowns showing how each factor contributes to the overall score. Trend charts visualize how ATS scores change over time, helping users understand whether their optimization efforts are yielding improvements. The dashboard identifies top missing keywords across all resumes, highlighting skills or qualifications that users should consider adding to their profiles. Optimization history shows all optimization sessions with before/after scores, enabling users to assess which optimization strategies have been most effective.
+
+The template system in the proposed solution balances aesthetic appeal with ATS compatibility, a challenging combination given that many visually striking resume designs use formatting elements that confuse ATS parsers. The system includes a curated gallery of templates designed by professionals with expertise in both graphic design and ATS requirements. Each template is available in multiple color schemes and font combinations, enabling personalization while maintaining the underlying ATS-friendly structure. Users can preview templates with their own resume data before committing to a selection, ensuring that the chosen template presents their information effectively. Advanced users can customize templates further through custom CSS, though the system validates customizations to ensure ATS compatibility is maintained.
+
+The export functionality supports multiple formats optimized for different use cases. PDF export generates ATS-compatible documents using WeasyPrint, with careful attention to text extraction, font embedding, and structural markup that enables accurate parsing by ATS systems. The PDF export includes options for different page sizes, margins, and styling preferences while maintaining ATS compatibility. DOCX export generates Microsoft Word documents using python-docx, providing editable files for situations where employers request Word format or users want to make final adjustments in familiar word processing software. Plain text export strips all formatting to produce maximum ATS compatibility, useful for pasting into online application forms or submitting to systems with strict formatting requirements. Users can export any version of their resumes, not just the current version, facilitating A/B testing where different resume versions are submitted to different applications to determine which performs better.
+
+The proposed system implements comprehensive security measures to protect user data and prevent malicious activity. File upload validation checks file types, sizes, and MIME types before accepting uploads, preventing users from uploading executable files or excessively large files that could impact system performance. Uploaded PDFs are scanned for embedded scripts or other potentially malicious content before processing. All text extracted from PDFs is sanitized using Bleach to remove any HTML tags or JavaScript that could enable XSS attacks. User data is strictly isolated, with all database queries filtered by user ID to ensure users can only access their own resumes. Authentication is required for all resume-related functionality, with session management using secure, HTTP-only cookies to prevent session hijacking. CSRF protection is enabled on all state-changing operations, preventing cross-site request forgery attacks.
+
+The proposed system's architecture supports future enhancements and scaling. The service layer pattern isolates business logic from presentation concerns, making it easy to add new features or modify existing functionality without impacting the entire application. The database schema is designed for extensibility, with foreign key relationships and normalized structure that can accommodate new entity types or relationships. The system's stateless application design enables horizontal scaling through addition of application servers, while database read replicas can distribute query load. Caching strategies can be implemented at multiple levels including page caching, fragment caching, and data caching to improve performance as user base grows. The system's modular structure and comprehensive test coverage facilitate ongoing development and maintenance, ensuring that the platform can evolve to meet changing user needs and technological capabilities.
+
+
+### 2.2 Objectives of System
+
+The NextGenCV system has been designed with a comprehensive set of objectives that guide its development, feature prioritization, and user experience design. These objectives reflect both the immediate needs of job seekers and the long-term vision for creating a transformative platform in the career development space. Each objective has been carefully formulated to be specific, measurable, achievable, relevant, and time-bound, ensuring that the development team maintains focus on delivering tangible value to users while building a sustainable, scalable platform.
+
+The primary objective is to significantly improve users' success rates in passing ATS screening by providing intelligent optimization tools that enhance resume compatibility with automated parsing systems. This objective addresses the fundamental problem that motivated the system's creation: the high rejection rate of qualified candidates due to technical resume issues rather than lack of qualifications. The system aims to increase users' ATS scores by an average of 30-50% through automated optimization, bringing resumes that would have been automatically rejected into the consideration set for human review. This objective is measured through before-and-after ATS score comparisons, tracking the score improvements achieved through the optimization process. Success in this objective directly translates to more interview opportunities for users, making it the most impactful measure of the system's value.
+
+A second critical objective is to reduce the time required to create and optimize professional resumes by at least 70% compared to manual methods. Traditional resume creation and optimization is time-consuming, often requiring hours of research into industry keywords, multiple rounds of editing and formatting, and trial-and-error testing of different approaches. The system's automation features including PDF parsing, intelligent optimization, and template-based formatting dramatically accelerate this process. Users can upload existing resumes and have them parsed in seconds, run optimization algorithms that would take hours to replicate manually, and apply professional templates instantly rather than spending time on layout and formatting. This time savings is particularly valuable for active job seekers who may be applying to dozens of positions, as it enables them to maintain quality while increasing application volume.
+
+The third objective focuses on democratizing access to professional-grade resume optimization tools that were previously available only through expensive services or premium software. Professional resume writers typically charge $200-$500 or more for resume optimization services, placing them out of reach for many job seekers, particularly those who are unemployed or underemployed. The system aims to provide comparable optimization capabilities at a fraction of the cost, making professional-quality resume development accessible regardless of financial resources. This objective aligns with the organization's social mission of reducing barriers to employment and promoting economic mobility. Success is measured through user adoption across diverse demographic and economic segments, with particular attention to usage among populations that traditionally lack access to career development resources.
+
+A fourth objective is to provide users with data-driven insights into resume quality and effectiveness, replacing subjective assessments with objective, measurable metrics. Many job seekers struggle with uncertainty about whether their resumes are effective, relying on opinions from friends, family, or online forums that may be inconsistent or outdated. The system's analytics dashboard provides concrete metrics including ATS compatibility scores, keyword match percentages, content quality assessments, and trend analysis showing how resumes improve over time. These metrics enable users to make informed decisions about resume modifications, understanding not just what to change but why changes matter and how they impact overall effectiveness. This objective transforms resume development from an art based on intuition into a science based on data, empowering users with knowledge and confidence.
+
+The fifth objective centers on enabling iterative, experimental approaches to resume optimization through comprehensive version control and comparison capabilities. Traditional resume development often involves making changes and hoping they improve effectiveness, with no systematic way to evaluate impact or revert unsuccessful modifications. The system's version control enables users to try different optimization strategies, compare results objectively through ATS scores, and refine their approach based on empirical evidence. This iterative methodology, borrowed from software development and scientific experimentation, leads to better outcomes than one-shot optimization attempts. Users can test hypotheses about what makes resumes effective, learn from results, and continuously improve their materials. This objective is measured through user engagement with version control features and the number of optimization iterations users perform before settling on final resume versions.
+
+A sixth objective involves providing flexibility to accommodate diverse career backgrounds, industries, and presentation preferences while maintaining ATS compatibility. Job seekers come from varied backgrounds including traditional linear career paths, non-linear paths with career changes, freelance or contract work, gaps due to education or caregiving, and international experience. The system must accommodate this diversity without forcing users into rigid templates that don't fit their situations. The flexible section-based architecture enables users to structure resumes appropriately for their circumstances, while the optimization engine adapts recommendations to different industries and career levels. This objective ensures that the system serves all users effectively rather than only those with conventional career paths.
+
+The seventh objective focuses on maintaining the highest standards of data security and privacy, recognizing that resumes contain sensitive personal information including contact details, employment history, and educational credentials. Users must trust that their data is protected from unauthorized access, breaches, or misuse. The system implements multiple layers of security including encrypted data transmission, secure password storage, strict data isolation between users, regular security audits, and compliance with data protection regulations. This objective is measured through security metrics including zero data breaches, successful completion of security audits, and user trust indicators from surveys. Building and maintaining user trust is essential for long-term success and user retention.
+
+An eighth objective emphasizes providing an intuitive, accessible user experience that serves users with varying levels of technical sophistication and digital literacy. Not all job seekers are comfortable with technology, and the system must be usable by everyone from digital natives to those with limited computer experience. The interface design prioritizes clarity, consistency, and simplicity, with clear navigation, helpful guidance, informative error messages, and progressive disclosure that presents advanced features only when needed. Accessibility features ensure that users with disabilities can effectively use the system, including keyboard navigation, screen reader compatibility, and sufficient color contrast. This objective is measured through usability testing, user satisfaction surveys, and accessibility audits.
+
+The ninth objective involves building a scalable, maintainable platform that can grow with increasing user base and evolving requirements. The system must handle growth from initial launch through thousands or tens of thousands of users without performance degradation or reliability issues. The architecture employs proven patterns including service layer abstraction, database optimization, caching strategies, and stateless application design that enable horizontal scaling. Code quality practices including comprehensive testing, clear documentation, and modular design ensure that the system can be maintained and enhanced efficiently over time. This objective is measured through performance metrics including page load times, system uptime, and successful handling of load testing scenarios.
+
+The tenth objective focuses on continuous improvement through user feedback integration and data-driven feature development. The system includes mechanisms for collecting user feedback, tracking feature usage, and identifying pain points or opportunities for enhancement. Analytics on feature adoption, user workflows, and common issues inform the product roadmap, ensuring that development efforts focus on areas with highest user impact. Regular updates introduce new features, refinements to existing functionality, and optimizations based on real-world usage patterns. This objective ensures that the system evolves to meet changing user needs and maintains relevance in a dynamic job market landscape.
+
+
+### 2.3 User Requirements
+
+The user requirements for the NextGenCV system have been derived through extensive research including user interviews, surveys, competitive analysis, and usability testing with representative users from target demographics. These requirements represent the essential capabilities and characteristics that users expect from a modern resume optimization platform, organized into functional requirements that specify what the system must do and non-functional requirements that specify how well the system must perform. Understanding and meeting these requirements is critical for user adoption, satisfaction, and long-term platform success.
+
+Functional requirements define the specific features and capabilities that users need to accomplish their resume development goals. The first major functional requirement is comprehensive user account management, enabling users to register for accounts with email verification, log in securely with password authentication, reset forgotten passwords through email-based recovery, update profile information including name and contact details, and manage account settings including notification preferences and privacy controls. Users require confidence that their accounts are secure and that they maintain control over their personal information and how it is used. The account system must prevent unauthorized access while remaining convenient for legitimate users, balancing security with usability.
+
+The second functional requirement encompasses resume creation and editing capabilities that provide flexibility while maintaining structure. Users must be able to create multiple resumes for different purposes or target positions, add and remove sections dynamically to accommodate their unique backgrounds, reorder sections to emphasize most relevant information, input content through intuitive forms with appropriate field types and validation, save drafts automatically to prevent data loss, and preview resumes in real-time as they make changes. The editing interface must be responsive and intuitive, minimizing the learning curve for new users while providing efficiency for experienced users. Users expect modern web application interactions including autosave, undo/redo capabilities, and immediate visual feedback on changes.
+
+The third functional requirement addresses PDF upload and parsing functionality that enables users to import existing resumes. Users need to upload PDF files through drag-and-drop or file selection, have the system automatically extract text and identify sections, review parsed data in a clear comparison interface showing original PDF alongside extracted data, make corrections to any parsing errors before confirming import, and have the imported data populate a new resume in the system. The parsing must handle various resume formats and layouts with reasonable accuracy, though users understand that manual review and correction may be necessary for complex layouts. Clear communication about parsing limitations and guidance for reviewing results are essential for managing user expectations.
+
+The fourth functional requirement involves the resume optimization feature that analyzes and improves resume content. Users must be able to initiate optimization by providing a target job description, have the system analyze their resume against the job description and identify improvement opportunities, receive an optimized version with specific changes highlighted and explained, review changes in a side-by-side comparison interface, accept or reject the optimized version or selectively accept individual changes, and understand the rationale behind each suggested modification. The optimization must produce genuinely improved content rather than superficial changes, maintaining the user's authentic voice while enhancing effectiveness. Users require transparency about what the optimization does and control over whether to accept suggestions.
+
+The fifth functional requirement covers ATS analysis and scoring that provides objective assessment of resume quality. Users need to analyze resumes against job descriptions to calculate compatibility scores, receive detailed breakdowns showing how scores are calculated across multiple factors, identify specific keywords present in the job description but missing from the resume, understand which resume sections contribute positively or negatively to ATS scores, and receive actionable recommendations for improving scores. The scoring must be based on legitimate ATS evaluation factors rather than arbitrary metrics, providing users with insights that genuinely improve their chances of passing ATS screening. Clear explanations of scoring methodology build user trust and understanding.
+
+The sixth functional requirement addresses version control and history management that enables iterative optimization. Users must be able to view complete version history for each resume showing all past versions with timestamps and scores, compare any two versions side-by-side to see exactly what changed, restore previous versions if recent changes prove ineffective, track how ATS scores evolve across versions, and understand what modifications were made in each version. The version control interface must make it easy to navigate through history, understand changes, and make informed decisions about which version to use. Automatic version creation on significant changes ensures that users don't lose work, while manual version creation enables users to mark important milestones.
+
+The seventh functional requirement encompasses analytics and insights that help users understand their resume portfolio's overall health. Users need to view aggregate metrics across all resumes including average ATS scores and trends, identify common weaknesses or missing keywords across multiple resumes, track improvement over time through trend visualizations, receive personalized recommendations based on their specific resume content and target industries, and export analytics data for external analysis or record-keeping. The analytics must provide actionable insights rather than just presenting data, helping users understand not only what their metrics are but what they should do to improve them.
+
+The eighth functional requirement involves template selection and customization that enables professional presentation. Users must be able to browse a gallery of professionally designed templates with preview images, preview templates with their own resume data before committing to a selection, select templates and have their resume content automatically formatted accordingly, customize template colors, fonts, and spacing to match personal preferences, and switch between templates easily to find the best fit for their content. Templates must maintain ATS compatibility regardless of customization, with the system preventing or warning about modifications that would harm ATS scores. The template system must balance aesthetic appeal with technical requirements, recognizing that resumes must pass both automated screening and human review.
+
+The ninth functional requirement covers export functionality that enables users to submit resumes in various formats. Users need to export resumes as ATS-compatible PDF files suitable for most application systems, export as DOCX files for situations requiring editable documents, export as plain text for maximum ATS compatibility or pasting into online forms, export any version of their resumes not just the current version, and receive exported files immediately without delays or complex processes. Export quality must be high, with proper formatting, font embedding, and text extraction in PDFs, and accurate content representation in DOCX and text formats. Users expect exports to work reliably without requiring technical knowledge or troubleshooting.
+
+The tenth functional requirement addresses collaboration and sharing capabilities that enable users to get feedback on their resumes. Users may want to share resumes with mentors, career counselors, or peers for review, receive comments or suggestions from reviewers, track who has accessed their resumes and when, control sharing permissions including view-only or edit access, and revoke sharing access when no longer needed. While not implemented in the current version, this requirement represents an important future enhancement that would add significant value for users who benefit from external feedback on their resume development.
+
+Non-functional requirements specify quality attributes and constraints that affect user experience and system operation. Performance requirements mandate that page load times remain under 2 seconds for typical operations, resume analysis completes within 5 seconds, PDF parsing completes within 10 seconds for typical resume files, and export generation completes within 5 seconds. These performance targets ensure that the system feels responsive and doesn't frustrate users with long wait times. Users have limited patience for slow systems, particularly when they're in the stressful context of job searching.
+
+Reliability requirements specify that the system maintains 99.5% uptime excluding planned maintenance, automatically saves user work to prevent data loss from browser crashes or network interruptions, handles errors gracefully with informative messages rather than cryptic technical errors, and recovers from failures without data corruption. Users need confidence that their work is safe and that the system will be available when they need it. Unexpected downtime or data loss severely damages user trust and satisfaction.
+
+Usability requirements mandate that new users can create their first resume within 15 minutes without external help, the interface follows consistent design patterns and conventions throughout, error messages clearly explain what went wrong and how to fix it, help documentation is easily accessible and comprehensive, and the system works across different browsers and devices without degraded functionality. Users should be able to accomplish their goals efficiently without extensive training or technical knowledge.
+
+Security requirements specify that all data transmission uses HTTPS encryption, passwords are hashed using industry-standard algorithms, user data is strictly isolated preventing unauthorized access, uploaded files are validated and scanned for malicious content, and the system complies with relevant data protection regulations. Users must trust that their personal information and resume content are protected from unauthorized access, breaches, or misuse.
+
+Accessibility requirements mandate that the system meets WCAG 2.1 Level AA standards, supports keyboard navigation for users who cannot use a mouse, provides appropriate ARIA labels for screen readers, maintains sufficient color contrast for users with visual impairments, and enables text resizing without breaking layouts. The system must be usable by people with diverse abilities, ensuring that disabilities don't prevent access to career development tools.
+
+
+
+---
+
+## 3. ANALYSIS & DESIGN
+
+### 3.1 Data Flow Diagram (DFD)
+
+Data Flow Diagrams provide a graphical representation of how data moves through the NextGenCV v2.0 system, illustrating the flow of information between external entities, processes, data stores, and the transformations that occur at each stage. The DFD hierarchy consists of multiple levels, starting with a context diagram that shows the system as a single process, then decomposing into increasingly detailed levels that reveal the internal workings of the system. This hierarchical approach enables stakeholders to understand the system at different levels of abstraction, from high-level overview to detailed process specifications.
+
+**Context Diagram (Level 0 DFD)**
+
+The context diagram represents the highest level of abstraction, showing the NextGenCV system as a single process interacting with external entities. The primary external entity is the User (Job Seeker), who interacts with the system by providing resume data, job descriptions, and PDF files, while receiving optimized resumes, ATS scores, analytics reports, and exported documents. A secondary external entity is the ATS System (conceptual), representing the target audience for the generated resumes, though this is not a direct system interaction but rather the context for optimization decisions. The Admin user represents another external entity who manages templates, monitors system health, and performs administrative tasks.
+
+Data flows in the context diagram include:
+- User → System: Registration data, login credentials, resume content, job descriptions, PDF uploads, optimization requests, export requests
+- System → User: Authentication confirmations, resume previews, ATS scores, optimization suggestions, analytics dashboards, exported files (PDF/DOCX/TXT)
+- Admin → System: Template definitions, system configurations, user management commands
+- System → Admin: System logs, usage statistics, error reports
+
+**Level 1 DFD - Major Processes**
+
+The Level 1 DFD decomposes the system into major functional processes, each representing a significant subsystem:
+
+**Process 1.0: User Authentication**
+- Inputs: Registration data (email, password, name), login credentials
+- Outputs: Authentication tokens, session data, user profile information
+- Data Stores: User database
+- Description: Handles user registration, login, logout, password reset, and session management
+
+**Process 2.0: Resume Management**
+- Inputs: Resume content (personal info, experience, education, skills), section additions/deletions, formatting preferences
+- Outputs: Saved resume data, preview HTML, validation messages
+- Data Stores: Resume database, Resume Version database
+- Description: Manages CRUD operations for resumes, handles section management, maintains version history
+
+**Process 3.0: PDF Processing**
+- Inputs: Uploaded PDF files
+- Outputs: Extracted text, parsed resume sections, structured data
+- Data Stores: Uploaded Resume database, temporary file storage
+- Description: Parses uploaded PDFs, extracts text, identifies sections, structures data for import
+
+**Process 4.0: ATS Analysis**
+- Inputs: Resume content, job description text
+- Outputs: ATS compatibility scores, keyword match analysis, missing keywords list, improvement suggestions
+- Data Stores: Resume Analysis database, keyword cache
+- Description: Analyzes resumes against job descriptions, calculates multi-factor scores, identifies optimization opportunities
+
+**Process 5.0: Resume Optimization**
+- Inputs: Resume content, job description, optimization preferences
+- Outputs: Optimized resume content, change highlights, improvement explanations
+- Data Stores: Optimization History database, Resume Version database
+- Description: Automatically improves resume content through action verb enhancement, keyword injection, quantification suggestions
+
+**Process 6.0: Analytics & Reporting**
+- Inputs: Resume data, version history, analysis results
+- Outputs: Health scores, trend charts, insights, recommendations
+- Data Stores: Resume database, Resume Version database, Resume Analysis database
+- Description: Aggregates data across resumes and versions, computes metrics, generates visualizations
+
+**Process 7.0: Template Management**
+- Inputs: Template selections, customization preferences (colors, fonts)
+- Outputs: Formatted resume HTML, template previews
+- Data Stores: Template database, Template Customization database
+- Description: Manages resume templates, applies formatting, handles customization
+
+**Process 8.0: Export Generation**
+- Inputs: Resume data, export format selection (PDF/DOCX/TXT), version selection
+- Outputs: Exported files in requested formats
+- Data Stores: Resume database, Resume Version database
+- Description: Generates downloadable files in multiple formats with appropriate formatting
+
+**Level 2 DFD - Detailed Process Decomposition**
+
+**Process 4.0 Decomposition: ATS Analysis**
+
+**Process 4.1: Keyword Extraction**
+- Inputs: Job description text
+- Outputs: Extracted keywords with importance weights
+- Description: Uses NLP to identify important terms, skills, qualifications from job descriptions
+
+**Process 4.2: Resume Text Aggregation**
+- Inputs: Resume sections (experience, education, skills, etc.)
+- Outputs: Aggregated resume text
+- Description: Combines all resume sections into unified text for analysis
+
+**Process 4.3: Keyword Matching**
+- Inputs: Extracted keywords, aggregated resume text
+- Outputs: Matched keywords, missing keywords, match percentage
+- Description: Compares job description keywords against resume content
+
+**Process 4.4: Multi-Factor Scoring**
+- Inputs: Resume content, keyword match results
+- Outputs: Component scores (keyword, skills, quantification, action verbs, formatting, structure), overall ATS score
+- Description: Evaluates resume across six dimensions, calculates weighted overall score
+
+**Process 4.5: Recommendation Generation**
+- Inputs: Analysis results, missing keywords, weak areas
+- Outputs: Prioritized improvement recommendations
+- Description: Generates actionable suggestions based on analysis findings
+
+**Process 5.0 Decomposition: Resume Optimization**
+
+**Process 5.1: Action Verb Analysis**
+- Inputs: Resume bullet points
+- Outputs: Weak verbs identified, strong verb suggestions
+- Description: Identifies weak action verbs and suggests stronger alternatives
+
+**Process 5.2: Keyword Injection**
+- Inputs: Resume content, missing keywords
+- Outputs: Modified content with naturally integrated keywords
+- Description: Inserts missing keywords into existing content while maintaining readability
+
+**Process 5.3: Quantification Detection**
+- Inputs: Achievement statements
+- Outputs: Quantification opportunities, metric suggestions
+- Description: Identifies achievements lacking metrics, suggests quantification approaches
+
+**Process 5.4: Formatting Standardization**
+- Inputs: Resume content with various formatting
+- Outputs: Standardized, ATS-compatible formatting
+- Description: Removes problematic formatting elements, applies consistent styling
+
+**Process 5.5: Content Rewriting**
+- Inputs: Original content, optimization rules
+- Outputs: Rewritten content with improvements
+- Description: Generates improved versions of resume sections
+
+**Data Flow Mapping Instructions:**
+
+To create visual DFD diagrams, use the following notation:
+- **Circles/Rounded Rectangles**: Processes (numbered, e.g., "1.0 User Authentication")
+- **Squares/Rectangles**: External Entities (e.g., "User", "Admin")
+- **Open Rectangles**: Data Stores (e.g., "D1: User Database", "D2: Resume Database")
+- **Arrows**: Data Flows (labeled with data description, e.g., "resume content", "ATS score")
+
+Tools for creating DFDs:
+- Draw.io (free, web-based)
+- Lucidchart (online diagramming tool)
+- Microsoft Visio (professional diagramming)
+- PlantUML (text-based diagram generation)
+
+**DFD Best Practices:**
+1. Keep each level focused - don't show too much detail at once
+2. Balance processes - each should represent similar level of complexity
+3. Label all data flows clearly
+4. Ensure data flow conservation - inputs to a process must be sufficient to produce outputs
+5. Number processes consistently (1.0, 2.0 at Level 1; 1.1, 1.2 for decomposition of 1.0)
+6. Use meaningful names that describe what the process does
+

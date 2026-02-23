@@ -22,7 +22,7 @@ def template_gallery(request):
         'page_title': 'Template Gallery'
     }
     
-    return render(request, 'templates_mgmt/template_gallery.html', context)
+    return render(request, 'templates_mgmt/template_gallery_new.html', context)
 
 
 @login_required

@@ -230,9 +230,9 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-2;
-    opacity: 0;
-    max-height: 0;
-    overflow: hidden;
+    // Always visible for better UX
+    opacity: 1;
+    max-height: none;
     transition: all $duration-normal $easing-default;
   }
   
@@ -243,13 +243,6 @@
     .btn {
       flex: 1;
     }
-  }
-  
-  // Show actions on hover
-  &:hover &__actions {
-    opacity: 1;
-    max-height: 300px;
-    padding: $spacing-3;
   }
   
   // Enhanced hover effect

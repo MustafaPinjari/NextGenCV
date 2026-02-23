@@ -1,0 +1,396 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Edit Resume - NextGenCV{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header__content">
+        <div class="page-header__title-section">
+            <h1 class="page-header__title">
+                <i class="bi bi-pencil"></i>
+                Edit Resume
+            </h1>
+            <p class="page-header__subtitle">Update your resume information and sections</p>
+        </div>
+        <div class="page-header__actions">
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-ghost">
+                <i class="bi bi-x"></i>
+                <span>Cancel</span>
+            </a>
+            <button type="submit" form="resumeForm" class="btn btn-primary">
+                <i class="bi bi-check-circle"></i>
+                <span>Save Changes</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<form method="post" id="resumeForm">
+    {% csrf_token %}
+    
+    <div style="max-width: 1200px; margin: 0 auto;">
+        <!-- Resume Basic Info -->
+        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
+            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
+                <h2 class="card-title">Resume Information</h2>
+                
+                <div class="form-grid" style="display: grid; gap: var(--spacing-4, 2rem);">
+                    <div class="form-group">
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="title" 
+                            name="title" 
+                            value="{{ resume.title }}" 
+                            placeholder=" "
+                            required
+                        >
+                        <label class="form-label" for="title">Resume Title</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <select class="form-select" id="template" name="template" required>
+                            <option value="professional" {% if resume.template == 'professional' %}selected{% endif %}>Professional</option>
+                            <option value="modern" {% if resume.template == 'modern' %}selected{% endif %}>Modern</option>
+                            <option value="classic" {% if resume.template == 'classic' %}selected{% endif %}>Classic</option>
+                            <option value="creative" {% if resume.template == 'creative' %}selected{% endif %}>Creative</option>
+                        </select>
+                        <label class="form-label" for="template">Template Style</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Personal Information -->
+        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
+            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
+                <h2 class="card-title">Personal Information</h2>
+                
+                {% if personal_info %}
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-4, 2rem);">
+                    <div class="form-group">
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="full_name" 
+                            name="full_name" 
+                            value="{{ personal_info.full_name }}" 
+                            placeholder=" "
+                            required
+                        >
+                        <label class="form-label" for="full_name">Full Name</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="email" 
+                            class="form-input" 
+                            id="email" 
+                            name="email" 
+                            value="{{ personal_info.email }}" 
+                            placeholder=" "
+                            required
+                        >
+                        <label class="form-label" for="email">Email Address</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="tel" 
+                            class="form-input" 
+                            id="phone" 
+                            name="phone" 
+                            value="{{ personal_info.phone }}" 
+                            placeholder=" "
+                        >
+                        <label class="form-label" for="phone">Phone Number</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="text" 
+                            class="form-input" 
+                            id="location" 
+                            name="location" 
+                            value="{{ personal_info.location }}" 
+                            placeholder=" "
+                        >
+                        <label class="form-label" for="location">Location</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="url" 
+                            class="form-input" 
+                            id="linkedin" 
+                            name="linkedin" 
+                            value="{{ personal_info.linkedin }}" 
+                            placeholder=" "
+                        >
+                        <label class="form-label" for="linkedin">LinkedIn URL</label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input 
+                            type="url" 
+                            class="form-input" 
+                            id="github" 
+                            name="github" 
+                            value="{{ personal_info.github }}" 
+                            placeholder=" "
+                        >
+                        <label class="form-label" for="github">GitHub URL</label>
+                    </div>
+                </div>
+                {% else %}
+                <div class="empty-state empty-state-sm">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-person" style="font-size: 60px;"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Personal Information</h3>
+                    <p class="empty-state-description">Add your personal information to complete your resume</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Work Experience -->
+        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
+            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4, 2rem);">
+                    <h2 class="card-title" style="margin: 0;">Work Experience</h2>
+                    <a href="{% url 'experience_add' resume.id %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Experience
+                    </a>
+                </div>
+                
+                {% if experiences %}
+                <div style="display: grid; gap: var(--spacing-3, 1.5rem);">
+                    {% for exp in experiences %}
+                    <div class="card-default">
+                        <div class="card-body" style="padding: var(--spacing-4, 2rem);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-2, 1rem);">
+                                <div>
+                                    <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-primary); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        {{ exp.role }}
+                                    </h3>
+                                    <p style="font-size: var(--font-size-base, 1rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        {{ exp.company }}
+                                    </p>
+                                    <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-tertiary);">
+                                        {{ exp.start_date|date:"M Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: var(--spacing-2, 1rem);">
+                                    <a href="{% url 'experience_edit' resume.id exp.id %}" class="btn btn-sm btn-ghost">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'experience_delete' resume.id exp.id %}" class="btn btn-sm btn-outline" style="border-color: var(--color-error); color: var(--color-error);">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); line-height: 1.6;">
+                                {{ exp.description|truncatewords:50 }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state empty-state-sm">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-briefcase" style="font-size: 60px;"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Work Experience</h3>
+                    <p class="empty-state-description">Add your work experience to showcase your professional background</p>
+                    <a href="{% url 'experience_add' resume.id %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Experience
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Education -->
+        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
+            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4, 2rem);">
+                    <h2 class="card-title" style="margin: 0;">Education</h2>
+                    <a href="{% url 'education_add' resume.id %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Education
+                    </a>
+                </div>
+                
+                {% if education %}
+                <div style="display: grid; gap: var(--spacing-3, 1.5rem);">
+                    {% for edu in education %}
+                    <div class="card-default">
+                        <div class="card-body" style="padding: var(--spacing-4, 2rem);">
+                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                <div>
+                                    <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-primary); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        {{ edu.degree }} in {{ edu.field }}
+                                    </h3>
+                                    <p style="font-size: var(--font-size-base, 1rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        {{ edu.institution }}
+                                    </p>
+                                    <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-tertiary);">
+                                        {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
+                                    </p>
+                                </div>
+                                <div style="display: flex; gap: var(--spacing-2, 1rem);">
+                                    <a href="{% url 'education_edit' resume.id edu.id %}" class="btn btn-sm btn-ghost">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'education_delete' resume.id edu.id %}" class="btn btn-sm btn-outline" style="border-color: var(--color-error); color: var(--color-error);">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state empty-state-sm">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-mortarboard" style="font-size: 60px;"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Education</h3>
+                    <p class="empty-state-description">Add your educational background</p>
+                    <a href="{% url 'education_add' resume.id %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Education
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Skills -->
+        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
+            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4, 2rem);">
+                    <h2 class="card-title" style="margin: 0;">Skills</h2>
+                    <a href="{% url 'skill_add' resume.id %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Skill
+                    </a>
+                </div>
+                
+                {% if skills %}
+                {% regroup skills by category as skills_by_category %}
+                <div style="display: grid; gap: var(--spacing-4, 2rem);">
+                    {% for category in skills_by_category %}
+                    <div>
+                        <h3 style="font-size: var(--font-size-base, 1rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-secondary); margin-bottom: var(--spacing-2, 1rem); text-transform: uppercase; letter-spacing: 0.05em;">
+                            {{ category.grouper }}
+                        </h3>
+                        <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-2, 1rem);">
+                            {% for skill in category.list %}
+                            <div class="badge badge-primary" style="display: flex; align-items: center; gap: var(--spacing-2, 1rem); padding: var(--spacing-2, 1rem) var(--spacing-3, 1.5rem);">
+                                <span>{{ skill.name }}</span>
+                                <div style="display: flex; gap: var(--spacing-1, 0.5rem);">
+                                    <a href="{% url 'skill_edit' resume.id skill.id %}" style="color: inherit; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'skill_delete' resume.id skill.id %}" style="color: var(--color-error); opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state empty-state-sm">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-star" style="font-size: 60px;"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Skills</h3>
+                    <p class="empty-state-description">Add your professional skills and competencies</p>
+                    <a href="{% url 'skill_add' resume.id %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Skill
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Projects -->
+        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
+            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4, 2rem);">
+                    <h2 class="card-title" style="margin: 0;">Projects</h2>
+                    <a href="{% url 'project_add' resume.id %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Project
+                    </a>
+                </div>
+                
+                {% if projects %}
+                <div style="display: grid; gap: var(--spacing-3, 1.5rem);">
+                    {% for proj in projects %}
+                    <div class="card-default">
+                        <div class="card-body" style="padding: var(--spacing-4, 2rem);">
+                            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-2, 1rem);">
+                                <div>
+                                    <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-primary); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        {{ proj.name }}
+                                    </h3>
+                                    {% if proj.technologies %}
+                                    <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-primary-text); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        <i class="bi bi-code-slash"></i> {{ proj.technologies }}
+                                    </p>
+                                    {% endif %}
+                                    {% if proj.url %}
+                                    <p style="font-size: var(--font-size-sm, 0.875rem); margin-bottom: var(--spacing-1, 0.5rem);">
+                                        <a href="{{ proj.url }}" target="_blank" style="color: var(--color-link);">
+                                            <i class="bi bi-link-45deg"></i> {{ proj.url|truncatechars:50 }}
+                                        </a>
+                                    </p>
+                                    {% endif %}
+                                </div>
+                                <div style="display: flex; gap: var(--spacing-2, 1rem);">
+                                    <a href="{% url 'project_edit' resume.id proj.id %}" class="btn btn-sm btn-ghost">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'project_delete' resume.id proj.id %}" class="btn btn-sm btn-outline" style="border-color: var(--color-error); color: var(--color-error);">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                            <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); line-height: 1.6;">
+                                {{ proj.description|truncatewords:50 }}
+                            </p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-state empty-state-sm">
+                    <div class="empty-state-icon">
+                        <i class="bi bi-folder" style="font-size: 60px;"></i>
+                    </div>
+                    <h3 class="empty-state-title">No Projects</h3>
+                    <p class="empty-state-description">Showcase your projects and portfolio work</p>
+                    <a href="{% url 'project_add' resume.id %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        Add Project
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

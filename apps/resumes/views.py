@@ -369,7 +369,7 @@ def resume_detail(request, pk):
         return render(request, template_name, context)
     else:
         # Default: show the detail view with action buttons
-        return render(request, 'resumes/resume_detail.html', context)
+        return render(request, 'resumes/resume_detail_new.html', context)
 
 @login_required
 def resume_update(request, pk):
@@ -430,7 +430,7 @@ def resume_update(request, pk):
         'projects': resume.projects.all()
     }
     
-    return render(request, 'resumes/resume_update.html', context)
+    return render(request, 'resumes/resume_update_new.html', context)
 
 @login_required
 def resume_delete(request, pk):
@@ -1147,6 +1147,9 @@ def pdf_upload(request):
             uploaded_resume.status = 'parsing'
             uploaded_resume.save()
             
+            # Reset file pointer to beginning before extraction
+            uploaded_file.seek(0)
+            
             # Extract text using PDFParserService
             raw_text = PDFParserService.extract_text_from_pdf(uploaded_file)
             
@@ -1268,7 +1271,7 @@ def pdf_parse_review(request, upload_id):
         'confidence_percent': int((uploaded_resume.parsing_confidence or 0.0) * 100),
     }
     
-    return render(request, 'resumes/parse_review.html', context)
+    return render(request, 'resumes/parse_review_new.html', context)
 
 
 @login_required
@@ -1387,7 +1390,7 @@ def pdf_import_confirm(request, upload_id):
                 resume_data['education'].append({
                     'institution': edu.get('institution', 'Unknown Institution'),
                     'degree': edu.get('degree', 'Unknown Degree'),
-                    'field': edu.get('field_of_study', 'Unknown Field'),
+                    'field': edu.get('field_of_study', ''),  # Allow empty field
                     'start_year': year - 4,  # Assume 4-year program
                     'end_year': year,
                 })

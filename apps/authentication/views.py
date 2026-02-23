@@ -29,6 +29,22 @@ def register(request):
     return render(request, 'authentication/register.html', {'form': form})
 
 @login_required
+def profile(request):
+    """User profile view"""
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'authentication/profile.html', context)
+
+@login_required
+def settings(request):
+    """User settings view"""
+    context = {
+        'user': request.user,
+    }
+    return render(request, 'authentication/settings.html', context)
+
+@login_required
 def dashboard(request):
     """User dashboard view"""
     # Get user's resumes (will be implemented when resume app is ready)

@@ -1,0 +1,72 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+
+{% block title %}Template Gallery - NextGenCV{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="page-header__content">
+        <div class="page-header__title-section">
+            <h1 class="page-header__title">
+                <i class="bi bi-palette"></i>
+                Resume Template Gallery
+            </h1>
+            <p class="page-header__subtitle">Choose a professional template for your resume. All templates are ATS-friendly and fully customizable.</p>
+        </div>
+    </div>
+</div>
+
+{% if templates %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--spacing-4, 2rem);">
+    {% for template in templates %}
+    <div class="card-elevated card-interactive">
+        <!-- Template Preview -->
+        <div style="position: relative; width: 100%; height: 300px; background: var(--color-base-bg); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--color-border); overflow: hidden;">
+            {% if template.thumbnail %}
+            <img src="{{ template.thumbnail.url }}" alt="{{ template.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+            <i class="bi bi-file-earmark-text" style="font-size: 80px; color: var(--color-text-tertiary); opacity: 0.3;"></i>
+            {% endif %}
+            
+            {% if template.is_default %}
+            <div style="position: absolute; top: var(--spacing-3, 1.5rem); right: var(--spacing-3, 1.5rem);">
+                <span class="badge badge-primary">Default</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Template Info -->
+        <div class="card-body" style="padding: var(--spacing-4, 2rem);">
+            <h3 style="font-size: var(--font-size-xl, 1.25rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-primary); margin-bottom: var(--spacing-2, 1rem);">
+                {{ template.name }}
+            </h3>
+            <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-3, 1.5rem);">
+                {{ template.description|default:"Professional resume template optimized for ATS systems" }}
+            </p>
+            
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-3, 1.5rem);">
+                <div style="display: flex; align-items: center; gap: var(--spacing-1, 0.5rem); font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-tertiary);">
+                    <i class="bi bi-people"></i>
+                    <span>Used {{ template.usage_count|default:0 }} times</span>
+                </div>
+            </div>
+            
+            <a href="{% url 'template_preview' template.id %}" class="btn btn-primary btn-block">
+                <i class="bi bi-eye"></i>
+                Preview Template
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-state-icon">
+        <i class="bi bi-palette" style="font-size: 80px;"></i>
+    </div>
+    <h3 class="empty-state-title">No Templates Available</h3>
+    <p class="empty-state-description">Templates are coming soon. Check back later!</p>
+</div>
+{% endif %}
+{% endblock %}

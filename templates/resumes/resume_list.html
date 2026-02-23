@@ -80,16 +80,20 @@
                     </a>
                 </div>
                 <div class="resume-card__actions-row">
+                    <a href="{% url 'analyze_resume' resume.id %}" class="btn btn-sm btn-ghost" title="Analyze Resume" aria-label="Analyze {{ resume.title }}">
+                        <i class="bi bi-graph-up"></i>
+                        <span>Analyze</span>
+                    </a>
                     <a href="{% url 'resume_duplicate' resume.id %}" class="btn btn-sm btn-ghost" title="Duplicate Resume" aria-label="Duplicate {{ resume.title }}">
                         <i class="bi bi-files"></i>
                         <span>Duplicate</span>
                     </a>
+                </div>
+                <div class="resume-card__actions-row">
                     <a href="{% url 'resume_export' resume.id %}" class="btn btn-sm btn-ghost" title="Download Resume" aria-label="Download {{ resume.title }}">
                         <i class="bi bi-download"></i>
                         <span>Download</span>
                     </a>
-                </div>
-                <div class="resume-card__actions-row">
                     <a href="{% url 'resume_delete' resume.id %}" class="btn btn-sm btn-outline" title="Delete Resume" aria-label="Delete {{ resume.title }}" style="border-color: var(--color-error); color: var(--color-error);">
                         <i class="bi bi-trash"></i>
                         <span>Delete</span>

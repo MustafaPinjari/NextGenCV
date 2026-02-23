@@ -123,16 +123,18 @@ class SectionParserService:
         if email_match:
             info['email'] = email_match.group(0)
         
-        # Extract phone
+        # Extract phone - improved patterns for international formats
         phone_patterns = [
-            r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',  # 123-456-7890 or 1234567890
+            r'\+\d{1,3}\s*\d{10}',  # +91 8799849225
+            r'\+\d{1,3}[-.\s]?\d{3}[-.\s]?\d{3}[-.\s]?\d{4}',  # +1-123-456-7890
+            r'\b\d{10}\b',  # 8799849225
+            r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b',  # 123-456-7890
             r'\(\d{3}\)\s*\d{3}[-.]?\d{4}',     # (123) 456-7890
-            r'\+\d{1,3}\s*\d{3}[-.]?\d{3}[-.]?\d{4}',  # +1 123-456-7890
         ]
         for pattern in phone_patterns:
             phone_match = re.search(pattern, text)
             if phone_match:
-                info['phone'] = phone_match.group(0)
+                info['phone'] = phone_match.group(0).strip()
                 break
         
         # Extract LinkedIn
@@ -142,46 +144,60 @@ class SectionParserService:
             re.IGNORECASE
         )
         if linkedin_match:
-            info['linkedin'] = linkedin_match.group(0)
+            info['linkedin'] = 'https://' + linkedin_match.group(0)
         
-        # Extract website
-        website_match = re.search(
+        # Extract website - improved to handle various formats
+        website_patterns = [
+            r'(?:www\.)?[\w-]+\.(?:netlify\.app|herokuapp\.com|vercel\.app|github\.io)(?:/[\w.-]*)*',
             r'https?://[\w.-]+\.[a-z]{2,}(?:/[\w.-]*)*',
-            text,
-            re.IGNORECASE
-        )
-        if website_match and 'linkedin' not in website_match.group(0).lower():
-            info['website'] = website_match.group(0)
+        ]
+        for pattern in website_patterns:
+            website_match = re.search(pattern, text, re.IGNORECASE)
+            if website_match and 'linkedin' not in website_match.group(0).lower():
+                url = website_match.group(0)
+                if not url.startswith('http'):
+                    url = 'https://' + url
+                info['website'] = url
+                break
         
-        # Extract name using spaCy NER if available
-        if nlp:
-            try:
-                doc = nlp(text[:500])  # Only process first 500 chars for efficiency
-                for ent in doc.ents:
-                    if ent.label_ == 'PERSON' and not info['name']:
-                        info['name'] = ent.text
+        # Extract name - improved logic
+        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        if lines:
+            # First line is usually the name (all caps or title case)
+            first_line = lines[0]
+            # Check if it looks like a name (not email, phone, or URL)
+            if '@' not in first_line and not re.search(r'\d{3}', first_line) and '.' not in first_line:
+                info['name'] = first_line
+            # Try second or third line if first didn't work
+            elif len(lines) > 1:
+                for line in lines[1:4]:
+                    if '@' not in line and not re.search(r'\d{3}', line) and len(line.split()) <= 4:
+                        # Looks like a name (2-4 words, no numbers/emails)
+                        info['name'] = line
                         break
-            except Exception as e:
-                logger.warning(f"spaCy NER failed: {e}")
         
-        # Fallback: Use first non-empty line as name
-        if not info['name']:
-            lines = [line.strip() for line in text.split('\n') if line.strip()]
-            if lines:
-                # First line is often the name
-                first_line = lines[0]
-                # Make sure it's not an email or phone
-                if '@' not in first_line and not re.search(r'\d{3}', first_line):
-                    info['name'] = first_line
+        # Extract location - look for pattern "City | email | website" or standalone city names
+        # Common pattern: "Bhiwandi | email | website"
+        location_pattern = r'([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s*\|'
+        location_match = re.search(location_pattern, text)
+        if location_match:
+            potential_location = location_match.group(1).strip()
+            # Make sure it's not a name or common word
+            if potential_location.lower() not in ['summary', 'education', 'experience', 'skills', 'projects']:
+                # Check if it's not part of the name (appears after name)
+                if info['name'] and potential_location not in info['name']:
+                    info['location'] = potential_location
         
-        # Extract location using spaCy NER if available
-        if nlp:
+        # Use spaCy NER as fallback for location if not found
+        if not info['location'] and nlp:
             try:
                 doc = nlp(text[:500])
                 for ent in doc.ents:
-                    if ent.label_ in ['GPE', 'LOC'] and not info['location']:
-                        info['location'] = ent.text
-                        break
+                    if ent.label_ in ['GPE', 'LOC']:
+                        # Avoid common false positives
+                        if ent.text.lower() not in ['python', 'django', 'java', 'javascript']:
+                            info['location'] = ent.text
+                            break
             except Exception as e:
                 logger.warning(f"spaCy location extraction failed: {e}")
         
@@ -211,7 +227,6 @@ class SectionParserService:
             return experiences
         
         # Split by double newlines or clear separators
-        # Each experience is typically separated by blank lines
         entries = re.split(r'\n\s*\n', text)
         
         for entry in entries:
@@ -232,11 +247,12 @@ class SectionParserService:
             if not lines:
                 continue
             
-            # Extract dates (common patterns)
+            # Extract dates - improved patterns
             date_patterns = [
-                r'(\w+\s+\d{4})\s*[-–—]\s*(\w+\s+\d{4}|Present|Current)',
-                r'(\d{1,2}/\d{4})\s*[-–—]\s*(\d{1,2}/\d{4}|Present|Current)',
-                r'(\d{4})\s*[-–—]\s*(\d{4}|Present|Current)',
+                r'(\w+\s+\d{4,5})\s*[-–—]\s*(\w+\s+\d{4}|present|current)',  # July 20224 -present
+                r'(\w+\s+\d{4})\s*[-–—]\s*(\w+\s+\d{4}|present|current)',  # July 2022 - July 2025
+                r'(\d{1,2}/\d{4})\s*[-–—]\s*(\d{1,2}/\d{4}|present|current)',
+                r'(\d{4})\s*[-–—]\s*(\d{4}|present|current)',
             ]
             
             dates_found = False
@@ -248,38 +264,39 @@ class SectionParserService:
                     dates_found = True
                     break
             
-            # Use spaCy NER to extract company names (ORG entities)
-            if nlp:
+            # Extract title and company from first line
+            # Pattern: "Title | Company Date - Date"
+            first_line = lines[0] if lines else ''
+            title_company_pattern = r'([^|]+?)\s*\|\s*([^|]+?)(?:\s+\w+\s+\d{4})?$'
+            title_company_match = re.search(title_company_pattern, first_line)
+            
+            if title_company_match:
+                exp['title'] = title_company_match.group(1).strip()
+                company_part = title_company_match.group(2).strip()
+                # Remove date from company if present
+                company_clean = re.sub(r'\s+\w+\s+\d{4,5}\s*[-–—].*$', '', company_part)
+                exp['company'] = company_clean.strip()
+            else:
+                # Fallback: first line is title
+                if lines:
+                    # Remove dates from title line
+                    title_clean = re.sub(r'\s+\w+\s+\d{4,5}\s*[-–—].*$', '', lines[0])
+                    exp['title'] = title_clean.strip()
+            
+            # Use spaCy NER to extract company names if not found
+            if not exp['company'] and nlp:
                 try:
-                    doc = nlp(entry[:300])  # First 300 chars usually have company/title
+                    doc = nlp(entry[:300])
                     for ent in doc.ents:
-                        if ent.label_ == 'ORG' and not exp['company']:
+                        if ent.label__ == 'ORG':
                             exp['company'] = ent.text
-                        elif ent.label_ in ['GPE', 'LOC'] and not exp['location']:
-                            exp['location'] = ent.text
+                            break
                 except Exception as e:
                     logger.warning(f"spaCy NER for experience failed: {e}")
             
-            # Heuristic: First line is often job title, second is company
-            if len(lines) >= 2:
-                # If we haven't found company via NER, use heuristics
-                if not exp['title']:
-                    exp['title'] = lines[0]
-                if not exp['company'] and len(lines) > 1:
-                    # Second line often has company
-                    exp['company'] = lines[1]
-            
-            # Extract bullet points as description
-            bullet_lines = [
-                line for line in lines 
-                if line.startswith(('•', '●', '○', '-', '*', '▪'))
-            ]
-            if bullet_lines:
-                exp['description'] = '\n'.join(bullet_lines)
-            else:
-                # Use all lines after the first 2 as description
-                if len(lines) > 2:
-                    exp['description'] = '\n'.join(lines[2:])
+            # Extract description - everything after first line
+            if len(lines) > 1:
+                exp['description'] = '\n'.join(lines[1:])
             
             # Only add if we have at least company or title
             if exp['company'] or exp['title']:
@@ -325,13 +342,23 @@ class SectionParserService:
                 'gpa': None,
             }
             
-            # Extract dates
+            lines = [line.strip() for line in entry.split('\n') if line.strip()]
+            
+            if not lines:
+                continue
+            
+            # Extract dates - improved pattern
             date_match = re.search(
-                r'(\d{4})|(\w+\s+\d{4})',
+                r'(\w+\s+\d{4})\s*[-–—]\s*(\w+\s+\d{4})',
                 entry
             )
             if date_match:
-                edu['graduation_date'] = date_match.group(0)
+                edu['graduation_date'] = date_match.group(2)  # Use end date as graduation
+            else:
+                # Try single year
+                year_match = re.search(r'\b(20\d{2})\b', entry)
+                if year_match:
+                    edu['graduation_date'] = year_match.group(1)
             
             # Extract GPA
             gpa_match = re.search(
@@ -342,37 +369,35 @@ class SectionParserService:
             if gpa_match:
                 edu['gpa'] = gpa_match.group(1)
             
-            # Extract degree keywords
-            degree_keywords = [
-                'Bachelor', 'Master', 'PhD', 'Doctorate', 'Associate',
-                'B.S.', 'B.A.', 'M.S.', 'M.A.', 'MBA', 'Ph.D.'
-            ]
-            for keyword in degree_keywords:
-                if keyword in entry:
-                    # Extract the line containing the degree
-                    for line in entry.split('\n'):
-                        if keyword in line:
-                            edu['degree'] = line.strip()
-                            break
-                    break
+            # Extract degree from first line
+            # Pattern: "Degree Date - Date"
+            first_line = lines[0] if lines else ''
+            degree_match = re.search(r'^([^|]+?)(?:\s+\w+\s+\d{4})', first_line)
+            if degree_match:
+                edu['degree'] = degree_match.group(1).strip()
+            else:
+                # Check for degree keywords
+                degree_keywords = [
+                    'Bachelor', 'Master', 'PhD', 'Doctorate', 'Associate',
+                    'B.S.', 'B.A.', 'M.S.', 'M.A.', 'MBA', 'Ph.D.', 'BCA', 'MCA'
+                ]
+                for keyword in degree_keywords:
+                    if keyword in entry:
+                        for line in lines:
+                            if keyword in line:
+                                edu['degree'] = line.strip()
+                                break
+                        break
             
-            # Use spaCy NER to extract institution (ORG entities)
-            if nlp:
-                try:
-                    doc = nlp(entry[:200])
-                    for ent in doc.ents:
-                        if ent.label_ == 'ORG' and not edu['institution']:
-                            edu['institution'] = ent.text
-                            break
-                except Exception as e:
-                    logger.warning(f"spaCy NER for education failed: {e}")
+            # Extract institution from second line or using pipe separator
+            if len(lines) > 1:
+                # Pattern: "Institution | Department | Location"
+                institution_line = lines[1]
+                institution_parts = [p.strip() for p in institution_line.split('|')]
+                if institution_parts:
+                    edu['institution'] = institution_parts[0]
             
-            # Heuristic: First line is often institution
-            lines = [line.strip() for line in entry.split('\n') if line.strip()]
-            if lines and not edu['institution']:
-                edu['institution'] = lines[0]
-            
-            # Extract field of study (often after "in" or "of")
+            # Extract field of study - look for "in" or "of" patterns
             field_match = re.search(
                 r'(?:in|of)\s+([A-Z][a-zA-Z\s]+?)(?:\n|,|$)',
                 entry

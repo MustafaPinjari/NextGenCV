@@ -4591,9 +4591,8 @@ hr {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  opacity: 0;
-  max-height: 0;
-  overflow: hidden;
+  opacity: 1;
+  max-height: none;
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -4604,12 +4603,6 @@ hr {
 
 .resume-card__actions-row .btn {
   flex: 1;
-}
-
-.resume-card:hover .resume-card__actions {
-  opacity: 1;
-  max-height: 300px;
-  padding: 1.5rem;
 }
 
 .resume-card:hover .resume-card__preview {

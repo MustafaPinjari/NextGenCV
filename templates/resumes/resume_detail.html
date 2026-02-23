@@ -17,7 +17,7 @@
                 <a href="{% url 'version_list' resume.id %}" class="btn btn-outline-info" title="View version history">
                     <i class="bi bi-clock-history"></i> Versions
                 </a>
-                <a href="#" onclick="analyzeResume({{ resume.id }}); return false;" class="btn btn-warning" title="Analyze with ATS">
+                <a href="{% url 'analyze_resume' resume.id %}" class="btn btn-warning" title="Analyze with ATS">
                     <i class="bi bi-graph-up"></i> Analyze
                 </a>
                 <a href="{% url 'resume_export' resume.id %}" class="btn btn-success" title="Export to PDF">
