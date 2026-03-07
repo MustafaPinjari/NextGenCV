@@ -463,6 +463,9 @@ def resume_duplicate(request, pk):
     """
     Duplicate an existing resume.
     Verify resume belongs to authenticated user.
+    Redirects to edit page after duplication.
+    
+    Requirements: 25.1, 25.2, 25.3, 25.4, 25.5, 25.6
     """
     resume = get_object_or_404(Resume, id=pk)
     
@@ -471,10 +474,12 @@ def resume_duplicate(request, pk):
         logger.warning(f'Unauthorized access attempt: User {request.user.username} tried to duplicate resume {pk} owned by {resume.user.username}')
         return HttpResponseForbidden("You do not have permission to duplicate this resume.")
     
-    # Duplicate the resume
+    # Duplicate the resume (uses optimized query with prefetch_related)
     duplicate = ResumeService.duplicate_resume(pk)
     messages.success(request, f'Resume duplicated successfully as "{duplicate.title}"')
-    return redirect('resume_detail', pk=duplicate.id)
+    
+    # Redirect to edit page (Requirement: 25.5)
+    return redirect('resume_update', pk=duplicate.id)
 
 @login_required
 def resume_export(request, pk):
@@ -483,8 +488,11 @@ def resume_export(request, pk):
     Verify resume belongs to authenticated user.
     Calls PDFExportService to generate PDF and returns as downloadable file.
     Supports optional version parameter to export specific version.
+    
+    Requirements: 16.1, 16.2, 16.3, 16.4, 16.5
     """
     from .pdf_service import PDFExportService
+    from .models import ResumeVersion
     
     resume = get_object_or_404(Resume, id=pk)
     
@@ -495,23 +503,33 @@ def resume_export(request, pk):
     
     # Get optional version parameter
     version_id = request.GET.get('version')
+    version_number = None
+    
+    if version_id:
+        # Get version number for filename (Requirement: 16.3)
+        try:
+            version = ResumeVersion.objects.get(id=version_id, resume=resume)
+            version_number = version.version_number
+        except ResumeVersion.DoesNotExist:
+            messages.error(request, 'Version not found.')
+            return redirect('resume_detail', pk=pk)
     
     try:
-        # Generate PDF using the service
+        # Generate PDF using the service (Requirement: 16.2, 16.4)
         pdf_bytes, resume = PDFExportService.generate_pdf(pk, version_id=version_id)
         
         # Create HTTP response with PDF content
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         
-        # Set headers for download
+        # Set headers for download with version number in filename (Requirement: 16.3)
         filename = f"{resume.title.replace(' ', '_')}"
-        if version_id:
-            filename += f"_v{version_id}"
+        if version_number:
+            filename += f"_v{version_number}"
         filename += ".pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
         logger.info(f'PDF generated successfully for resume {pk}' + 
-                   (f' version {version_id}' if version_id else '') +
+                   (f' version {version_number}' if version_number else '') +
                    f' by user {request.user.username}')
         return response
         
@@ -529,9 +547,10 @@ def resume_export_docx(request, pk):
     Verify resume belongs to authenticated user.
     Supports optional version parameter to export specific version.
     
-    Requirements: 21.2, 21.5, 21.6
+    Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 21.2, 21.5, 21.6
     """
     from .services.docx_export_service import DOCXExportService
+    from .models import ResumeVersion
     
     resume = get_object_or_404(Resume, id=pk)
     
@@ -542,9 +561,19 @@ def resume_export_docx(request, pk):
     
     # Get optional version parameter
     version_id = request.GET.get('version')
+    version_number = None
+    
+    if version_id:
+        # Get version number for filename (Requirement: 16.3)
+        try:
+            version = ResumeVersion.objects.get(id=version_id, resume=resume)
+            version_number = version.version_number
+        except ResumeVersion.DoesNotExist:
+            messages.error(request, 'Version not found.')
+            return redirect('resume_detail', pk=pk)
     
     try:
-        # Generate DOCX using the service
+        # Generate DOCX using the service (Requirement: 16.2, 16.4)
         docx_bytes, resume = DOCXExportService.generate_docx(pk, version_id=version_id)
         
         # Create HTTP response with DOCX content
@@ -553,15 +582,15 @@ def resume_export_docx(request, pk):
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
         
-        # Set headers for download
+        # Set headers for download with version number in filename (Requirement: 16.3)
         filename = f"{resume.title.replace(' ', '_')}"
-        if version_id:
-            filename += f"_v{version_id}"
+        if version_number:
+            filename += f"_v{version_number}"
         filename += ".docx"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
         logger.info(f'DOCX generated successfully for resume {pk}' +
-                   (f' version {version_id}' if version_id else '') +
+                   (f' version {version_number}' if version_number else '') +
                    f' by user {request.user.username}')
         return response
         
@@ -580,9 +609,10 @@ def resume_export_text(request, pk):
     Optimized for ATS parsing.
     Supports optional version parameter to export specific version.
     
-    Requirements: 21.3, 21.6
+    Requirements: 16.1, 16.2, 16.3, 16.4, 16.5, 21.3, 21.6
     """
     from .services.text_export_service import TextExportService
+    from .models import ResumeVersion
     
     resume = get_object_or_404(Resume, id=pk)
     
@@ -593,23 +623,33 @@ def resume_export_text(request, pk):
     
     # Get optional version parameter
     version_id = request.GET.get('version')
+    version_number = None
+    
+    if version_id:
+        # Get version number for filename (Requirement: 16.3)
+        try:
+            version = ResumeVersion.objects.get(id=version_id, resume=resume)
+            version_number = version.version_number
+        except ResumeVersion.DoesNotExist:
+            messages.error(request, 'Version not found.')
+            return redirect('resume_detail', pk=pk)
     
     try:
-        # Generate plain text using the service
+        # Generate plain text using the service (Requirement: 16.2, 16.4)
         text_content, resume = TextExportService.generate_text(pk, version_id=version_id)
         
         # Create HTTP response with plain text content
         response = HttpResponse(text_content, content_type='text/plain; charset=utf-8')
         
-        # Set headers for download
+        # Set headers for download with version number in filename (Requirement: 16.3)
         filename = f"{resume.title.replace(' ', '_')}"
-        if version_id:
-            filename += f"_v{version_id}"
+        if version_number:
+            filename += f"_v{version_number}"
         filename += ".txt"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
         logger.info(f'Plain text generated successfully for resume {pk}' +
-                   (f' version {version_id}' if version_id else '') +
+                   (f' version {version_number}' if version_number else '') +
                    f' by user {request.user.username}')
         return response
         
@@ -722,6 +762,149 @@ def batch_export(request):
         logger.error(f'Batch export failed for user {request.user.username}: {str(e)}', exc_info=True)
         messages.error(request, f'Batch export failed: {str(e)}')
         return redirect('resume_list')
+
+
+@login_required
+def batch_analysis(request):
+    """
+    Analyze multiple resumes against the same job description.
+    Compare scores and highlight the best-scoring resume.
+    
+    POST parameters:
+    - resume_ids: List of resume IDs to analyze
+    - job_description: Job description text to compare against
+    
+    Requirements: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6
+    """
+    from apps.analyzer.services.scoring_engine import ScoringEngineService
+    import time
+    
+    if request.method == 'POST':
+        # Get resume IDs and job description from POST data
+        resume_ids = request.POST.getlist('resume_ids')
+        job_description = request.POST.get('job_description', '').strip()
+        
+        # Validation
+        if not resume_ids:
+            messages.error(request, 'Please select at least one resume to analyze.')
+            return redirect('resume_list')
+        
+        if not job_description:
+            messages.error(request, 'Please provide a job description.')
+            return redirect('resume_list')
+        
+        if len(job_description) < 50:
+            messages.error(request, 'Job description is too short. Please provide at least 50 characters.')
+            return redirect('resume_list')
+        
+        # Validate that all resumes belong to the user
+        resumes = Resume.objects.filter(
+            id__in=resume_ids, 
+            user=request.user
+        ).prefetch_related(
+            'personal_info',
+            'experiences',
+            'education',
+            'skills',
+            'projects'
+        )
+        
+        if resumes.count() != len(resume_ids):
+            messages.error(request, 'Some selected resumes do not exist or do not belong to you.')
+            return redirect('resume_list')
+        
+        try:
+            # Analyze all resumes
+            analysis_results = []
+            start_time = time.time()
+            
+            for resume in resumes:
+                try:
+                    # Run comprehensive ATS analysis
+                    analysis = ScoringEngineService.calculate_ats_score(resume, job_description)
+                    
+                    analysis_results.append({
+                        'resume': resume,
+                        'final_score': analysis['final_score'],
+                        'keyword_match_score': analysis['keyword_match_score'],
+                        'skill_relevance_score': analysis['skill_relevance_score'],
+                        'section_completeness_score': analysis['section_completeness_score'],
+                        'experience_impact_score': analysis['experience_impact_score'],
+                        'quantification_score': analysis['quantification_score'],
+                        'action_verb_score': analysis['action_verb_score'],
+                        'matched_keywords': analysis['matched_keywords'][:10],  # Top 10
+                        'missing_keywords': analysis['missing_keywords'][:10],  # Top 10
+                    })
+                    
+                    logger.info(
+                        f'Analyzed resume {resume.id} in batch: score {analysis["final_score"]:.2f}'
+                    )
+                    
+                except Exception as e:
+                    logger.error(f'Failed to analyze resume {resume.id} in batch: {str(e)}', exc_info=True)
+                    # Add placeholder with error
+                    analysis_results.append({
+                        'resume': resume,
+                        'final_score': 0,
+                        'error': str(e),
+                    })
+            
+            elapsed_time = time.time() - start_time
+            avg_time_per_resume = elapsed_time / len(resumes) if resumes else 0
+            
+            # Sort by score (highest first)
+            analysis_results.sort(key=lambda x: x['final_score'], reverse=True)
+            
+            # Identify best resume
+            best_resume = analysis_results[0] if analysis_results else None
+            
+            # Calculate key differences
+            if len(analysis_results) > 1:
+                for result in analysis_results[1:]:
+                    # Find keywords that best resume has but this one doesn't
+                    if best_resume and 'matched_keywords' in best_resume and 'matched_keywords' in result:
+                        best_keywords = set(best_resume['matched_keywords'])
+                        current_keywords = set(result['matched_keywords'])
+                        result['missing_from_best'] = list(best_keywords - current_keywords)[:5]
+            
+            logger.info(
+                f'Batch analysis completed for user {request.user.username}: '
+                f'{len(resumes)} resumes analyzed in {elapsed_time:.2f}s '
+                f'(avg {avg_time_per_resume:.2f}s per resume)'
+            )
+            
+            # Check performance requirement (< 5s per resume)
+            if avg_time_per_resume > 5:
+                logger.warning(
+                    f'Batch analysis performance issue: {avg_time_per_resume:.2f}s per resume '
+                    f'(target: < 5s)'
+                )
+            
+            context = {
+                'analysis_results': analysis_results,
+                'job_description': job_description,
+                'best_resume': best_resume,
+                'total_analyzed': len(resumes),
+                'elapsed_time': elapsed_time,
+                'avg_time_per_resume': avg_time_per_resume,
+            }
+            
+            return render(request, 'resumes/batch_analysis_results.html', context)
+            
+        except Exception as e:
+            logger.error(f'Batch analysis failed for user {request.user.username}: {str(e)}', exc_info=True)
+            messages.error(request, f'Batch analysis failed: {str(e)}')
+            return redirect('resume_list')
+    
+    # GET request - show form
+    # Get user's resumes for selection
+    resumes = Resume.objects.filter(user=request.user).order_by('-updated_at')
+    
+    context = {
+        'resumes': resumes,
+    }
+    
+    return render(request, 'resumes/batch_analysis_form.html', context)
 
 
 @login_required
@@ -1799,6 +1982,328 @@ def fix_reject(request, pk):
 
 
 # ============================================================================
+# Keyword & Achievement Assistance Module Views
+# ============================================================================
+
+@login_required
+def keyword_suggestions(request, pk):
+    """
+    Display keyword suggestions for a resume based on industry and job description.
+    
+    GET: Display form to enter job description (optional)
+    POST: Show keyword suggestions
+    
+    Requirements: 17.1, 17.2, 17.3, 17.4, 17.5, 17.6
+    """
+    from apps.analyzer.services.keyword_suggester import KeywordSuggesterService
+    
+    # Load resume
+    resume = get_object_or_404(
+        Resume.objects.prefetch_related(
+            'experiences',
+            'education',
+            'skills',
+            'projects'
+        ),
+        id=pk
+    )
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view keyword suggestions for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view keyword suggestions for this resume.")
+    
+    if request.method == 'POST':
+        # Get job description (optional)
+        job_description = request.POST.get('job_description', '').strip()
+        
+        if not job_description:
+            # Use generic suggestions based on industry
+            job_description = ''
+        
+        # Get keyword suggestions
+        try:
+            suggestions = KeywordSuggesterService.suggest_keywords(
+                resume, 
+                job_description, 
+                max_suggestions=15
+            )
+            
+            # Extract industry info
+            industry_info = KeywordSuggesterService.extract_industry_and_role(resume)
+            
+            # Group suggestions by category
+            suggestions_by_category = {
+                'technical': [],
+                'soft_skills': [],
+                'certifications': []
+            }
+            
+            for suggestion in suggestions:
+                category = suggestion['category']
+                if category in suggestions_by_category:
+                    suggestions_by_category[category].append(suggestion)
+            
+            logger.info(
+                f'Generated {len(suggestions)} keyword suggestions for resume {pk} '
+                f'(industry: {industry_info["industry"]})'
+            )
+            
+            context = {
+                'resume': resume,
+                'suggestions': suggestions,
+                'suggestions_by_category': suggestions_by_category,
+                'industry_info': industry_info,
+                'job_description': job_description,
+                'has_job_description': bool(job_description),
+            }
+            
+            return render(request, 'resumes/keyword_suggestions.html', context)
+            
+        except Exception as e:
+            logger.error(f'Failed to generate keyword suggestions for resume {pk}: {str(e)}', exc_info=True)
+            messages.error(request, f'Failed to generate keyword suggestions: {str(e)}')
+            return redirect('resume_detail', pk=pk)
+    
+    # GET request - show form
+    context = {
+        'resume': resume,
+    }
+    
+    return render(request, 'resumes/keyword_suggestions_form.html', context)
+
+
+@login_required
+def add_keyword(request, pk):
+    """
+    Add a suggested keyword to the resume.
+    
+    POST only: Adds keyword to appropriate section
+    
+    Requirements: 17.6, 18.1, 18.2, 18.3
+    """
+    from apps.resumes.models import Skill
+    
+    if request.method != 'POST':
+        return redirect('keyword_suggestions', pk=pk)
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to add keyword to resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to modify this resume.")
+    
+    # Get keyword and placement
+    keyword = request.POST.get('keyword', '').strip()
+    placement = request.POST.get('placement', 'skills')
+    
+    if not keyword:
+        messages.error(request, 'No keyword provided.')
+        return redirect('keyword_suggestions', pk=pk)
+    
+    try:
+        # Add keyword based on placement
+        if placement == 'skills':
+            # Check if skill already exists
+            existing_skill = Skill.objects.filter(
+                resume=resume,
+                name__iexact=keyword
+            ).first()
+            
+            if existing_skill:
+                messages.info(request, f'Skill "{keyword}" already exists in your resume.')
+            else:
+                # Add new skill
+                Skill.objects.create(
+                    resume=resume,
+                    name=keyword,
+                    category='Technical'  # Default category
+                )
+                messages.success(request, f'Added "{keyword}" to your Skills section.')
+                logger.info(f'Added keyword "{keyword}" to resume {pk} skills')
+        
+        # For other placements, we'd need to modify experience descriptions
+        # For now, just add to skills
+        
+        # Redirect back to keyword suggestions
+        return redirect('keyword_suggestions', pk=pk)
+        
+    except Exception as e:
+        logger.error(f'Failed to add keyword to resume {pk}: {str(e)}', exc_info=True)
+        messages.error(request, f'Failed to add keyword: {str(e)}')
+        return redirect('keyword_suggestions', pk=pk)
+
+
+# ============================================================================
+# Optimization History Module Views
+# ============================================================================
+
+@login_required
+def optimization_history_list(request, pk):
+    """
+    Display all optimization sessions for a resume in reverse chronological order.
+    
+    Shows optimization history with metadata including:
+    - Optimization dates
+    - Job description snippets
+    - Score improvements
+    - Change summaries
+    
+    Requirements: 3.3, 10.3
+    """
+    from .models import OptimizationHistory
+    from django.core.paginator import Paginator
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view optimization history for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view this optimization history.")
+    
+    # Get all optimization sessions for this resume
+    optimizations = OptimizationHistory.objects.filter(
+        resume=resume
+    ).select_related(
+        'original_version',
+        'optimized_version'
+    ).order_by('-created_at')
+    
+    # Paginate results (10 per page)
+    paginator = Paginator(optimizations, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Prepare optimization data with truncated job descriptions
+    optimization_data = []
+    for opt in page_obj:
+        # Truncate job description to 150 characters
+        job_desc_snippet = opt.job_description[:150] + '...' if len(opt.job_description) > 150 else opt.job_description
+        
+        optimization_data.append({
+            'id': opt.id,
+            'created_at': opt.created_at,
+            'job_description_snippet': job_desc_snippet,
+            'original_score': opt.original_score,
+            'optimized_score': opt.optimized_score,
+            'improvement_delta': opt.improvement_delta,
+            'changes_summary': opt.changes_summary,
+            'original_version': opt.original_version,
+            'optimized_version': opt.optimized_version,
+        })
+    
+    logger.info(
+        f'Displaying optimization history for resume {pk}: '
+        f'{optimizations.count()} total sessions'
+    )
+    
+    context = {
+        'resume': resume,
+        'page_obj': page_obj,
+        'optimization_data': optimization_data,
+        'total_optimizations': optimizations.count(),
+    }
+    
+    return render(request, 'resumes/optimization_history_list.html', context)
+
+
+@login_required
+def optimization_history_detail(request, pk, optimization_id):
+    """
+    Display detailed view of a specific optimization session.
+    
+    Shows complete optimization metadata including:
+    - Full job description
+    - All changes with accept/reject status
+    - Original and optimized scores
+    - Links to original and optimized versions
+    
+    Requirements: 3.4, 3.5, 10.4, 10.5
+    """
+    from .models import OptimizationHistory
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to view optimization detail for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to view this optimization detail.")
+    
+    # Load optimization history record
+    optimization = get_object_or_404(
+        OptimizationHistory.objects.select_related(
+            'original_version',
+            'optimized_version'
+        ),
+        id=optimization_id,
+        resume=resume
+    )
+    
+    # Group changes by type for easier display
+    changes_by_type = {
+        'bullet_rewrites': [],
+        'keyword_injections': [],
+        'quantification_suggestions': [],
+        'formatting_fixes': [],
+    }
+    
+    for change in optimization.detailed_changes:
+        change_type = change.get('type', '')
+        if change_type == 'bullet_rewrite':
+            changes_by_type['bullet_rewrites'].append(change)
+        elif change_type == 'keyword_injection':
+            changes_by_type['keyword_injections'].append(change)
+        elif change_type == 'quantification_suggestion':
+            changes_by_type['quantification_suggestions'].append(change)
+        elif change_type == 'formatting_standardization':
+            changes_by_type['formatting_fixes'].append(change)
+    
+    # Determine which changes were accepted vs rejected
+    accepted_change_ids = set()
+    rejected_change_ids = set()
+    
+    for change in optimization.accepted_changes:
+        # Create a unique identifier for the change
+        change_id = f"{change.get('type')}_{change.get('section')}_{change.get('old_text', '')[:50]}"
+        accepted_change_ids.add(change_id)
+    
+    for change in optimization.rejected_changes:
+        change_id = f"{change.get('type')}_{change.get('section')}_{change.get('old_text', '')[:50]}"
+        rejected_change_ids.add(change_id)
+    
+    logger.info(
+        f'Displaying optimization detail {optimization_id} for resume {pk} '
+        f'by user {request.user.username}'
+    )
+    
+    context = {
+        'resume': resume,
+        'optimization': optimization,
+        'changes_by_type': changes_by_type,
+        'accepted_change_ids': accepted_change_ids,
+        'rejected_change_ids': rejected_change_ids,
+    }
+    
+    return render(request, 'resumes/optimization_history_detail.html', context)
+
+
+# ============================================================================
 # Version Management Module Views
 # ============================================================================
 
@@ -2045,3 +2550,89 @@ def version_restore(request, pk, version_id):
             f'Failed to restore version: {str(e)}. Please try again or contact support.'
         )
         return redirect('version_detail', pk=pk, version_id=version_id)
+
+
+# ============================================================================
+# Template Customization Module Views
+# ============================================================================
+
+@login_required
+def customize_template(request, pk):
+    """
+    Customize resume template with color scheme and font selection.
+    
+    GET: Display customization form with current settings
+    POST: Apply customization changes
+    
+    Requirements: 13.1, 13.2, 13.3, 14.1, 14.3
+    """
+    from apps.resumes.services.template_customization_service import TemplateCustomizationService
+    
+    # Load resume
+    resume = get_object_or_404(Resume, id=pk)
+    
+    # Authorization check
+    if resume.user != request.user:
+        logger.warning(
+            f'Unauthorized access attempt: User {request.user.username} '
+            f'tried to customize template for resume {pk} owned by {resume.user.username}'
+        )
+        return HttpResponseForbidden("You do not have permission to customize this resume.")
+    
+    if request.method == 'POST':
+        # Get customization settings
+        color_scheme = request.POST.get('color_scheme')
+        font_family = request.POST.get('font_family')
+        
+        try:
+            # Apply customization
+            TemplateCustomizationService.apply_customization_to_resume(
+                resume,
+                color_scheme=color_scheme,
+                font_family=font_family
+            )
+            
+            logger.info(
+                f'Template customization applied to resume {pk}: '
+                f'color={color_scheme}, font={font_family}'
+            )
+            
+            messages.success(request, 'Template customization applied successfully!')
+            
+            # Check if this is an AJAX request for preview
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Customization applied',
+                    'css': TemplateCustomizationService.get_css_variables(resume)
+                })
+            
+            return redirect('resume_detail', pk=pk)
+            
+        except Exception as e:
+            logger.error(f'Failed to apply template customization to resume {pk}: {str(e)}', exc_info=True)
+            messages.error(request, f'Failed to apply customization: {str(e)}')
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                from django.http import JsonResponse
+                return JsonResponse({
+                    'success': False,
+                    'error': str(e)
+                }, status=400)
+    
+    # GET request - show customization form
+    color_schemes = TemplateCustomizationService.get_all_color_schemes()
+    fonts = TemplateCustomizationService.get_all_fonts()
+    current_css = TemplateCustomizationService.get_css_variables(resume)
+    
+    context = {
+        'resume': resume,
+        'color_schemes': color_schemes,
+        'fonts': fonts,
+        'current_color_scheme': resume.color_scheme,
+        'current_font': resume.font_family,
+        'current_css': current_css,
+    }
+    
+    return render(request, 'resumes/customize_template.html', context)

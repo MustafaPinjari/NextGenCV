@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Optimization Detail - {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Optimization Session Detail</h2>
+            <p class="text-muted">{{ optimization.created_at|date:"F d, Y g:i A" }}</p>
+        </div>
+        <div>
+            <a href="{% url 'optimization_history_list' resume.id %}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left"></i> Back to History
+            </a>
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-outline-primary">
+                <i class="bi bi-file-earmark-text"></i> View Resume
+            </a>
+        </div>
+    </div>
+
+    <!-- Score Improvement Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-graph-up"></i> Score Improvement</h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-4">
+                    <h6 class="text-muted">Original Score</h6>
+                    <h2 class="mb-0">{{ optimization.original_score|floatformat:1 }}</h2>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-muted">Improvement</h6>
+                    <h2 class="mb-0 text-success">
+                        <i class="bi bi-arrow-up"></i> +{{ optimization.improvement_delta|floatformat:1 }}
+                    </h2>
+                </div>
+                <div class="col-md-4">
+                    <h6 class="text-muted">Optimized Score</h6>
+                    <h2 class="mb-0 text-success">{{ optimization.optimized_score|floatformat:1 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Description -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-briefcase"></i> Job Description Used</h5>
+        </div>
+        <div class="card-body">
+            <p class="mb-0" style="white-space: pre-wrap;">{{ optimization.job_description }}</p>
+        </div>
+    </div>
+
+    <!-- Changes Summary -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-list-check"></i> Changes Summary</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h3 class="mb-0 text-primary">{{ optimization.changes_summary.total_changes }}</h3>
+                        <small class="text-muted">Total Changes</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h3 class="mb-0 text-info">{{ optimization.changes_summary.bullet_rewrites }}</h3>
+                        <small class="text-muted">Bullet Rewrites</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h3 class="mb-0 text-success">{{ optimization.changes_summary.keyword_injections }}</h3>
+                        <small class="text-muted">Keywords Added</small>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="text-center p-3 border rounded">
+                        <h3 class="mb-0 text-warning">{{ optimization.changes_summary.quantification_suggestions }}</h3>
+                        <small class="text-muted">Quantifications</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Changes -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-pencil-square"></i> Detailed Changes</h5>
+        </div>
+        <div class="card-body">
+            <!-- Bullet Rewrites -->
+            {% if changes_by_type.bullet_rewrites %}
+                <h6 class="text-info mb-3">
+                    <i class="bi bi-arrow-repeat"></i> Bullet Point Rewrites ({{ changes_by_type.bullet_rewrites|length }})
+                </h6>
+                {% for change in changes_by_type.bullet_rewrites %}
+                    <div class="card mb-3 border-info">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>{{ change.company }} - {{ change.role }}</strong>
+                                <span class="badge bg-info ms-2">Bullet {{ change.bullet_index|add:1 }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Original:</small>
+                                <p class="mb-0 text-decoration-line-through text-muted">{{ change.old_text }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-success">Improved:</small>
+                                <p class="mb-0 text-success fw-bold">{{ change.new_text }}</p>
+                            </div>
+                            <div>
+                                <small class="text-muted"><i class="bi bi-info-circle"></i> {{ change.reason }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Keyword Injections -->
+            {% if changes_by_type.keyword_injections %}
+                <h6 class="text-success mb-3 mt-4">
+                    <i class="bi bi-plus-circle"></i> Keywords Added ({{ changes_by_type.keyword_injections|length }})
+                </h6>
+                {% for change in changes_by_type.keyword_injections %}
+                    <div class="card mb-3 border-success">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>Section: {{ change.location|title }}</strong>
+                                <span class="badge bg-success ms-2">{{ change.keyword }}</span>
+                            </div>
+                            {% if change.context %}
+                                <div>
+                                    <small class="text-muted">Context:</small>
+                                    <p class="mb-0">{{ change.context }}</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Quantification Suggestions -->
+            {% if changes_by_type.quantification_suggestions %}
+                <h6 class="text-warning mb-3 mt-4">
+                    <i class="bi bi-123"></i> Quantification Suggestions ({{ changes_by_type.quantification_suggestions|length }})
+                </h6>
+                {% for change in changes_by_type.quantification_suggestions %}
+                    <div class="card mb-3 border-warning">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>{{ change.company }} - {{ change.role }}</strong>
+                                <span class="badge bg-warning text-dark ms-2">{{ change.achievement_type|title }}</span>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-muted">Original:</small>
+                                <p class="mb-0">{{ change.old_text }}</p>
+                            </div>
+                            <div class="mb-2">
+                                <small class="text-warning">Suggested:</small>
+                                <p class="mb-0 fw-bold">{{ change.suggested_text }}</p>
+                            </div>
+                            {% if change.metric_options %}
+                                <div>
+                                    <small class="text-muted">Metric options: {{ change.metric_options|join:", " }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Formatting Fixes -->
+            {% if changes_by_type.formatting_fixes %}
+                <h6 class="text-secondary mb-3 mt-4">
+                    <i class="bi bi-text-paragraph"></i> Formatting Standardization ({{ changes_by_type.formatting_fixes|length }})
+                </h6>
+                {% for change in changes_by_type.formatting_fixes %}
+                    <div class="card mb-3 border-secondary">
+                        <div class="card-body">
+                            <div class="mb-2">
+                                <strong>{{ change.section|title }}</strong>
+                                {% if change.company %}
+                                    - {{ change.company }}
+                                {% elif change.project_name %}
+                                    - {{ change.project_name }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <small class="text-muted">Changes: {{ change.specific_changes|join:", " }}</small>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if not changes_by_type.bullet_rewrites and not changes_by_type.keyword_injections and not changes_by_type.quantification_suggestions and not changes_by_type.formatting_fixes %}
+                <p class="text-muted text-center py-4">No detailed changes recorded for this optimization session.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Version Links -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Related Versions</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Original Version</h6>
+                    {% if optimization.original_version %}
+                        <a href="{% url 'version_detail' resume.id optimization.original_version.id %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-file-earmark"></i> View Version {{ optimization.original_version.version_number }}
+                        </a>
+                    {% else %}
+                        <p class="text-muted">No version recorded</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6">
+                    <h6>Optimized Version</h6>
+                    {% if optimization.optimized_version %}
+                        <a href="{% url 'version_detail' resume.id optimization.optimized_version.id %}" class="btn btn-outline-success">
+                            <i class="bi bi-file-earmark-check"></i> View Version {{ optimization.optimized_version.version_number }}
+                        </a>
+                    {% else %}
+                        <p class="text-muted">No version recorded</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Notes -->
+    {% if optimization.user_notes %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-sticky"></i> Notes</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ optimization.user_notes }}</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

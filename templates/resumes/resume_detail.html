@@ -17,6 +17,15 @@
                 <a href="{% url 'version_list' resume.id %}" class="btn btn-outline-info" title="View version history">
                     <i class="bi bi-clock-history"></i> Versions
                 </a>
+                <a href="{% url 'optimization_history_list' resume.id %}" class="btn btn-outline-secondary" title="View optimization history">
+                    <i class="bi bi-magic"></i> Optimizations
+                </a>
+                <a href="{% url 'keyword_suggestions' resume.id %}" class="btn btn-outline-info" title="Get keyword suggestions">
+                    <i class="bi bi-tags"></i> Keywords
+                </a>
+                <a href="{% url 'customize_template' resume.id %}" class="btn btn-outline-primary" title="Customize template colors and fonts">
+                    <i class="bi bi-palette"></i> Customize
+                </a>
                 <a href="{% url 'analyze_resume' resume.id %}" class="btn btn-warning" title="Analyze with ATS">
                     <i class="bi bi-graph-up"></i> Analyze
                 </a>

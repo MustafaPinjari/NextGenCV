@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Keyword Suggestions - {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-tags"></i> Keyword Suggestions</h2>
+            <p class="text-muted">{{ resume.title }}</p>
+        </div>
+        <div>
+            <a href="{% url 'keyword_suggestions' resume.id %}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-arrow-repeat"></i> New Search
+            </a>
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Resume
+            </a>
+        </div>
+    </div>
+
+    <!-- Industry Info -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Detected Industry</h6>
+                    <h5><i class="bi bi-building"></i> {{ industry_info.industry|title|replace:"_":" " }}</h5>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="text-muted mb-2">Current Role</h6>
+                    <h5><i class="bi bi-person-badge"></i> {{ industry_info.role }}</h5>
+                </div>
+            </div>
+            {% if has_job_description %}
+                <div class="mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="bi bi-check-circle text-success"></i> 
+                        Suggestions prioritized based on provided job description
+                    </small>
+                </div>
+            {% else %}
+                <div class="mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="bi bi-info-circle"></i> 
+                        Showing general industry suggestions. Provide a job description for more targeted keywords.
+                    </small>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Filter Tabs -->
+    <ul class="nav nav-tabs mb-4" id="keywordTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                All Suggestions ({{ suggestions|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="technical-tab" data-bs-toggle="tab" data-bs-target="#technical" type="button" role="tab">
+                Technical Skills ({{ suggestions_by_category.technical|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="soft-tab" data-bs-toggle="tab" data-bs-target="#soft" type="button" role="tab">
+                Soft Skills ({{ suggestions_by_category.soft_skills|length }})
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cert-tab" data-bs-toggle="tab" data-bs-target="#cert" type="button" role="tab">
+                Certifications ({{ suggestions_by_category.certifications|length }})
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="keywordTabContent">
+        <!-- All Suggestions -->
+        <div class="tab-pane fade show active" id="all" role="tabpanel">
+            {% if suggestions %}
+                <div class="row">
+                    {% for suggestion in suggestions %}
+                        <div class="col-md-6 mb-3">
+                            {% include 'resumes/partials/keyword_card.html' with suggestion=suggestion resume=resume %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <h4 class="mt-3">Great job!</h4>
+                    <p class="text-muted">Your resume already contains all relevant keywords for your industry.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Technical Skills -->
+        <div class="tab-pane fade" id="technical" role="tabpanel">
+            {% if suggestions_by_category.technical %}
+                <div class="row">
+                    {% for suggestion in suggestions_by_category.technical %}
+                        <div class="col-md-6 mb-3">
+                            {% include 'resumes/partials/keyword_card.html' with suggestion=suggestion resume=resume %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <p class="text-muted">No technical skill suggestions at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Soft Skills -->
+        <div class="tab-pane fade" id="soft" role="tabpanel">
+            {% if suggestions_by_category.soft_skills %}
+                <div class="row">
+                    {% for suggestion in suggestions_by_category.soft_skills %}
+                        <div class="col-md-6 mb-3">
+                            {% include 'resumes/partials/keyword_card.html' with suggestion=suggestion resume=resume %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <p class="text-muted">No soft skill suggestions at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Certifications -->
+        <div class="tab-pane fade" id="cert" role="tabpanel">
+            {% if suggestions_by_category.certifications %}
+                <div class="row">
+                    {% for suggestion in suggestions_by_category.certifications %}
+                        <div class="col-md-6 mb-3">
+                            {% include 'resumes/partials/keyword_card.html' with suggestion=suggestion resume=resume %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-check-circle display-1 text-success"></i>
+                    <p class="text-muted">No certification suggestions at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Job Description Reference -->
+    {% if has_job_description %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Job Description Used</h5>
+            </div>
+            <div class="card-body">
+                <div class="bg-light p-3 rounded" style="max-height: 200px; overflow-y: auto;">
+                    <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit; font-size: 0.9rem;">{{ job_description }}</pre>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

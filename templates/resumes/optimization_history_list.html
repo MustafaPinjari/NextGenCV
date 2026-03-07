@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Optimization History - {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Optimization History</h2>
+            <p class="text-muted">{{ resume.title }}</p>
+        </div>
+        <a href="{% url 'resume_detail' resume.id %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Resume
+        </a>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3 class="mb-0">{{ total_optimizations }}</h3>
+                    <p class="text-muted mb-0">Total Optimizations</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if optimization_data %}
+                        <h3 class="mb-0 text-success">+{{ optimization_data.0.improvement_delta|floatformat:1 }}</h3>
+                        <p class="text-muted mb-0">Latest Improvement</p>
+                    {% else %}
+                        <h3 class="mb-0">-</h3>
+                        <p class="text-muted mb-0">No optimizations yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if optimization_data %}
+                        <h3 class="mb-0">{{ optimization_data.0.optimized_score|floatformat:1 }}</h3>
+                        <p class="text-muted mb-0">Current Score</p>
+                    {% else %}
+                        <h3 class="mb-0">-</h3>
+                        <p class="text-muted mb-0">No score available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Optimization History List -->
+    {% if optimization_data %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Optimization Sessions</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for opt in optimization_data %}
+                    <a href="{% url 'optimization_history_detail' resume.id opt.id %}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between align-items-start">
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-calendar3 me-2 text-muted"></i>
+                                    <strong>{{ opt.created_at|date:"F d, Y" }}</strong>
+                                    <span class="ms-2 text-muted">{{ opt.created_at|date:"g:i A" }}</span>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">Job Description:</small>
+                                    <p class="mb-0 text-truncate">{{ opt.job_description_snippet }}</p>
+                                </div>
+                                
+                                <div class="d-flex gap-3">
+                                    <span class="badge bg-primary">
+                                        {{ opt.changes_summary.total_changes }} changes
+                                    </span>
+                                    {% if opt.changes_summary.bullet_rewrites > 0 %}
+                                        <span class="badge bg-info">
+                                            {{ opt.changes_summary.bullet_rewrites }} bullet rewrites
+                                        </span>
+                                    {% endif %}
+                                    {% if opt.changes_summary.keyword_injections > 0 %}
+                                        <span class="badge bg-success">
+                                            {{ opt.changes_summary.keyword_injections }} keywords added
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="text-end ms-3">
+                                <div class="mb-2">
+                                    <span class="text-muted small">Score Change</span>
+                                </div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-secondary me-2">{{ opt.original_score|floatformat:1 }}</span>
+                                    <i class="bi bi-arrow-right text-muted"></i>
+                                    <span class="badge bg-success ms-2">{{ opt.optimized_score|floatformat:1 }}</span>
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-arrow-up"></i> +{{ opt.improvement_delta|floatformat:1 }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <nav aria-label="Optimization history pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
+                <h4>No Optimization History</h4>
+                <p class="text-muted">
+                    You haven't optimized this resume yet. Use the "Fix My Resume" feature to improve your resume's ATS score.
+                </p>
+                <a href="{% url 'fix_resume' resume.id %}" class="btn btn-primary mt-3">
+                    <i class="bi bi-magic"></i> Optimize Resume
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

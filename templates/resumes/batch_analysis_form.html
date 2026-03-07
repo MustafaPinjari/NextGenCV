@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Batch Resume Analysis - NextGenCV{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-graph-up-arrow"></i> Batch Resume Analysis</h2>
+            <p class="text-muted">Compare multiple resumes against the same job description to find the best match</p>
+        </div>
+        <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Resumes
+        </a>
+    </div>
+
+    <!-- Instructions -->
+    <div class="alert alert-info mb-4">
+        <h5 class="alert-heading"><i class="bi bi-info-circle"></i> How it works</h5>
+        <ol class="mb-0">
+            <li>Select 2 or more resumes you want to compare</li>
+            <li>Paste the job description you're applying for</li>
+            <li>Click "Analyze Resumes" to see which resume scores highest</li>
+            <li>Review the comparison table to understand the differences</li>
+        </ol>
+    </div>
+
+    <form method="post" action="{% url 'batch_analysis' %}">
+        {% csrf_token %}
+        
+        <!-- Resume Selection -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Step 1: Select Resumes</h5>
+            </div>
+            <div class="card-body">
+                {% if resumes %}
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
+                            <i class="bi bi-check-square"></i> Select All
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
+                            <i class="bi bi-square"></i> Deselect All
+                        </button>
+                        <span class="ms-3 text-muted" id="selectedCount">0 resumes selected</span>
+                    </div>
+                    
+                    <div class="row">
+                        {% for resume in resumes %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input resume-checkbox" 
+                                                   type="checkbox" 
+                                                   name="resume_ids" 
+                                                   value="{{ resume.id }}" 
+                                                   id="resume_{{ resume.id }}">
+                                            <label class="form-check-label w-100" for="resume_{{ resume.id }}">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <h6 class="mb-1">{{ resume.title }}</h6>
+                                                        <small class="text-muted">
+                                                            <i class="bi bi-calendar3"></i> Updated {{ resume.updated_at|date:"M d, Y" }}
+                                                        </small>
+                                                    </div>
+                                                    <span class="badge bg-primary">{{ resume.template|title }}</span>
+                                                </div>
+                                                <div class="mt-2">
+                                                    <small class="text-muted">
+                                                        {% if resume.experiences.count > 0 %}
+                                                            <i class="bi bi-briefcase"></i> {{ resume.experiences.count }} experience(s)
+                                                        {% endif %}
+                                                        {% if resume.skills.count > 0 %}
+                                                            <i class="bi bi-star ms-2"></i> {{ resume.skills.count }} skill(s)
+                                                        {% endif %}
+                                                    </small>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <p class="text-muted mt-3">You don't have any resumes yet.</p>
+                        <a href="{% url 'resume_create' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Create Your First Resume
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Job Description -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Step 2: Enter Job Description</h5>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="job_description" class="form-label">
+                        Job Description <span class="text-danger">*</span>
+                    </label>
+                    <textarea 
+                        class="form-control" 
+                        id="job_description" 
+                        name="job_description" 
+                        rows="12" 
+                        placeholder="Paste the complete job description here. Include requirements, responsibilities, and qualifications for best results."
+                        required
+                        minlength="50"></textarea>
+                    <small class="form-text text-muted">
+                        <i class="bi bi-info-circle"></i> Minimum 50 characters required. Include as much detail as possible for accurate analysis.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn" disabled>
+                <i class="bi bi-graph-up-arrow"></i> Analyze Resumes
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const checkboxes = document.querySelectorAll('.resume-checkbox');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deselectAllBtn = document.getElementById('deselectAllBtn');
+    const selectedCount = document.getElementById('selectedCount');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const jobDescription = document.getElementById('job_description');
+    
+    function updateSelectedCount() {
+        const checked = document.querySelectorAll('.resume-checkbox:checked').length;
+        selectedCount.textContent = `${checked} resume${checked !== 1 ? 's' : ''} selected`;
+        
+        // Enable analyze button only if at least 1 resume is selected and job description is filled
+        const jobDescValid = jobDescription.value.trim().length >= 50;
+        analyzeBtn.disabled = !(checked >= 1 && jobDescValid);
+    }
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', updateSelectedCount);
+    });
+    
+    jobDescription.addEventListener('input', updateSelectedCount);
+    
+    selectAllBtn.addEventListener('click', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+    });
+    
+    deselectAllBtn.addEventListener('click', function() {
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    });
+    
+    // Initial update
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

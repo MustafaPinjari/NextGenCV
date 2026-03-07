@@ -222,11 +222,13 @@ class ResumeService:
             # Get the original resume with all relations prefetched
             original = get_resume_with_relations(resume_id)
             
-            # Create new resume with same data
+            # Create new resume with same data (Requirements: 25.1, 25.2, 25.3)
             duplicate = Resume.objects.create(
                 user=original.user,
                 title=f"{original.title} (Copy)",
-                template=original.template
+                template=original.template,
+                color_scheme=original.color_scheme,  # Copy customization
+                font_family=original.font_family      # Copy customization
             )
             
             # Duplicate personal info if exists

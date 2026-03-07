@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Batch Analysis Results - NextGenCV{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-graph-up-arrow"></i> Batch Analysis Results</h2>
+            <p class="text-muted">Analyzed {{ total_analyzed }} resume(s) in {{ elapsed_time|floatformat:2 }}s</p>
+        </div>
+        <div>
+            <a href="{% url 'batch_analysis' %}" class="btn btn-outline-primary me-2">
+                <i class="bi bi-arrow-repeat"></i> New Analysis
+            </a>
+            <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Resumes
+            </a>
+        </div>
+    </div>
+
+    <!-- Performance Notice -->
+    {% if avg_time_per_resume > 5 %}
+        <div class="alert alert-warning mb-4">
+            <i class="bi bi-exclamation-triangle"></i>
+            Analysis took longer than expected ({{ avg_time_per_resume|floatformat:2 }}s per resume). 
+            Consider analyzing fewer resumes at once for better performance.
+        </div>
+    {% endif %}
+
+    <!-- Best Resume Highlight -->
+    {% if best_resume %}
+        <div class="card border-success mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-trophy-fill"></i> Best Match: {{ best_resume.resume.title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h3 class="text-success mb-3">Score: {{ best_resume.final_score|floatformat:1 }}/100</h3>
+                        <p class="mb-2">
+                            <strong>Why this resume scored highest:</strong>
+                        </p>
+                        <ul>
+                            <li>Keyword Match: {{ best_resume.keyword_match_score|floatformat:1 }}/100</li>
+                            <li>Skill Relevance: {{ best_resume.skill_relevance_score|floatformat:1 }}/100</li>
+                            <li>Experience Impact: {{ best_resume.experience_impact_score|floatformat:1 }}/100</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a href="{% url 'resume_detail' best_resume.resume.id %}" class="btn btn-success mb-2">
+                            <i class="bi bi-eye"></i> View Resume
+                        </a>
+                        <br>
+                        <a href="{% url 'fix_resume' best_resume.resume.id %}" class="btn btn-outline-success">
+                            <i class="bi bi-magic"></i> Optimize Further
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Comparison Table -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-table"></i> Detailed Comparison</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Resume</th>
+                            <th>Final Score</th>
+                            <th>Keyword Match</th>
+                            <th>Skills</th>
+                            <th>Completeness</th>
+                            <th>Experience</th>
+                            <th>Quantification</th>
+                            <th>Action Verbs</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for result in analysis_results %}
+                            <tr {% if forloop.first %}class="table-success"{% endif %}>
+                                <td>
+                                    {% if forloop.first %}
+                                        <i class="bi bi-trophy-fill text-warning"></i>
+                                    {% else %}
+                                        {{ forloop.counter }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong>{{ result.resume.title }}</strong>
+                                    {% if forloop.first %}
+                                        <span class="badge bg-success ms-2">Best Match</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <strong class="{% if result.final_score >= 80 %}text-success{% elif result.final_score >= 60 %}text-warning{% else %}text-danger{% endif %}">
+                                        {{ result.final_score|floatformat:1 }}
+                                    </strong>
+                                </td>
+                                <td>{{ result.keyword_match_score|floatformat:1 }}</td>
+                                <td>{{ result.skill_relevance_score|floatformat:1 }}</td>
+                                <td>{{ result.section_completeness_score|floatformat:1 }}</td>
+                                <td>{{ result.experience_impact_score|floatformat:1 }}</td>
+                                <td>{{ result.quantification_score|floatformat:1 }}</td>
+                                <td>{{ result.action_verb_score|floatformat:1 }}</td>
+                                <td>
+                                    <a href="{% url 'resume_detail' result.resume.id %}" class="btn btn-sm btn-outline-primary" title="View Resume">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Differences -->
+    {% if analysis_results|length > 1 %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Key Differences</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">Here's what makes the top resume better than the others:</p>
+                
+                {% for result in analysis_results %}
+                    {% if not forloop.first %}
+                        <div class="mb-4 pb-3 {% if not forloop.last %}border-bottom{% endif %}">
+                            <h6>{{ result.resume.title }} vs {{ best_resume.resume.title }}</h6>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Score Gap:</strong> 
+                                        <span class="text-danger">
+                                            -{{ best_resume.final_score|floatformat:1|add:"-"|add:result.final_score|floatformat:1 }} points
+                                        </span>
+                                    </p>
+                                    
+                                    {% if result.missing_from_best %}
+                                        <p class="mb-2"><strong>Missing Keywords:</strong></p>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            {% for keyword in result.missing_from_best %}
+                                                <span class="badge bg-danger">{{ keyword }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <p class="mb-2"><strong>Improvement Areas:</strong></p>
+                                    <ul class="small mb-0">
+                                        {% if result.keyword_match_score < best_resume.keyword_match_score %}
+                                            <li>Add more relevant keywords from job description</li>
+                                        {% endif %}
+                                        {% if result.skill_relevance_score < best_resume.skill_relevance_score %}
+                                            <li>Include more skills that match the job requirements</li>
+                                        {% endif %}
+                                        {% if result.quantification_score < best_resume.quantification_score %}
+                                            <li>Add measurable metrics to achievements</li>
+                                        {% endif %}
+                                        {% if result.action_verb_score < best_resume.action_verb_score %}
+                                            <li>Use stronger action verbs in experience descriptions</li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <a href="{% url 'fix_resume' result.resume.id %}" class="btn btn-sm btn-warning">
+                                    <i class="bi bi-magic"></i> Optimize This Resume
+                                </a>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Matched Keywords -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-tags"></i> Keyword Analysis</h5>
+        </div>
+        <div class="card-body">
+            {% for result in analysis_results %}
+                <div class="mb-4 {% if not forloop.last %}pb-3 border-bottom{% endif %}">
+                    <h6>{{ result.resume.title }}</h6>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Matched Keywords ({{ result.matched_keywords|length }}):</strong></p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% for keyword in result.matched_keywords %}
+                                    <span class="badge bg-success">{{ keyword }}</span>
+                                {% empty %}
+                                    <span class="text-muted">No keywords matched</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <p class="mb-2"><strong>Missing Keywords ({{ result.missing_keywords|length }}):</strong></p>
+                            <div class="d-flex gap-2 flex-wrap">
+                                {% for keyword in result.missing_keywords %}
+                                    <span class="badge bg-danger">{{ keyword }}</span>
+                                {% empty %}
+                                    <span class="text-muted">All keywords present</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Job Description Reference -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-briefcase"></i> Job Description Used</h5>
+        </div>
+        <div class="card-body">
+            <div class="bg-light p-3 rounded" style="max-height: 300px; overflow-y: auto;">
+                <pre class="mb-0" style="white-space: pre-wrap; font-family: inherit;">{{ job_description }}</pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-center gap-3 mb-4">
+        <a href="{% url 'batch_analysis' %}" class="btn btn-primary">
+            <i class="bi bi-arrow-repeat"></i> Analyze Different Resumes
+        </a>
+        <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Resume List
+        </a>
+    </div>
+</div>
+{% endblock %}

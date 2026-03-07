@@ -1,5 +1,6 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
+{% load section_completeness %}
 
 {% block title %}{{ resume.title }} - NextGenCV{% endblock %}
 
@@ -21,6 +22,10 @@
                 <span class="badge badge-lg" style="background: var(--color-bg-secondary, #1a1a2e); border: 1px solid var(--color-border, #2d2d44);">
                     <i class="bi bi-clock"></i> Updated {{ resume.updated_at|date:"M d, Y g:i A" }}
                 </span>
+                {% section_completeness_percentage resume as completeness %}
+                <span class="badge badge-lg" style="background: {% if completeness < 50 %}#dc3545{% elif completeness < 75 %}#ffc107{% else %}#28a745{% endif %};">
+                    <i class="bi bi-clipboard-check"></i> {{ completeness|floatformat:0 }}% Complete
+                </span>
             </div>
         </div>
     </div>
@@ -40,6 +45,10 @@
         <a href="{% url 'version_list' resume.id %}" class="btn btn-outline">
             <i class="bi bi-clock-history"></i>
             <span>Versions</span>
+        </a>
+        <a href="{% url 'optimization_history_list' resume.id %}" class="btn btn-outline">
+            <i class="bi bi-magic"></i>
+            <span>Optimizations</span>
         </a>
         <a href="{% url 'analyze_resume' resume.id %}" class="btn btn-warning">
             <i class="bi bi-graph-up"></i>

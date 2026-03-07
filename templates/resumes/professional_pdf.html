@@ -10,14 +10,15 @@
          * Print-friendly CSS for PDF Resume Generation
          * Uses absolute units (pt, px) for consistent PDF rendering
          * Ensures text is selectable and ATS-compatible
+         * Supports custom colors and fonts (Requirements: 13.5, 14.5)
          */
 
-        /* Base styles with absolute units */
+        /* Base styles with absolute units and custom font */
         body {
-            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-family: {{ font_info.family }};
             font-size: 11pt;
             line-height: 1.5;
-            color: #000;
+            color: {{ color_scheme.text }};
             background: #fff;
             margin: 0;
             padding: 0;
@@ -31,11 +32,11 @@
             background: #fff;
         }
 
-        /* Header styling with absolute units */
+        /* Header styling with custom colors */
         .resume-header {
             text-align: center;
             margin-bottom: 20pt;
-            border-bottom: 2pt solid #333;
+            border-bottom: 2pt solid {{ color_scheme.primary }};
             padding-bottom: 15pt;
         }
 
@@ -43,21 +44,21 @@
             font-size: 24pt;
             font-weight: bold;
             margin: 0 0 8pt 0;
-            color: #000;
+            color: {{ color_scheme.primary }};
         }
 
         .resume-header .contact-info {
             font-size: 10pt;
-            color: #333;
+            color: {{ color_scheme.text }};
             margin: 0;
         }
 
         .resume-header .contact-info a {
-            color: #000;
+            color: {{ color_scheme.secondary }};
             text-decoration: none;
         }
 
-        /* Section styling */
+        /* Section styling with custom colors */
         .resume-section {
             margin-bottom: 20pt;
             page-break-inside: avoid;
@@ -67,10 +68,10 @@
             font-size: 14pt;
             font-weight: bold;
             text-transform: uppercase;
-            border-bottom: 1pt solid #333;
+            border-bottom: 1pt solid {{ color_scheme.accent }};
             padding-bottom: 5pt;
             margin: 0 0 12pt 0;
-            color: #000;
+            color: {{ color_scheme.primary }};
         }
 
         /* Experience and Education entries */
@@ -89,24 +90,24 @@
         .entry-title {
             font-size: 11pt;
             font-weight: bold;
-            color: #000;
+            color: {{ color_scheme.primary }};
         }
 
         .entry-date {
             font-size: 10pt;
-            color: #333;
+            color: {{ color_scheme.text }};
             font-style: italic;
         }
 
         .entry-subtitle {
             font-size: 10pt;
-            color: #333;
+            color: {{ color_scheme.secondary }};
             margin-bottom: 6pt;
         }
 
         .entry-description {
             font-size: 10pt;
-            color: #000;
+            color: {{ color_scheme.text }};
             margin: 0;
             white-space: pre-wrap;
         }
@@ -118,37 +119,38 @@
 
         .skills-category strong {
             font-weight: bold;
-            color: #000;
+            color: {{ color_scheme.primary }};
         }
 
         .skills-list {
             display: inline;
             font-size: 10pt;
+            color: {{ color_scheme.text }};
         }
 
         /* Projects styling */
         .project-title {
             font-size: 11pt;
             font-weight: bold;
-            color: #000;
+            color: {{ color_scheme.primary }};
             margin-bottom: 4pt;
         }
 
         .project-description {
             font-size: 10pt;
-            color: #000;
+            color: {{ color_scheme.text }};
             margin-bottom: 4pt;
             white-space: pre-wrap;
         }
 
         .project-tech {
             font-size: 9pt;
-            color: #555;
+            color: {{ color_scheme.secondary }};
         }
 
         /* Ensure links are visible and selectable */
         a {
-            color: #000;
+            color: {{ color_scheme.secondary }};
             text-decoration: underline;
         }
 

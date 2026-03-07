@@ -237,6 +237,31 @@
                                         <a href="{% url 'version_detail' resume.id version.id %}" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-eye"></i> View
                                         </a>
+                                        
+                                        <!-- Export Dropdown (Requirements: 16.1, 16.5) -->
+                                        <div class="btn-group w-100" role="group">
+                                            <button type="button" class="btn btn-sm btn-outline-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-download"></i> Export
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'resume_export' resume.id %}?version={{ version.id }}">
+                                                        <i class="bi bi-file-pdf"></i> PDF
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'resume_export_docx' resume.id %}?version={{ version.id }}">
+                                                        <i class="bi bi-file-word"></i> DOCX
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a class="dropdown-item" href="{% url 'resume_export_text' resume.id %}?version={{ version.id }}">
+                                                        <i class="bi bi-file-text"></i> TXT
+                                                    </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        
                                         {% if version.version_number != current_version_number %}
                                         <form method="post" action="{% url 'version_restore' resume.id version.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.');">
                                             {% csrf_token %}

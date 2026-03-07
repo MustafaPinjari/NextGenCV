@@ -1,5 +1,6 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
+{% load section_completeness %}
 
 {% block title %}Edit Resume - NextGenCV{% endblock %}
 
@@ -26,6 +27,9 @@
         </div>
     </div>
 </div>
+
+<!-- Section Completeness Banner -->
+{% section_completeness_banner resume %}
 
 <form method="post" id="resumeForm">
     {% csrf_token %}

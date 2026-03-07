@@ -20,6 +20,18 @@ class Resume(models.Model):
     # Analysis tracking
     last_analyzed_at = models.DateTimeField(null=True, blank=True)
     last_optimized_at = models.DateTimeField(null=True, blank=True)
+    
+    # Template customization (Requirements: 13.4, 14.4)
+    color_scheme = models.CharField(
+        max_length=50, 
+        default='professional_blue',
+        help_text='Color scheme for resume template'
+    )
+    font_family = models.CharField(
+        max_length=50,
+        default='Arial',
+        help_text='Font family for resume text'
+    )
 
     class Meta:
         indexes = [
@@ -173,6 +185,7 @@ class ResumeVersion(models.Model):
         unique_together = [['resume', 'version_number']]
         indexes = [
             models.Index(fields=['resume', '-created_at']),
+            models.Index(fields=['resume', 'created_at']),  # For chronological queries (Requirements: 28.1)
         ]
         ordering = ['-version_number']
 

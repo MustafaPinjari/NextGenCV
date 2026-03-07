@@ -21,6 +21,7 @@ class PDFExportService:
         """
         Render resume to HTML string using Django template.
         Uses PDF-specific template with print-friendly CSS.
+        Applies custom colors and fonts from resume settings.
         
         Args:
             resume: Resume object to render
@@ -28,14 +29,23 @@ class PDFExportService:
         Returns:
             str: HTML string of the rendered resume
         """
-        # Prepare context with all resume sections
+        from apps.resumes.services.template_customization_service import TemplateCustomizationService
+        
+        # Get customization settings
+        color_scheme = TemplateCustomizationService.get_color_scheme(resume.color_scheme)
+        font_info = TemplateCustomizationService.get_font_family(resume.font_family)
+        
+        # Prepare context with all resume sections and customization
         context = {
             'resume': resume,
             'personal_info': getattr(resume, 'personal_info', None),
             'experiences': resume.experiences.all(),
             'education': resume.education.all(),
             'skills': resume.skills.all(),
-            'projects': resume.projects.all()
+            'projects': resume.projects.all(),
+            # Add customization data
+            'color_scheme': color_scheme,
+            'font_info': font_info,
         }
         
         # Use PDF-specific template with print-friendly CSS

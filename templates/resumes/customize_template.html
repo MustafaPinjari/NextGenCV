@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Customize Template - {{ resume.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Preview styles that will be updated dynamically */
+    {{ current_css|safe }}
+    
+    .preview-card {
+        border: 2px solid var(--primary-color);
+        transition: all 0.3s ease;
+    }
+    
+    .preview-card h1, .preview-card h2, .preview-card h3 {
+        color: var(--primary-color);
+        font-family: var(--font-family);
+    }
+    
+    .preview-card p, .preview-card li {
+        font-family: var(--font-family);
+        color: var(--text-color);
+    }
+    
+    .preview-card .accent-line {
+        height: 3px;
+        background-color: var(--accent-color);
+        margin: 1rem 0;
+    }
+    
+    .color-scheme-card {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    
+    .color-scheme-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .color-scheme-card.selected {
+        border-color: #28a745;
+        box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+    }
+    
+    .color-swatch {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-right: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .font-option {
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border: 2px solid transparent;
+    }
+    
+    .font-option:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .font-option.selected {
+        border-color: #28a745;
+        background-color: #e7f5e9;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="bi bi-palette"></i> Customize Template</h2>
+            <p class="text-muted">{{ resume.title }}</p>
+        </div>
+        <div>
+            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to Resume
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Customization Options -->
+        <div class="col-md-5">
+            <form method="post" id="customizationForm">
+                {% csrf_token %}
+                
+                <!-- Color Schemes -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-palette-fill"></i> Color Scheme</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            {% for scheme_key, scheme in color_schemes.items %}
+                                <div class="col-12">
+                                    <div class="color-scheme-card card p-3 {% if scheme_key == current_color_scheme %}selected{% endif %}" 
+                                         data-scheme="{{ scheme_key }}"
+                                         onclick="selectColorScheme('{{ scheme_key }}')">
+                                        <div class="d-flex align-items-center">
+                                            <div>
+                                                <span class="color-swatch" style="background-color: {{ scheme.primary }};"></span>
+                                                <span class="color-swatch" style="background-color: {{ scheme.secondary }};"></span>
+                                                <span class="color-swatch" style="background-color: {{ scheme.accent }};"></span>
+                                            </div>
+                                            <div class="ms-3">
+                                                <h6 class="mb-1">{{ scheme.name }}</h6>
+                                                <small class="text-muted">{{ scheme.description }}</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="color_scheme" id="colorSchemeInput" value="{{ current_color_scheme }}">
+                    </div>
+                </div>
+
+                <!-- Font Selection -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-fonts"></i> Font Family</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2">
+                            {% for font_key, font in fonts.items %}
+                                <div class="col-12">
+                                    <div class="font-option card p-3 {% if font_key == current_font %}selected{% endif %}"
+                                         data-font="{{ font_key }}"
+                                         onclick="selectFont('{{ font_key }}')">
+                                        <h6 class="mb-1" style="font-family: {{ font.family }};">{{ font.name }}</h6>
+                                        <small class="text-muted">{{ font.description }}</small>
+                                        {% if font.ats_safe %}
+                                            <span class="badge bg-success ms-2">ATS Safe</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" name="font_family" id="fontFamilyInput" value="{{ current_font }}">
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> Apply Customization
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="resetToDefaults()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset to Defaults
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="col-md-7">
+            <div class="card preview-card sticky-top" style="top: 20px;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-eye"></i> Live Preview</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Sample Resume Content -->
+                    <div class="text-center mb-4">
+                        <h1 class="mb-2">John Doe</h1>
+                        <p class="text-muted mb-1">john.doe@email.com | (555) 123-4567</p>
+                        <p class="text-muted">San Francisco, CA</p>
+                    </div>
+                    
+                    <div class="accent-line"></div>
+                    
+                    <h2 class="mb-3">Professional Summary</h2>
+                    <p>Experienced software engineer with 5+ years of expertise in full-stack development. Proven track record of delivering high-quality solutions and leading cross-functional teams.</p>
+                    
+                    <div class="accent-line"></div>
+                    
+                    <h2 class="mb-3">Work Experience</h2>
+                    <div class="mb-3">
+                        <h3 class="h5 mb-1">Senior Software Engineer</h3>
+                        <p class="text-muted mb-2">Tech Company Inc. | 2020 - Present</p>
+                        <ul>
+                            <li>Led development of microservices architecture serving 1M+ users</li>
+                            <li>Improved system performance by 40% through optimization</li>
+                            <li>Mentored team of 5 junior developers</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="accent-line"></div>
+                    
+                    <h2 class="mb-3">Skills</h2>
+                    <p>
+                        <span class="badge bg-secondary me-1">Python</span>
+                        <span class="badge bg-secondary me-1">JavaScript</span>
+                        <span class="badge bg-secondary me-1">React</span>
+                        <span class="badge bg-secondary me-1">Docker</span>
+                        <span class="badge bg-secondary me-1">AWS</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Color scheme data for preview
+const colorSchemes = {{ color_schemes|safe|escapejs }};
+const fonts = {{ fonts|safe|escapejs }};
+
+function selectColorScheme(schemeKey) {
+    // Update UI
+    document.querySelectorAll('.color-scheme-card').forEach(card => {
+        card.classList.remove('selected');
+    });
+    document.querySelector(`[data-scheme="${schemeKey}"]`).classList.add('selected');
+    
+    // Update hidden input
+    document.getElementById('colorSchemeInput').value = schemeKey;
+    
+    // Update preview
+    updatePreview();
+}
+
+function selectFont(fontKey) {
+    // Update UI
+    document.querySelectorAll('.font-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    document.querySelector(`[data-font="${fontKey}"]`).classList.add('selected');
+    
+    // Update hidden input
+    document.getElementById('fontFamilyInput').value = fontKey;
+    
+    // Update preview
+    updatePreview();
+}
+
+function updatePreview() {
+    const schemeKey = document.getElementById('colorSchemeInput').value;
+    const fontKey = document.getElementById('fontFamilyInput').value;
+    
+    // Get scheme and font data
+    const scheme = colorSchemes[schemeKey];
+    const font = fonts[fontKey];
+    
+    if (!scheme || !font) return;
+    
+    // Update CSS variables
+    document.documentElement.style.setProperty('--primary-color', scheme.primary);
+    document.documentElement.style.setProperty('--secondary-color', scheme.secondary);
+    document.documentElement.style.setProperty('--accent-color', scheme.accent);
+    document.documentElement.style.setProperty('--text-color', scheme.text);
+    document.documentElement.style.setProperty('--font-family', font.family);
+}
+
+function resetToDefaults() {
+    selectColorScheme('professional_blue');
+    selectFont('Arial');
+}
+
+// Parse JSON data from Django
+try {
+    const colorSchemesData = JSON.parse('{{ color_schemes|escapejs }}');
+    const fontsData = JSON.parse('{{ fonts|escapejs }}');
+    Object.assign(colorSchemes, colorSchemesData);
+    Object.assign(fonts, fontsData);
+} catch (e) {
+    console.error('Failed to parse customization data:', e);
+}
+</script>
+{% endblock %}

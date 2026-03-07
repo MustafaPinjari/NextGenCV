@@ -1,0 +1,67 @@
+{% if show_banner %}
+<div class="alert alert-warning alert-dismissible fade show" role="alert" style="margin-bottom: var(--spacing-4, 2rem);">
+    <div class="d-flex align-items-start">
+        <i class="bi bi-exclamation-triangle-fill me-3" style="font-size: 1.5rem;"></i>
+        <div class="flex-grow-1">
+            <h5 class="alert-heading mb-2">
+                <i class="bi bi-clipboard-check"></i> Resume Incomplete ({{ completeness_percentage|floatformat:0 }}% Complete)
+            </h5>
+            <p class="mb-3">
+                Your resume is missing some required sections. Complete these sections to improve your ATS compatibility and increase your chances of getting noticed by employers.
+            </p>
+            
+            <!-- Missing Required Sections -->
+            <div class="mb-3">
+                <strong>Missing Required Sections:</strong>
+                <ul class="mt-2 mb-0">
+                    {% for section in missing_sections %}
+                        <li class="mb-2">
+                            <i class="bi bi-{{ section.icon }} text-warning"></i>
+                            <strong>{{ section.name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ section.importance }}</small>
+                            <br>
+                            <a href="{% url section.url_name resume.id %}" class="btn btn-sm btn-warning mt-1">
+                                <i class="bi bi-plus-circle"></i> Add {{ section.name }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-muted">Section Completeness</small>
+                    <small class="text-muted">{{ completeness_percentage|floatformat:0 }}%</small>
+                </div>
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar {% if completeness_percentage < 50 %}bg-danger{% elif completeness_percentage < 75 %}bg-warning{% else %}bg-success{% endif %}" 
+                         role="progressbar" 
+                         style="width: {{ completeness_percentage }}%;" 
+                         aria-valuenow="{{ completeness_percentage }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Optional Recommendations -->
+            {% if optional_recommendations %}
+                <div class="mt-3 pt-3 border-top">
+                    <strong>Recommended Optional Sections:</strong>
+                    <p class="small text-muted mb-2">These sections can help you stand out from other candidates.</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        {% for rec in optional_recommendations %}
+                            <a href="{% url rec.url_name resume.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-{{ rec.icon }}"></i> Add {{ rec.name }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endif %}

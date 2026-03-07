@@ -1,0 +1,58 @@
+{% load static %}
+
+<div class="card h-100 shadow-sm">
+    <div class="card-body">
+        <!-- Keyword Header -->
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+                <h5 class="card-title mb-1">{{ suggestion.keyword }}</h5>
+                <span class="badge bg-{% if suggestion.category == 'technical' %}primary{% elif suggestion.category == 'soft_skills' %}info{% else %}success{% endif %}">
+                    {{ suggestion.category|title|replace:"_":" " }}
+                </span>
+            </div>
+            <div class="text-end">
+                <!-- Relevance Score -->
+                <div class="mb-1">
+                    <span class="badge bg-{% if suggestion.relevance_score == 100 %}success{% else %}secondary{% endif %} fs-6">
+                        {{ suggestion.relevance_score }}%
+                    </span>
+                </div>
+                <!-- In Job Description Badge -->
+                {% if suggestion.in_job_description %}
+                    <span class="badge bg-warning text-dark">
+                        <i class="bi bi-star-fill"></i> In JD
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Placement Suggestion -->
+        <div class="mb-3">
+            <small class="text-muted">
+                <i class="bi bi-pin-angle"></i> 
+                <strong>Suggested placement:</strong> 
+                <span class="text-capitalize">{{ suggestion.placement_suggestion }}</span> section
+            </small>
+        </div>
+
+        <!-- Example Usage -->
+        <div class="mb-3">
+            <small class="text-muted">
+                <i class="bi bi-lightbulb"></i> 
+                <strong>Example:</strong>
+            </small>
+            <p class="small mb-0 mt-1 fst-italic">{{ suggestion.example_usage }}</p>
+        </div>
+
+        <!-- Add to Resume Button -->
+        <form method="post" action="{% url 'add_keyword' resume.id %}" class="mt-3">
+            {% csrf_token %}
+            <input type="hidden" name="keyword" value="{{ suggestion.keyword }}">
+            <input type="hidden" name="category" value="{{ suggestion.category }}">
+            <input type="hidden" name="placement" value="{{ suggestion.placement_suggestion }}">
+            <button type="submit" class="btn btn-sm btn-outline-primary w-100">
+                <i class="bi bi-plus-circle"></i> Add to Resume
+            </button>
+        </form>
+    </div>
+</div>

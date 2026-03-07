@@ -6,6 +6,7 @@ urlpatterns = [
     path('', views.resume_list, name='resume_list'),
     path('create/', views.resume_create, name='resume_create'),
     path('batch-export/', views.batch_export, name='batch_export'),
+    path('batch-analysis/', views.batch_analysis, name='batch_analysis'),
     path('<int:pk>/', views.resume_detail, name='resume_detail'),
     path('<int:pk>/edit/', views.resume_update, name='resume_update'),
     path('<int:pk>/delete/', views.resume_delete, name='resume_delete'),
@@ -29,11 +30,22 @@ urlpatterns = [
     path('<int:pk>/fix/accept/', views.fix_accept, name='fix_accept'),
     path('<int:pk>/fix/reject/', views.fix_reject, name='fix_reject'),
     
+    # Keyword & Achievement Assistance
+    path('<int:pk>/keywords/', views.keyword_suggestions, name='keyword_suggestions'),
+    path('<int:pk>/keywords/add/', views.add_keyword, name='add_keyword'),
+    
+    # Template Customization Module
+    path('<int:pk>/customize/', views.customize_template, name='customize_template'),
+    
     # Version Management Module
     path('<int:pk>/versions/', views.version_list, name='version_list'),
     path('<int:pk>/versions/<int:version_id>/', views.version_detail, name='version_detail'),
     path('<int:pk>/versions/compare/', views.version_compare, name='version_compare'),
     path('<int:pk>/versions/<int:version_id>/restore/', views.version_restore, name='version_restore'),
+    
+    # Optimization History Module
+    path('<int:pk>/optimizations/', views.optimization_history_list, name='optimization_history_list'),
+    path('<int:pk>/optimizations/<int:optimization_id>/', views.optimization_history_detail, name='optimization_history_detail'),
     
     # Experience management
     path('<int:resume_pk>/experience/add/', views.experience_add, name='experience_add'),
