@@ -29,24 +29,97 @@ def template_gallery(request):
 def template_preview(request, template_id):
     """
     Generate and display a preview of the template with sample data.
-    Allows user to select the template for their resume.
+    Enhanced with comprehensive error handling and logging.
     """
-    template = get_object_or_404(ResumeTemplate, id=template_id, is_active=True)
+    import logging
+    from django.http import Http404
+    from django.template import TemplateDoesNotExist
     
-    # Generate preview HTML with sample data
-    preview_html = TemplateService.generate_preview_with_sample_data(template)
+    logger = logging.getLogger(__name__)
     
-    # Get user's resumes for selection
-    user_resumes = Resume.objects.filter(user=request.user).order_by('-updated_at')
+    try:
+        template = get_object_or_404(ResumeTemplate, id=template_id, is_active=True)
+    except Http404:
+        logger.error(f"Template {template_id} not found or inactive")
+        
+        # Return JSON error for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'error': 'Template not found',
+                'message': 'The requested template does not exist or is no longer available.',
+                'template_id': template_id
+            }, status=404)
+        
+        # For regular requests, render error page
+        return render(request, 'templates_mgmt/template_preview.html', {
+            'error': True,
+            'error_message': 'The requested template does not exist or is no longer available.',
+            'template_id': template_id
+        }, status=404)
     
-    context = {
-        'template': template,
-        'preview_html': preview_html,
-        'user_resumes': user_resumes,
-        'page_title': f'Preview: {template.name}'
-    }
-    
-    return render(request, 'templates_mgmt/template_preview.html', context)
+    try:
+        # Generate preview HTML with sample data
+        preview_html = TemplateService.generate_preview_with_sample_data(template)
+        
+        # Validate that HTML was generated successfully
+        if not preview_html or preview_html.startswith("<p>Error"):
+            raise ValueError("Template rendering failed")
+        
+        # Get user's resumes for selection
+        user_resumes = Resume.objects.filter(user=request.user).order_by('-updated_at')
+        
+        context = {
+            'template': template,
+            'preview_html': preview_html,
+            'user_resumes': user_resumes,
+            'page_title': f'Preview: {template.name}'
+        }
+        
+        logger.info(f"Successfully generated preview for template {template_id}")
+        return render(request, 'templates_mgmt/template_preview.html', context)
+        
+    except TemplateDoesNotExist as e:
+        logger.error(f"Template file not found for template {template_id}: {str(e)}", exc_info=True)
+        
+        error_message = f"Template file '{template.template_file}' does not exist. Please contact support."
+        
+        # Return JSON error for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'error': 'Template file not found',
+                'message': error_message,
+                'template_id': template_id,
+                'template_name': template.name,
+                'template_file': template.template_file
+            }, status=500)
+        
+        # For regular requests, render error page
+        return render(request, 'templates_mgmt/template_preview.html', {
+            'error': True,
+            'error_message': error_message,
+            'template': template
+        }, status=500)
+        
+    except Exception as e:
+        logger.error(f"Error generating preview for template {template_id}: {str(e)}", exc_info=True)
+        
+        error_message = f'Unable to generate preview: {str(e)}'
+        
+        # Return JSON error for AJAX requests
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'error': 'Preview generation failed',
+                'message': error_message,
+                'template_id': template_id,
+                'template_name': template.name if template else 'Unknown'
+            }, status=500)
+        
+        # For regular requests, render error page
+        return render(request, 'templates_mgmt/template_preview.html', {
+            'error': True,
+            'error_message': error_message,
+            'template': template
+        }, status=500)
 
 
 @login_required

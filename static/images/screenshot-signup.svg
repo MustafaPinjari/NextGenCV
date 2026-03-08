@@ -1,0 +1,35 @@
+<svg width="600" height="400" viewBox="0 0 600 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Browser Window Frame -->
+  <rect width="600" height="400" rx="8" fill="#1e293b"/>
+  <rect y="0" width="600" height="40" rx="8" fill="#0f172a"/>
+  
+  <!-- Browser Dots -->
+  <circle cx="20" cy="20" r="6" fill="#ef4444"/>
+  <circle cx="40" cy="20" r="6" fill="#f59e0b"/>
+  <circle cx="60" cy="20" r="6" fill="#10b981"/>
+  
+  <!-- URL Bar -->
+  <rect x="100" y="12" width="400" height="16" rx="8" fill="#334155"/>
+  <text x="110" y="24" font-family="monospace" font-size="12" fill="#94a3b8">nextgencv.com/register</text>
+  
+  <!-- Content Area -->
+  <g transform="translate(50, 80)">
+    <!-- Heading -->
+    <text x="250" y="30" font-family="sans-serif" font-size="24" font-weight="bold" fill="#f1f5f9" text-anchor="middle">Create Your Account</text>
+    <text x="250" y="55" font-family="sans-serif" font-size="14" fill="#94a3b8" text-anchor="middle">Get started in seconds - no credit card required</text>
+    
+    <!-- Form Fields -->
+    <rect x="100" y="80" width="300" height="40" rx="6" fill="#334155" stroke="#475569" stroke-width="1"/>
+    <text x="115" y="105" font-family="sans-serif" font-size="14" fill="#94a3b8">Full Name</text>
+    
+    <rect x="100" y="130" width="300" height="40" rx="6" fill="#334155" stroke="#475569" stroke-width="1"/>
+    <text x="115" y="155" font-family="sans-serif" font-size="14" fill="#94a3b8">Email Address</text>
+    
+    <rect x="100" y="180" width="300" height="40" rx="6" fill="#334155" stroke="#475569" stroke-width="1"/>
+    <text x="115" y="205" font-family="sans-serif" font-size="14" fill="#94a3b8">Password</text>
+    
+    <!-- Button -->
+    <rect x="100" y="240" width="300" height="45" rx="6" fill="#3b82f6"/>
+    <text x="250" y="268" font-family="sans-serif" font-size="16" font-weight="600" fill="white" text-anchor="middle">Get Started Free</text>
+  </g>
+</svg>

@@ -139,7 +139,7 @@ def resume_create(request):
         elif current_step == 5:
             # Step 5: Summary and finish
             action = request.POST.get('action')
-            if action == 'save' or action == 'next':
+            if action == 'save' or action == 'next' or 'finish' in request.POST:
                 # Get summary if provided
                 summary = request.POST.get('summary', '')
                 if summary:
@@ -164,6 +164,9 @@ def resume_create(request):
                 if 'template' not in wizard_data['data']:
                     wizard_data['data']['template'] = 'professional'
                 
+                # Mark resume as complete (not draft) - Requirements: 4.2, 5.1, 5.5
+                wizard_data['data']['is_draft'] = False
+                
                 # Create the resume
                 resume = ResumeService.create_resume(request.user, wizard_data['data'])
                 
@@ -174,7 +177,10 @@ def resume_create(request):
                 del request.session['resume_wizard']
                 request.session.modified = True
                 
+                # Requirement: 5.3 - Display success message
                 messages.success(request, 'Resume created successfully!')
+                
+                # Requirement: 5.2 - Redirect to resume detail page
                 return redirect('resume_detail', pk=resume.id)
     
     # Handle back button
@@ -199,10 +205,18 @@ def resume_create(request):
             request.session.modified = True
             return JsonResponse({'success': True, 'message': 'Draft saved'})
         
+        # Requirement: 4.4 - AI summary generation endpoint
         if request.POST.get('action') == 'generate_summary':
-            # Generate AI summary based on experience and skills
-            summary = generate_ai_summary(wizard_data['data'])
-            return JsonResponse({'summary': summary})
+            try:
+                # Generate AI summary based on experience and skills
+                summary = generate_ai_summary(wizard_data['data'])
+                return JsonResponse({'summary': summary, 'success': True})
+            except Exception as e:
+                logger.error(f'Failed to generate AI summary: {str(e)}', exc_info=True)
+                return JsonResponse({
+                    'success': False, 
+                    'error': 'Failed to generate summary. Please try again.'
+                }, status=500)
     
     # Prepare context based on current step
     context = {
@@ -265,28 +279,54 @@ def resume_create(request):
         context['form'] = SummaryForm(initial={'summary': wizard_data['data'].get('summary', '')})
         
         # Handle summary submission
-        if request.POST.get('action') == 'next' or request.POST.get('action') == 'save':
+        if request.POST.get('action') == 'next' or request.POST.get('action') == 'save' or 'finish' in request.POST:
             from .forms import SummaryForm
             form = SummaryForm(request.POST)
             if form.is_valid():
                 wizard_data['data']['summary'] = form.cleaned_data['summary']
                 request.session.modified = True
                 
-                if request.POST.get('action') == 'save':
-                    # Save the resume
-                    from datetime import date
-                    if 'experiences' in wizard_data['data']:
-                        for exp in wizard_data['data']['experiences']:
-                            if isinstance(exp['start_date'], str):
-                                exp['start_date'] = date.fromisoformat(exp['start_date'])
-                            if exp['end_date'] and isinstance(exp['end_date'], str):
-                                exp['end_date'] = date.fromisoformat(exp['end_date'])
-                    
-                    resume = ResumeService.create_resume(request.user, wizard_data['data'])
-                    del request.session['resume_wizard']
-                    request.session.modified = True
-                    messages.success(request, 'Resume created successfully!')
-                    return redirect('resume_detail', pk=resume.id)
+                # Requirement: 5.4 - Handle save errors
+                try:
+                    if request.POST.get('action') == 'save' or 'finish' in request.POST:
+                        # Save the resume
+                        from datetime import date
+                        if 'experiences' in wizard_data['data']:
+                            for exp in wizard_data['data']['experiences']:
+                                if isinstance(exp['start_date'], str):
+                                    exp['start_date'] = date.fromisoformat(exp['start_date'])
+                                if exp['end_date'] and isinstance(exp['end_date'], str):
+                                    exp['end_date'] = date.fromisoformat(exp['end_date'])
+                        
+                        # Set default title and template if not provided
+                        if 'title' not in wizard_data['data']:
+                            wizard_data['data']['title'] = f"{wizard_data['data'].get('personal_info', {}).get('full_name', 'My')} Resume"
+                        if 'template' not in wizard_data['data']:
+                            wizard_data['data']['template'] = 'professional'
+                        
+                        # Mark resume as complete (not draft) - Requirements: 4.2, 5.1, 5.5
+                        wizard_data['data']['is_draft'] = False
+                        
+                        resume = ResumeService.create_resume(request.user, wizard_data['data'])
+                        
+                        del request.session['resume_wizard']
+                        request.session.modified = True
+                        
+                        # Requirement: 5.3 - Display success message
+                        messages.success(request, 'Resume created successfully!')
+                        
+                        # Requirement: 5.2 - Redirect to resume detail page
+                        return redirect('resume_detail', pk=resume.id)
+                except Exception as e:
+                    # Requirement: 5.4 - Display error message and remain on Step 5
+                    logger.error(f'Failed to save resume: {str(e)}', exc_info=True)
+                    messages.error(request, f'Failed to save resume. Please try again. Error: {str(e)}')
+                    context['form'] = form
+                    return render(request, 'resumes/wizard_steps/step5_summary.html', context)
+            else:
+                # Form validation failed
+                context['form'] = form
+                return render(request, 'resumes/wizard_steps/step5_summary.html', context)
         
         return render(request, 'resumes/wizard_steps/step5_summary.html', context)
     
@@ -295,7 +335,17 @@ def resume_create(request):
 
 
 def generate_ai_summary(wizard_data):
-    """Generate an AI-powered professional summary based on user data."""
+    """
+    Generate an AI-powered professional summary based on user data.
+    
+    Requirement: 4.4 - Generate AI summary based on experience and skills
+    
+    Args:
+        wizard_data: Dictionary containing user's resume data
+        
+    Returns:
+        str: Generated professional summary
+    """
     # This is a placeholder. In production, this would call an AI service
     experiences = wizard_data.get('experiences', [])
     skills = wizard_data.get('skills', [])

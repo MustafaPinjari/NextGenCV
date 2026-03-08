@@ -40,83 +40,103 @@ class TemplateService:
     def generate_preview_with_sample_data(template):
         """
         Generate a preview of the template using sample data.
+        Enhanced with validation and error handling.
         
         Args:
             template (ResumeTemplate): Template to preview
             
         Returns:
             str: Rendered HTML with sample data
+            
+        Raises:
+            ValueError: If template file is invalid
+            TemplateDoesNotExist: If template file not found
         """
-        # Sample data for preview
+        import logging
+        from django.template import TemplateDoesNotExist
+        
+        logger = logging.getLogger(__name__)
+        
+        # Validate template file path
+        if not template.template_file:
+            logger.error(f"Template {template.id} has no template_file set")
+            raise ValueError("Template file path is not configured")
+        
+        # Sample data for preview - convert dictionaries to mock objects with attributes
         sample_data = {
-            'resume': {
-                'title': 'Sample Resume'
-            },
-            'personal_info': {
+            'resume': type('obj', (object,), {
+                'title': 'Sample Resume',
+                'summary': 'Experienced professional with expertise in software development and a proven track record of delivering high-quality solutions. Passionate about creating efficient, scalable applications and mentoring team members.'
+            })(),
+            'personal_info': type('obj', (object,), {
                 'full_name': 'John Doe',
                 'email': 'john.doe@email.com',
                 'phone': '(555) 123-4567',
                 'location': 'San Francisco, CA',
                 'linkedin': 'linkedin.com/in/johndoe',
                 'github': 'github.com/johndoe'
-            },
+            })(),
             'experiences': [
-                {
+                type('obj', (object,), {
                     'role': 'Senior Software Engineer',
                     'company': 'Tech Company Inc.',
                     'start_date': '2021-01-01',
                     'end_date': None,
                     'description': 'Led development of scalable web applications using Python and Django. Implemented CI/CD pipelines and improved system performance by 40%. Mentored junior developers and conducted code reviews.'
-                },
-                {
+                })(),
+                type('obj', (object,), {
                     'role': 'Software Engineer',
                     'company': 'Startup Solutions',
                     'start_date': '2019-06-01',
                     'end_date': '2020-12-31',
                     'description': 'Developed RESTful APIs and microservices. Collaborated with cross-functional teams to deliver features on time. Reduced API response time by 30% through optimization.'
-                }
+                })()
             ],
             'education': [
-                {
+                type('obj', (object,), {
                     'degree': 'Bachelor of Science',
                     'field': 'Computer Science',
                     'institution': 'University of California',
                     'start_year': 2015,
                     'end_year': 2019
-                }
+                })()
             ],
             'skills': [
-                {'name': 'Python', 'category': 'Programming Languages'},
-                {'name': 'JavaScript', 'category': 'Programming Languages'},
-                {'name': 'Django', 'category': 'Frameworks'},
-                {'name': 'React', 'category': 'Frameworks'},
-                {'name': 'PostgreSQL', 'category': 'Databases'},
-                {'name': 'Docker', 'category': 'Tools'},
-                {'name': 'Git', 'category': 'Tools'}
+                type('obj', (object,), {'name': 'Python', 'category': 'Programming Languages'})(),
+                type('obj', (object,), {'name': 'JavaScript', 'category': 'Programming Languages'})(),
+                type('obj', (object,), {'name': 'Django', 'category': 'Frameworks'})(),
+                type('obj', (object,), {'name': 'React', 'category': 'Frameworks'})(),
+                type('obj', (object,), {'name': 'PostgreSQL', 'category': 'Databases'})(),
+                type('obj', (object,), {'name': 'Docker', 'category': 'Tools'})(),
+                type('obj', (object,), {'name': 'Git', 'category': 'Tools'})()
             ],
             'projects': [
-                {
+                type('obj', (object,), {
                     'name': 'E-commerce Platform',
                     'url': 'github.com/johndoe/ecommerce',
                     'description': 'Built a full-stack e-commerce platform with payment integration and inventory management.',
                     'technologies': 'Django, React, PostgreSQL, Stripe API'
-                },
-                {
+                })(),
+                type('obj', (object,), {
                     'name': 'Task Management App',
                     'url': 'github.com/johndoe/taskapp',
                     'description': 'Developed a collaborative task management application with real-time updates.',
                     'technologies': 'Node.js, Socket.io, MongoDB'
-                }
+                })()
             ]
         }
         
         # Render the template with sample data
         try:
             html = render_to_string(template.template_file, sample_data)
+            logger.info(f"Successfully rendered preview for template {template.id} ({template.name})")
             return html
+        except TemplateDoesNotExist as e:
+            logger.error(f"Template file not found: {template.template_file}")
+            raise ValueError(f"Template file '{template.template_file}' does not exist")
         except Exception as e:
-            # Return error message if template rendering fails
-            return f"<p>Error rendering template: {str(e)}</p>"
+            logger.error(f"Error rendering template {template.id}: {str(e)}", exc_info=True)
+            raise ValueError(f"Template rendering error: {str(e)}")
     
     @staticmethod
     def increment_usage_count(template):

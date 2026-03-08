@@ -153,8 +153,8 @@ p {
 
 .btn-primary:hover {
   background-color: var(--color-primary-dark);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
 }
 
 .btn-outline {
@@ -166,6 +166,8 @@ p {
 .btn-outline:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
+  background-color: rgba(59, 130, 246, 0.05);
+  transform: translateY(-1px);
 }
 
 /* ===== Navigation ===== */
@@ -222,6 +224,22 @@ p {
   position: relative;
   overflow: hidden;
   background-color: var(--color-surface);
+  background-image: url("{% static 'images/hero-background.svg' %}");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Hero background overlay for better text readability */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%);
+  z-index: 0;
 }
 
 .hero-content {
@@ -300,6 +318,26 @@ p {
   border-color: var(--color-primary);
 }
 
+.feature-screenshot {
+  width: 100%;
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+.feature-screenshot img {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: var(--transition);
+}
+
+.feature-card:hover .feature-screenshot img {
+  transform: scale(1.02);
+}
+
 .feature-icon {
   width: 48px;
   height: 48px;
@@ -355,7 +393,8 @@ p {
 
 .cta-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 12px 28px -5px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 /* ===== Footer ===== */
@@ -423,6 +462,31 @@ p {
 }
 
 /* ===== Responsive Design ===== */
+
+/* Scroll Reveal Animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-reveal.revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.scroll-reveal-delay-1 {
+  transition-delay: 0.1s;
+}
+
+.scroll-reveal-delay-2 {
+  transition-delay: 0.2s;
+}
+
+.scroll-reveal-delay-3 {
+  transition-delay: 0.3s;
+}
+
 @media (max-width: 1024px) {
   .hero-title {
     font-size: 3rem;
@@ -437,6 +501,8 @@ p {
   .hero {
     padding-top: 7rem;
     padding-bottom: 4rem;
+    background-size: cover;
+    background-position: center center;
   }
   
   .hero-title {
@@ -455,6 +521,15 @@ p {
   
   .features-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .feature-screenshot {
+    margin-bottom: var(--space-3);
+  }
+  
+  .feature-screenshot img {
+    max-width: 100%;
+    height: auto;
   }
   
   .nav-links {
@@ -512,31 +587,37 @@ p {
 <!-- Features Section -->
 <section id="features" class="section">
   <div class="container">
-    <div class="section-title">
+    <div class="section-title scroll-reveal">
       <h2>Everything You Need to Succeed</h2>
       <p>Designed to help you create the perfect resume that gets noticed by recruiters and hiring managers.</p>
     </div>
     
     <div class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card scroll-reveal scroll-reveal-delay-1">
         <div class="feature-icon">
+          <!-- Using Bootstrap Icon - can be replaced with custom SVG -->
           <i class="bi bi-magic"></i>
+          <!-- Alternative: <img src="{% static 'images/icon-ai-magic.svg' %}" alt="AI Magic" /> -->
         </div>
         <h3 class="feature-title">AI-Powered Builder</h3>
         <p>Create professional resumes in minutes with our intuitive, AI-powered builder that guides you through the process.</p>
       </div>
       
-      <div class="feature-card">
+      <div class="feature-card scroll-reveal scroll-reveal-delay-2">
         <div class="feature-icon">
+          <!-- Using Bootstrap Icon - can be replaced with custom SVG -->
           <i class="bi bi-shield-check"></i>
+          <!-- Alternative: <img src="{% static 'images/icon-ats-shield.svg' %}" alt="ATS Shield" /> -->
         </div>
         <h3 class="feature-title">ATS Optimization</h3>
         <p>Our resumes are designed to pass through Applicant Tracking Systems and get you noticed by recruiters.</p>
       </div>
       
-      <div class="feature-card">
+      <div class="feature-card scroll-reveal scroll-reveal-delay-3">
         <div class="feature-icon">
+          <!-- Using Bootstrap Icon - can be replaced with custom SVG -->
           <i class="bi bi-file-earmark-pdf"></i>
+          <!-- Alternative: <img src="{% static 'images/icon-templates.svg' %}" alt="Templates" /> -->
         </div>
         <h3 class="feature-title">Professional Templates</h3>
         <p>Choose from multiple ATS-friendly templates that make your resume stand out for all the right reasons.</p>
@@ -548,13 +629,16 @@ p {
 <!-- How It Works Section -->
 <section id="how-it-works" class="section" style="background-color: var(--color-surface);">
   <div class="container">
-    <div class="section-title">
+    <div class="section-title scroll-reveal">
       <h2>How It Works</h2>
       <p>Get started in minutes with our simple 3-step process</p>
     </div>
     
     <div class="features-grid">
-      <div class="feature-card">
+      <div class="feature-card scroll-reveal scroll-reveal-delay-1">
+        <div class="feature-screenshot">
+          <img src="{% static 'images/screenshot-signup.svg' %}" alt="Sign up screenshot" loading="lazy" />
+        </div>
         <div class="feature-icon">
           <span>1</span>
         </div>
@@ -562,7 +646,10 @@ p {
         <p>Sign up for free and get instant access to our resume builder. No credit card required.</p>
       </div>
       
-      <div class="feature-card">
+      <div class="feature-card scroll-reveal scroll-reveal-delay-2">
+        <div class="feature-screenshot">
+          <img src="{% static 'images/screenshot-builder.svg' %}" alt="Resume builder screenshot" loading="lazy" />
+        </div>
         <div class="feature-icon">
           <span>2</span>
         </div>
@@ -570,7 +657,10 @@ p {
         <p>Fill in your details and let our AI suggest improvements to make your resume stand out.</p>
       </div>
       
-      <div class="feature-card">
+      <div class="feature-card scroll-reveal scroll-reveal-delay-3">
+        <div class="feature-screenshot">
+          <img src="{% static 'images/screenshot-download.svg' %}" alt="Download resume screenshot" loading="lazy" />
+        </div>
         <div class="feature-icon">
           <span>3</span>
         </div>
@@ -582,7 +672,7 @@ p {
 </section>
 
 <!-- CTA Section -->
-<section class="cta">
+<section class="cta scroll-reveal">
   <div class="container">
     <h2 class="cta-title">Ready to Land Your Dream Job?</h2>
     <p class="cta-description">Join thousands of professionals who got hired with NextGenCV</p>
@@ -591,4 +681,51 @@ p {
     </a>
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Scroll Reveal Animation
+document.addEventListener('DOMContentLoaded', function() {
+  const revealElements = document.querySelectorAll('.scroll-reveal');
+  
+  const revealOnScroll = () => {
+    const windowHeight = window.innerHeight;
+    const revealPoint = 100;
+    
+    revealElements.forEach(element => {
+      const elementTop = element.getBoundingClientRect().top;
+      
+      if (elementTop < windowHeight - revealPoint) {
+        element.classList.add('revealed');
+      }
+    });
+  };
+  
+  // Initial check
+  revealOnScroll();
+  
+  // Check on scroll with throttling for performance
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    if (scrollTimeout) {
+      window.cancelAnimationFrame(scrollTimeout);
+    }
+    scrollTimeout = window.requestAnimationFrame(() => {
+      revealOnScroll();
+    });
+  });
+});
+
+// Enhanced button interactions
+document.addEventListener('DOMContentLoaded', function() {
+  const buttons = document.querySelectorAll('.btn, .cta-button');
+  
+  buttons.forEach(button => {
+    button.addEventListener('mouseenter', function() {
+      this.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    });
+  });
+});
+</script>
 {% endblock %}

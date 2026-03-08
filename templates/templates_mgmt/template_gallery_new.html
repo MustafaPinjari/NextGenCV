@@ -29,8 +29,18 @@
             <i class="bi bi-file-earmark-text" style="font-size: 80px; color: var(--color-text-tertiary); opacity: 0.3;"></i>
             {% endif %}
             
+            <!-- Preview Button (Eye Icon) -->
+            <button 
+                onclick="openTemplatePreview({{ template.id }}, event)" 
+                style="position: absolute; top: var(--spacing-3, 1.5rem); right: var(--spacing-3, 1.5rem); width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 0, 0, 0.7); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(4px);"
+                onmouseover="this.style.background='rgba(0, 102, 255, 0.9)'; this.style.transform='scale(1.1)';"
+                onmouseout="this.style.background='rgba(0, 0, 0, 0.7)'; this.style.transform='scale(1)';"
+                aria-label="Preview {{ template.name }}">
+                <i class="bi bi-eye" style="font-size: 20px;"></i>
+            </button>
+            
             {% if template.is_default %}
-            <div style="position: absolute; top: var(--spacing-3, 1.5rem); right: var(--spacing-3, 1.5rem);">
+            <div style="position: absolute; top: var(--spacing-3, 1.5rem); left: var(--spacing-3, 1.5rem);">
                 <span class="badge badge-primary">Default</span>
             </div>
             {% endif %}
@@ -52,10 +62,13 @@
                 </div>
             </div>
             
-            <a href="{% url 'template_preview' template.id %}" class="btn btn-primary btn-block">
-                <i class="bi bi-eye"></i>
-                Preview Template
-            </a>
+            <!-- Use Template Button at Bottom -->
+            <button 
+                onclick="useTemplate({{ template.id }})" 
+                class="btn btn-primary btn-block">
+                <i class="bi bi-check-circle"></i>
+                Use Template
+            </button>
         </div>
     </div>
     {% endfor %}
@@ -69,4 +82,182 @@
     <p class="empty-state-description">Templates are coming soon. Check back later!</p>
 </div>
 {% endif %}
+
+<!-- Template Preview Modal -->
+<div id="templatePreviewModal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); z-index: 9999; overflow-y: auto; padding: 2rem;">
+    <div class="modal modal-xl" style="margin: 0 auto; position: relative; animation: modalSlideIn 0.3s ease-out;">
+        <div class="modal-header">
+            <h2 class="modal-title" id="modalTemplateName">Template Preview</h2>
+            <button class="modal-close" onclick="closeTemplatePreview()" aria-label="Close preview">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="previewContent" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
+            <div style="text-align: center; color: var(--color-text-secondary);">
+                <i class="bi bi-hourglass-split" style="font-size: 48px; margin-bottom: 1rem; display: block;"></i>
+                <p>Loading preview...</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" onclick="closeTemplatePreview()">Close</button>
+            <button class="btn btn-primary" id="useTemplateBtn" onclick="useCurrentTemplate()">
+                <i class="bi bi-check-circle"></i>
+                Use This Template
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#templatePreviewModal .modal {
+    background: var(--color-base-bg, #1a1a1a);
+    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+#templatePreviewModal .modal-close:hover {
+    background: var(--color-base-bg-hover, #242424);
+    transform: rotate(90deg);
+}
+
+#previewContent iframe {
+    width: 100%;
+    min-height: 600px;
+    border: none;
+    background: white;
+    border-radius: 8px;
+}
+</style>
+
+<script>
+let currentTemplateId = null;
+
+function openTemplatePreview(templateId, event) {
+    currentTemplateId = templateId;
+    const modal = document.getElementById('templatePreviewModal');
+    const previewContent = document.getElementById('previewContent');
+    
+    // Show modal
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    
+    // Show loading state
+    previewContent.innerHTML = `
+        <div style="text-align: center; color: var(--color-text-secondary);">
+            <i class="bi bi-hourglass-split" style="font-size: 48px; margin-bottom: 1rem; display: block; animation: spin 2s linear infinite;"></i>
+            <p>Loading preview...</p>
+        </div>
+    `;
+    
+    // Fetch preview content with enhanced error handling
+    fetch(`/templates/preview/${templateId}/`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                // Try to parse error JSON
+                return response.json().then(errorData => {
+                    throw new Error(errorData.message || 'Failed to load preview');
+                }).catch(jsonError => {
+                    // If JSON parsing fails, throw generic error
+                    throw new Error(`Server error: ${response.status}`);
+                });
+            }
+            return response.text();
+        })
+        .then(html => {
+            // Create iframe to display preview
+            previewContent.innerHTML = `<iframe srcdoc="${html.replace(/"/g, '&quot;')}"></iframe>`;
+            
+            // Update modal title - try to get template name from the clicked element
+            if (event && event.target) {
+                const templateCard = event.target.closest('.card-elevated');
+                if (templateCard) {
+                    const templateName = templateCard.querySelector('h3').textContent.trim();
+                    document.getElementById('modalTemplateName').textContent = templateName;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error loading preview:', error);
+            previewContent.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 48px; margin-bottom: 1rem; display: block; color: var(--color-danger, #ef4444);"></i>
+                    <h3 style="color: var(--color-text-primary); margin-bottom: 0.5rem;">Preview Unavailable</h3>
+                    <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem;">${error.message}</p>
+                    <div style="background: var(--color-base-bg-hover, #242424); padding: 1rem; border-radius: 8px; text-align: left; max-width: 500px; margin: 0 auto;">
+                        <p style="font-size: 0.875rem; color: var(--color-text-tertiary); margin-bottom: 0.5rem;"><strong>Troubleshooting:</strong></p>
+                        <ul style="font-size: 0.875rem; color: var(--color-text-tertiary); margin: 0; padding-left: 1.5rem;">
+                            <li>Check that the template file exists</li>
+                            <li>Verify template configuration in admin panel</li>
+                            <li>Try refreshing the page</li>
+                            <li>Contact support if the issue persists</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        });
+}
+
+function closeTemplatePreview() {
+    const modal = document.getElementById('templatePreviewModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+    currentTemplateId = null;
+}
+
+function useTemplate(templateId) {
+    // For now, redirect to template preview page
+    // In a full implementation, this would show a resume selection dialog
+    window.location.href = `/templates/preview/${templateId}/`;
+}
+
+function useCurrentTemplate() {
+    if (currentTemplateId) {
+        useTemplate(currentTemplateId);
+    }
+}
+
+// Close modal on backdrop click
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('templatePreviewModal');
+    if (event.target === modal) {
+        closeTemplatePreview();
+    }
+});
+
+// Close modal on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('templatePreviewModal');
+        if (modal && modal.style.display === 'block') {
+            closeTemplatePreview();
+        }
+    }
+});
+
+// Add spin animation for loading icon
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+`;
+document.head.appendChild(style);
+</script>
 {% endblock %}

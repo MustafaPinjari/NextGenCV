@@ -46,7 +46,9 @@ class ResumeService:
             resume = Resume.objects.create(
                 user=user,
                 title=data.get('title', 'Untitled Resume'),
-                template=data.get('template', 'professional')
+                template=data.get('template', 'professional'),
+                summary=data.get('summary', ''),
+                is_draft=data.get('is_draft', True)
             )
             
             # Create personal info if provided

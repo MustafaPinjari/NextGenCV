@@ -87,4 +87,13 @@ $color-border-focus: rgba(0, 102, 255, 0.5);
   --color-border: #{$color-border};
   --color-border-hover: #{$color-border-hover};
   --color-border-focus: #{$color-border-focus};
+  
+  // Form Input Colors
+  --form-input-bg: #{$color-surface-elevated};
+  --form-input-bg-focus: #242424;
+  --form-input-text: #{$color-text-primary};
+  --form-input-placeholder: #{$color-text-tertiary};
+  --form-input-border: #{$color-border};
+  --form-input-border-focus: #{$color-primary-solid};
+  --form-input-border-error: #{$color-error};
 }

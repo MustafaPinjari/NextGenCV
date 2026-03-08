@@ -5,8 +5,9 @@
     <h2 class="form-step__title">Professional Summary</h2>
     <p class="form-step__description">Write a brief summary that highlights your key qualifications and career goals. This appears at the top of your resume.</p>
 
-    <form method="post" id="wizardForm">
+    <form method="post" id="wizardForm" action="">
         {% csrf_token %}
+        <input type="hidden" name="finish" value="true">
         
         <div class="form-group">
             <label for="{{ form.summary.id_for_label }}" class="form-label">Professional Summary</label>
@@ -208,7 +209,7 @@
 </style>
 
 <script>
-    // Character counter
+    // Character counter - Requirement: 4.3
     const summaryField = document.getElementById('{{ form.summary.id_for_label }}');
     const charCount = document.getElementById('charCount');
 
@@ -224,13 +225,46 @@
             } else {
                 charCount.style.color = 'var(--color-text-tertiary)';
             }
+            
+            // Requirement: 4.3 - Update live preview on summary input
+            updateLivePreview();
         });
 
         // Initialize count
         charCount.textContent = `${summaryField.value.length} / 500`;
     }
 
-    // AI Summary Generation
+    // Requirement: 4.3 - Live preview update function
+    function updateLivePreview() {
+        const previewContent = document.getElementById('previewContent');
+        if (previewContent && summaryField) {
+            // Find or create summary section in preview
+            let summarySection = previewContent.querySelector('.preview-summary');
+            
+            if (!summarySection) {
+                // Create summary section if it doesn't exist
+                summarySection = document.createElement('div');
+                summarySection.className = 'preview-summary';
+                summarySection.style.marginBottom = 'var(--spacing-4)';
+                previewContent.insertBefore(summarySection, previewContent.firstChild);
+            }
+            
+            // Update summary content
+            if (summaryField.value.trim()) {
+                summarySection.innerHTML = `
+                    <h3 style="font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); margin-bottom: var(--spacing-2); text-transform: uppercase;">Professional Summary</h3>
+                    <p style="color: var(--color-text-primary); line-height: 1.6;">${summaryField.value}</p>
+                `;
+            } else {
+                summarySection.innerHTML = '';
+            }
+        }
+    }
+
+    // Initialize preview on page load
+    document.addEventListener('DOMContentLoaded', updateLivePreview);
+
+    // AI Summary Generation - Requirement: 4.4
     function generateSummary() {
         const btn = document.getElementById('generateSummaryBtn');
         const aiSuggestion = document.getElementById('aiSuggestion');
@@ -274,7 +308,7 @@
         const suggestionText = document.getElementById('suggestionText').textContent;
         summaryField.value = suggestionText;
         
-        // Trigger input event to update character count
+        // Trigger input event to update character count and preview
         summaryField.dispatchEvent(new Event('input'));
         
         // Trigger autosave

@@ -27,6 +27,13 @@
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(255, 255, 255, 0.15);
   --color-border-focus: rgba(0, 102, 255, 0.5);
+  --form-input-bg: #1a1a1a;
+  --form-input-bg-focus: #242424;
+  --form-input-text: #f5f5f5;
+  --form-input-placeholder: #8a8a8a;
+  --form-input-border: rgba(255, 255, 255, 0.08);
+  --form-input-border-focus: #0066ff;
+  --form-input-border-error: #ef4444;
 }
 
 :root {
@@ -287,9 +294,7 @@
   }
   .btn,
 .card,
-.form-input,
-.form-select,
-.form-textarea {
+.form-input {
     border-width: 2px;
   }
   *:focus-visible {
@@ -1474,49 +1479,104 @@ hr {
   margin-bottom: 2rem;
 }
 
-.form-input, .form-select, .form-textarea {
+.form-input,
+.form-control,
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="url"],
+input[type="date"],
+input[type="number"],
+input[type="password"],
+textarea,
+select {
   width: 100%;
-  padding: 1.5rem 1.5rem 1rem 1.5rem;
-  background: #141414;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1.5rem;
+  background: var(--form-input-bg);
+  border: 1px solid var(--form-input-border);
   border-radius: 1rem;
-  color: #f5f5f5;
+  color: var(--form-input-text);
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 1rem;
   line-height: 1.5;
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
   outline: none;
+  min-height: 44px;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
 }
 
-.form-input::placeholder, .form-select::placeholder, .form-textarea::placeholder {
-  color: transparent;
+.form-input::placeholder,
+.form-control::placeholder,
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="tel"]::placeholder,
+input[type="url"]::placeholder,
+input[type="date"]::placeholder,
+input[type="number"]::placeholder,
+input[type="password"]::placeholder,
+textarea::placeholder,
+select::placeholder {
+  color: var(--form-input-placeholder);
+  opacity: 0.7;
 }
 
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  border: 2px solid rgba(0, 102, 255, 0.5);
+.form-input:focus,
+.form-control:focus,
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="url"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  border: 2px solid var(--form-input-border-focus);
   box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
-  padding: 1.5rem calc($spacing-3 - 1px) 1rem calc($spacing-3 - 1px);
+  padding: calc($spacing-3 - 1px);
+  background: var(--form-input-bg-focus);
 }
 
-.form-input:focus ~ .form-label, .form-select:focus ~ .form-label, .form-textarea:focus ~ .form-label {
-  transform: translateY(-2rem) scale(0.85);
-  color: #0066ff;
-}
-
-.form-input:not(:placeholder-shown) ~ .form-label, .form-select:not(:placeholder-shown) ~ .form-label, .form-textarea:not(:placeholder-shown) ~ .form-label {
-  transform: translateY(-2rem) scale(0.85);
-}
-
-.form-input:disabled, .form-select:disabled, .form-textarea:disabled {
+.form-input:disabled,
+.form-control:disabled,
+input[type="text"]:disabled,
+input[type="email"]:disabled,
+input[type="tel"]:disabled,
+input[type="url"]:disabled,
+input[type="date"]:disabled,
+input[type="number"]:disabled,
+input[type="password"]:disabled,
+textarea:disabled,
+select:disabled {
   background: #0a0a0a;
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.form-input:disabled ~ .form-label, .form-select:disabled ~ .form-label, .form-textarea:disabled ~ .form-label {
+.form-input {
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+}
+
+.form-input::placeholder {
+  color: transparent;
+}
+
+.form-input:focus {
+  padding: 1.5rem calc($spacing-3 - 1px) 1rem calc($spacing-3 - 1px);
+}
+
+.form-input:focus ~ .form-label {
+  transform: translateY(-2rem) scale(0.85);
+  color: #0066ff;
+}
+
+.form-input:not(:placeholder-shown) ~ .form-label {
+  transform: translateY(-2rem) scale(0.85);
+}
+
+.form-input:disabled ~ .form-label {
   opacity: 0.5;
 }
 
@@ -1537,7 +1597,7 @@ hr {
   position: relative;
 }
 
-.form-input-icon .form-input, .form-input-icon .form-select, .form-input-icon .form-textarea {
+.form-input-icon .form-input {
   padding-left: 4rem;
 }
 
@@ -1551,23 +1611,43 @@ hr {
   transition: color 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.form-input-icon .form-input:focus ~ .form-icon, .form-input-icon .form-select:focus ~ .form-icon, .form-input-icon .form-textarea:focus ~ .form-icon {
+.form-input-icon .form-input:focus ~ .form-icon {
   color: #0066ff;
 }
 
-.form-input-error .form-input, .form-input-error .form-select, .form-input-error .form-textarea {
-  border: 2px solid #ef4444;
+.form-input-error .form-input,
+.form-input-error .form-control {
+  border: 2px solid var(--form-input-border-error);
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-  padding: 1.5rem calc($spacing-3 - 1px) 1rem calc($spacing-3 - 1px);
+  padding: calc($spacing-3 - 1px);
 }
 
-.form-input-error .form-input:focus, .form-input-error .form-select:focus, .form-input-error .form-textarea:focus {
-  border-color: #ef4444;
+.form-input-error .form-input:focus,
+.form-input-error .form-control:focus {
+  border-color: var(--form-input-border-error);
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
-.form-input-error .form-input ~ .form-label, .form-input-error .form-select ~ .form-label, .form-input-error .form-textarea ~ .form-label {
-  color: #ef4444;
+.form-input-error .form-input ~ .form-label,
+.form-input-error .form-control ~ .form-label {
+  color: var(--form-input-border-error);
+}
+
+.form-control.is-invalid,
+input.is-invalid,
+textarea.is-invalid,
+select.is-invalid {
+  border: 2px solid var(--form-input-border-error);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  padding: calc($spacing-3 - 1px);
+}
+
+.form-control.is-invalid:focus,
+input.is-invalid:focus,
+textarea.is-invalid:focus,
+select.is-invalid:focus {
+  border-color: var(--form-input-border-error);
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
 }
 
 .form-error-message {
@@ -1584,18 +1664,18 @@ hr {
   font-size: 1rem;
 }
 
-.form-input-success .form-input, .form-input-success .form-select, .form-input-success .form-textarea {
+.form-input-success .form-input {
   border: 2px solid #10b981;
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
   padding: 1.5rem calc($spacing-3 - 1px) 1rem calc($spacing-3 - 1px);
 }
 
-.form-input-success .form-input:focus, .form-input-success .form-select:focus, .form-input-success .form-textarea:focus {
+.form-input-success .form-input:focus {
   border-color: #10b981;
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
 }
 
-.form-input-success .form-input ~ .form-label, .form-input-success .form-select ~ .form-label, .form-input-success .form-textarea ~ .form-label {
+.form-input-success .form-input ~ .form-label {
   color: #10b981;
 }
 
@@ -1619,13 +1699,18 @@ hr {
   line-height: 1.5;
 }
 
-.form-textarea {
+.form-textarea,
+textarea.form-control,
+textarea {
   min-height: 120px;
   resize: vertical;
-  padding-top: 2rem;
+  padding: 1.5rem;
+  line-height: 1.75;
 }
 
-.form-select {
+.form-select,
+select.form-control,
+select {
   padding-right: 4rem;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23a3a3a3' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -1633,7 +1718,9 @@ hr {
   cursor: pointer;
 }
 
-.form-select:focus {
+.form-select:focus,
+select.form-control:focus,
+select:focus {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%230066ff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
 }
 
@@ -1839,15 +1926,15 @@ hr {
   border-radius: 0 1rem 1rem 0;
 }
 
-.input-group .form-input, .input-group .form-textarea, .input-group .form-select {
+.input-group .form-input {
   border-radius: 0;
 }
 
-.input-group .form-input:first-child, .input-group .form-textarea:first-child, .input-group .form-select:first-child {
+.input-group .form-input:first-child {
   border-radius: 1rem 0 0 1rem;
 }
 
-.input-group .form-input:last-child, .input-group .form-textarea:last-child, .input-group .form-select:last-child {
+.input-group .form-input:last-child {
   border-radius: 0 1rem 1rem 0;
 }
 

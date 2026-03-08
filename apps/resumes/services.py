@@ -23,6 +23,7 @@ class ResumeService:
                 {
                     'title': str,
                     'template': str (optional, defaults to 'professional'),
+                    'summary': str (optional),
                     'personal_info': dict (optional),
                     'experiences': list of dicts (optional),
                     'education': list of dicts (optional),
@@ -38,7 +39,9 @@ class ResumeService:
             resume = Resume.objects.create(
                 user=user,
                 title=data.get('title', 'Untitled Resume'),
-                template=data.get('template', 'professional')
+                template=data.get('template', 'professional'),
+                summary=data.get('summary', ''),
+                is_draft=data.get('is_draft', True)
             )
             
             # Create personal info if provided
@@ -118,6 +121,10 @@ class ResumeService:
                 resume.title = data['title']
             if 'template' in data:
                 resume.template = data['template']
+            if 'summary' in data:
+                resume.summary = data['summary']
+            if 'is_draft' in data:
+                resume.is_draft = data['is_draft']
             resume.save()
             
             # Update personal info if provided
@@ -219,7 +226,9 @@ class ResumeService:
             duplicate = Resume.objects.create(
                 user=original.user,
                 title=f"{original.title} (Copy)",
-                template=original.template
+                template=original.template,
+                summary=original.summary,
+                is_draft=original.is_draft
             )
             
             # Duplicate personal info if exists

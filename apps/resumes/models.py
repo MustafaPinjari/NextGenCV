@@ -11,6 +11,8 @@ class Resume(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='resumes')
     title = models.CharField(max_length=200)
     template = models.CharField(max_length=50, default='professional')
+    summary = models.TextField(blank=True, default='', help_text='Professional summary')
+    is_draft = models.BooleanField(default=True, help_text='Whether resume is in draft state')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -68,9 +70,11 @@ class Experience(models.Model):
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='experiences')
     company = models.CharField(max_length=200)
     role = models.CharField(max_length=200)
+    location = models.CharField(max_length=200, blank=True, default='', help_text='City, State/Country')
     start_date = models.DateField()
     end_date = models.DateField(null=True, blank=True)
-    description = models.TextField(blank=True, default='')
+    description = models.TextField(blank=True, default='', help_text='Brief overview of role')
+    achievements = models.TextField(blank=True, default='', help_text='Bullet points of achievements with metrics (one per line)')
     order = models.IntegerField(default=0)
 
     class Meta:
@@ -101,6 +105,9 @@ class Education(models.Model):
     field = models.CharField(max_length=200, blank=True, null=True, default='')
     start_year = models.IntegerField()
     end_year = models.IntegerField(null=True, blank=True)
+    gpa = models.DecimalField(max_digits=3, decimal_places=2, null=True, blank=True, help_text='GPA out of 4.0')
+    honors = models.CharField(max_length=500, blank=True, default='', help_text='Honors, awards, or distinctions')
+    relevant_coursework = models.TextField(blank=True, default='', help_text='Relevant courses (comma-separated)')
     order = models.IntegerField(default=0)
 
     class Meta:
@@ -118,6 +125,8 @@ class Education(models.Model):
         from django.core.exceptions import ValidationError
         if self.end_year and self.start_year > self.end_year:
             raise ValidationError('Start year must be before end year.')
+        if self.gpa and (self.gpa < 0 or self.gpa > 4.0):
+            raise ValidationError('GPA must be between 0.0 and 4.0')
 
 
 class Skill(models.Model):
@@ -126,9 +135,18 @@ class Skill(models.Model):
     Multiple skills can be associated with one resume.
     Unique constraint on (resume, name) to prevent duplicates.
     """
+    PROFICIENCY_LEVELS = [
+        ('beginner', 'Beginner'),
+        ('intermediate', 'Intermediate'),
+        ('advanced', 'Advanced'),
+        ('expert', 'Expert'),
+    ]
+    
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='skills')
     name = models.CharField(max_length=100)
-    category = models.CharField(max_length=50)
+    category = models.CharField(max_length=50, help_text='e.g., Languages, Frameworks, Tools, Soft Skills')
+    proficiency_level = models.CharField(max_length=20, choices=PROFICIENCY_LEVELS, default='intermediate')
+    years_of_experience = models.IntegerField(null=True, blank=True, help_text='Years of experience with this skill')
 
     class Meta:
         unique_together = [['resume', 'name']]
@@ -147,9 +165,12 @@ class Project(models.Model):
     """
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='projects')
     name = models.CharField(max_length=200)
-    description = models.TextField(blank=True, default='')
-    technologies = models.CharField(max_length=500, blank=True, default='')
-    url = models.URLField(blank=True, validators=[URLValidator()])
+    description = models.TextField(blank=True, default='', help_text='Brief description of the project')
+    technologies = models.CharField(max_length=500, blank=True, default='', help_text='Technologies used (comma-separated)')
+    impact = models.TextField(blank=True, default='', help_text='Quantifiable impact or results achieved')
+    url = models.URLField(blank=True, validators=[URLValidator()], help_text='GitHub, live demo, or portfolio link')
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
     order = models.IntegerField(default=0)
 
     class Meta:
