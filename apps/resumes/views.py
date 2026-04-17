@@ -153,10 +153,13 @@ def resume_create(request):
                 from datetime import date
                 if 'experiences' in wizard_data['data']:
                     for exp in wizard_data['data']['experiences']:
-                        if isinstance(exp['start_date'], str):
-                            exp['start_date'] = date.fromisoformat(exp['start_date'])
-                        if exp['end_date'] and isinstance(exp['end_date'], str):
-                            exp['end_date'] = date.fromisoformat(exp['end_date'])
+                        try:
+                            if isinstance(exp['start_date'], str) and exp['start_date']:
+                                exp['start_date'] = date.fromisoformat(exp['start_date'])
+                            if exp.get('end_date') and isinstance(exp['end_date'], str):
+                                exp['end_date'] = date.fromisoformat(exp['end_date'])
+                        except (ValueError, TypeError):
+                            pass  # Keep as string if parsing fails
                 
                 # Set default title and template if not provided
                 if 'title' not in wizard_data['data']:
@@ -194,6 +197,90 @@ def resume_create(request):
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         import json
         from django.http import JsonResponse
+        from django.template.loader import render_to_string
+        
+        # Handle real-time preview updates
+        if request.POST.get('preview_update'):
+            # Update wizard data with current form values for ALL steps
+            if current_step == 1:
+                wizard_data['data']['personal_info'] = {
+                    'full_name': request.POST.get('full_name', ''),
+                    'email': request.POST.get('email', ''),
+                    'phone': request.POST.get('phone', ''),
+                    'location': request.POST.get('location', ''),
+                    'linkedin': request.POST.get('linkedin', ''),
+                    'github': request.POST.get('github', '')
+                }
+            elif current_step == 2:
+                # Show current form values in preview (not yet saved)
+                preview_exp = list(wizard_data['data'].get('experiences', []))
+                current = {
+                    'company': request.POST.get('company', ''),
+                    'role': request.POST.get('role', ''),
+                    'start_date': request.POST.get('start_date', ''),
+                    'end_date': request.POST.get('end_date', ''),
+                    'description': request.POST.get('description', ''),
+                }
+                if current['company'] or current['role']:
+                    # Show as a "draft" entry in preview
+                    wizard_data['data']['_preview_exp'] = current
+            elif current_step == 3:
+                preview_edu = list(wizard_data['data'].get('education', []))
+                current = {
+                    'institution': request.POST.get('institution', ''),
+                    'degree': request.POST.get('degree', ''),
+                    'field': request.POST.get('field', ''),
+                    'start_year': request.POST.get('start_year', ''),
+                    'end_year': request.POST.get('end_year', ''),
+                }
+                if current['institution'] or current['degree']:
+                    wizard_data['data']['_preview_edu'] = current
+            elif current_step == 4:
+                current_skill = {
+                    'name': request.POST.get('name', ''),
+                    'category': request.POST.get('category', ''),
+                }
+                if current_skill['name']:
+                    wizard_data['data']['_preview_skill'] = current_skill
+            elif current_step == 5:
+                wizard_data['data']['summary'] = request.POST.get('summary', '')
+            
+            request.session.modified = True
+            
+            # Build preview data including draft entries
+            preview_data = dict(wizard_data['data'])
+            
+            # Merge draft experience into preview
+            if '_preview_exp' in preview_data:
+                draft = preview_data.pop('_preview_exp')
+                if draft.get('company') or draft.get('role'):
+                    exps = list(preview_data.get('experiences', []))
+                    exps_preview = exps + [draft]
+                    preview_data['experiences'] = exps_preview
+            
+            # Merge draft education into preview
+            if '_preview_edu' in preview_data:
+                draft = preview_data.pop('_preview_edu')
+                if draft.get('institution') or draft.get('degree'):
+                    edus = list(preview_data.get('education', []))
+                    preview_data['education'] = edus + [draft]
+            
+            # Merge draft skill into preview
+            if '_preview_skill' in preview_data:
+                draft = preview_data.pop('_preview_skill')
+                if draft.get('name'):
+                    skills = list(preview_data.get('skills', []))
+                    preview_data['skills'] = skills + [draft]
+            
+            # Render preview HTML
+            preview_html = render_to_string('resumes/partials/wizard_preview.html', {
+                'wizard_data': preview_data
+            })
+            
+            return JsonResponse({
+                'success': True,
+                'preview_html': preview_html
+            })
         
         if request.POST.get('autosave'):
             # Save current form data to session
@@ -277,57 +364,6 @@ def resume_create(request):
     elif current_step == 5:
         from .forms import SummaryForm
         context['form'] = SummaryForm(initial={'summary': wizard_data['data'].get('summary', '')})
-        
-        # Handle summary submission
-        if request.POST.get('action') == 'next' or request.POST.get('action') == 'save' or 'finish' in request.POST:
-            from .forms import SummaryForm
-            form = SummaryForm(request.POST)
-            if form.is_valid():
-                wizard_data['data']['summary'] = form.cleaned_data['summary']
-                request.session.modified = True
-                
-                # Requirement: 5.4 - Handle save errors
-                try:
-                    if request.POST.get('action') == 'save' or 'finish' in request.POST:
-                        # Save the resume
-                        from datetime import date
-                        if 'experiences' in wizard_data['data']:
-                            for exp in wizard_data['data']['experiences']:
-                                if isinstance(exp['start_date'], str):
-                                    exp['start_date'] = date.fromisoformat(exp['start_date'])
-                                if exp['end_date'] and isinstance(exp['end_date'], str):
-                                    exp['end_date'] = date.fromisoformat(exp['end_date'])
-                        
-                        # Set default title and template if not provided
-                        if 'title' not in wizard_data['data']:
-                            wizard_data['data']['title'] = f"{wizard_data['data'].get('personal_info', {}).get('full_name', 'My')} Resume"
-                        if 'template' not in wizard_data['data']:
-                            wizard_data['data']['template'] = 'professional'
-                        
-                        # Mark resume as complete (not draft) - Requirements: 4.2, 5.1, 5.5
-                        wizard_data['data']['is_draft'] = False
-                        
-                        resume = ResumeService.create_resume(request.user, wizard_data['data'])
-                        
-                        del request.session['resume_wizard']
-                        request.session.modified = True
-                        
-                        # Requirement: 5.3 - Display success message
-                        messages.success(request, 'Resume created successfully!')
-                        
-                        # Requirement: 5.2 - Redirect to resume detail page
-                        return redirect('resume_detail', pk=resume.id)
-                except Exception as e:
-                    # Requirement: 5.4 - Display error message and remain on Step 5
-                    logger.error(f'Failed to save resume: {str(e)}', exc_info=True)
-                    messages.error(request, f'Failed to save resume. Please try again. Error: {str(e)}')
-                    context['form'] = form
-                    return render(request, 'resumes/wizard_steps/step5_summary.html', context)
-            else:
-                # Form validation failed
-                context['form'] = form
-                return render(request, 'resumes/wizard_steps/step5_summary.html', context)
-        
         return render(request, 'resumes/wizard_steps/step5_summary.html', context)
     
     # Fallback to old template if step is out of range
@@ -575,8 +611,16 @@ def resume_export(request, pk):
         filename = f"{resume.title.replace(' ', '_')}"
         if version_number:
             filename += f"_v{version_number}"
-        filename += ".pdf"
-        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        # Check if WeasyPrint fell back to HTML
+        if getattr(resume, '_pdf_fallback', False):
+            filename += ".html"
+            response = HttpResponse(pdf_bytes, content_type='text/html')
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            messages.warning(request, 'PDF export requires GTK libraries on Windows. Downloaded as HTML instead. Open in browser and use Ctrl+P to print as PDF.')
+        else:
+            filename += ".pdf"
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
         
         logger.info(f'PDF generated successfully for resume {pk}' + 
                    (f' version {version_number}' if version_number else '') +
@@ -2229,7 +2273,7 @@ def optimization_history_list(request, pk):
     ).select_related(
         'original_version',
         'optimized_version'
-    ).order_by('-created_at')
+    ).order_by('-optimization_timestamp')
     
     # Paginate results (10 per page)
     paginator = Paginator(optimizations, 10)
@@ -2244,7 +2288,7 @@ def optimization_history_list(request, pk):
         
         optimization_data.append({
             'id': opt.id,
-            'created_at': opt.created_at,
+            'created_at': opt.optimization_timestamp,
             'job_description_snippet': job_desc_snippet,
             'original_score': opt.original_score,
             'optimized_score': opt.optimized_score,

@@ -3,7 +3,6 @@ PDF Export Service for generating ATS-compatible PDF resumes.
 """
 from django.template.loader import render_to_string
 from django.shortcuts import get_object_or_404
-from weasyprint import HTML
 from .models import Resume
 import logging
 
@@ -14,6 +13,7 @@ class PDFExportService:
     """
     Service class for generating PDF exports of resumes.
     Uses WeasyPrint to convert HTML templates to PDF format.
+    Falls back to plain HTML download if WeasyPrint is unavailable (e.g. missing GTK on Windows).
     """
 
     @staticmethod
@@ -92,9 +92,16 @@ class PDFExportService:
             # Render HTML
             html_string = PDFExportService.render_resume_html(resume)
             
-            # Generate PDF using WeasyPrint
-            # Note: WeasyPrint 60.1 has simplified API
-            pdf_bytes = HTML(string=html_string).write_pdf()
+            # Generate PDF using WeasyPrint (requires GTK/Pango on Windows)
+            try:
+                from weasyprint import HTML
+                pdf_bytes = HTML(string=html_string).write_pdf()
+            except OSError as e:
+                # WeasyPrint missing system libraries (common on Windows without GTK)
+                logger.warning(f'WeasyPrint unavailable ({e}), returning HTML as fallback')
+                # Return HTML bytes with a flag so the view can serve as HTML download
+                pdf_bytes = html_string.encode('utf-8')
+                resume._pdf_fallback = True
             
             logger.info(f'Successfully generated PDF for resume {resume_id}' + 
                        (f' version {version_id}' if version_id else ''))

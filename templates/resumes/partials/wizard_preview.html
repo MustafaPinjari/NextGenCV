@@ -1,0 +1,56 @@
+﻿{% if wizard_data.personal_info or wizard_data.experiences or wizard_data.education or wizard_data.skills or wizard_data.summary %}
+
+  {% if wizard_data.personal_info %}
+  <h1>{{ wizard_data.personal_info.full_name|default:"Your Name" }}</h1>
+  <div class="contact">
+    {% if wizard_data.personal_info.email %}<span><i class="bi bi-envelope"></i> {{ wizard_data.personal_info.email }}</span>{% endif %}
+    {% if wizard_data.personal_info.phone %}<span><i class="bi bi-telephone"></i> {{ wizard_data.personal_info.phone }}</span>{% endif %}
+    {% if wizard_data.personal_info.location %}<span><i class="bi bi-geo-alt"></i> {{ wizard_data.personal_info.location }}</span>{% endif %}
+    {% if wizard_data.personal_info.linkedin %}<span><i class="bi bi-linkedin"></i> LinkedIn</span>{% endif %}
+    {% if wizard_data.personal_info.github %}<span><i class="bi bi-github"></i> GitHub</span>{% endif %}
+  </div>
+  {% endif %}
+
+  {% if wizard_data.summary %}
+  <h2>Professional Summary</h2>
+  <p>{{ wizard_data.summary }}</p>
+  {% endif %}
+
+  {% if wizard_data.experiences %}
+  <h2>Work Experience</h2>
+  {% for exp in wizard_data.experiences %}
+  <div class="exp-item">
+    <div class="exp-title">{{ exp.role|default:"Role" }}</div>
+    <div class="exp-company">{{ exp.company|default:"Company" }}</div>
+    <div class="exp-date">{{ exp.start_date }} — {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}</div>
+    {% if exp.description %}<p>{{ exp.description }}</p>{% endif %}
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if wizard_data.education %}
+  <h2>Education</h2>
+  {% for edu in wizard_data.education %}
+  <div class="exp-item">
+    <div class="exp-title">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+    <div class="exp-company">{{ edu.institution }}</div>
+    <div class="exp-date">{{ edu.start_year }} — {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% if wizard_data.skills %}
+  <h2>Skills</h2>
+  <div class="skill-list">
+    {% for skill in wizard_data.skills %}
+    <span class="skill-tag">{{ skill.name }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+{% else %}
+  <div class="preview-empty">
+    <i class="bi bi-file-earmark-text"></i>
+    <p>Your resume preview will<br>appear here as you fill in the form</p>
+  </div>
+{% endif %}

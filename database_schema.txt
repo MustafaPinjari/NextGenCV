@@ -1,0 +1,316 @@
+================================================================================
+  DATABASE SCHEMA EXPORT — NextGenCV Project
+  SQLite Database | 22 Tables
+================================================================================
+
+TABLE: auth_group
+Rows: 0
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    name                             varchar(150)       YES              
+
+TABLE: auth_group_permissions
+Rows: 0
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    group_id                         INTEGER            YES              FK -> auth_group.id
+  2    permission_id                    INTEGER            YES              FK -> auth_permission.id
+
+TABLE: auth_permission
+Rows: 72
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    content_type_id                  INTEGER            YES              FK -> django_content_type.id
+  2    codename                         varchar(100)       YES              
+  3    name                             varchar(255)       YES              
+
+TABLE: auth_user
+Rows: 8
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    password                         varchar(128)       YES              
+  2    last_login                       datetime           NO               
+  3    is_superuser                     bool               YES              
+  4    username                         varchar(150)       YES              
+  5    last_name                        varchar(150)       YES              
+  6    email                            varchar(254)       YES              
+  7    is_staff                         bool               YES              
+  8    is_active                        bool               YES              
+  9    date_joined                      datetime           YES              
+  10   first_name                       varchar(150)       YES              
+
+TABLE: auth_user_groups
+Rows: 0
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    user_id                          INTEGER            YES              FK -> auth_user.id
+  2    group_id                         INTEGER            YES              FK -> auth_group.id
+
+TABLE: auth_user_user_permissions
+Rows: 0
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    user_id                          INTEGER            YES              FK -> auth_user.id
+  2    permission_id                    INTEGER            YES              FK -> auth_permission.id
+
+TABLE: django_admin_log
+Rows: 0
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    object_id                        TEXT               NO               
+  2    object_repr                      varchar(200)       YES              
+  3    action_flag                      smallint unsigned  YES              
+  4    change_message                   TEXT               YES              
+  5    content_type_id                  INTEGER            NO               FK -> django_content_type.id
+  6    user_id                          INTEGER            YES              FK -> auth_user.id
+  7    action_time                      datetime           YES              
+
+TABLE: django_content_type
+Rows: 18
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    app_label                        varchar(100)       YES              
+  2    model                            varchar(100)       YES              
+
+TABLE: django_migrations
+Rows: 38
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    app                              varchar(255)       YES              
+  2    name                             varchar(255)       YES              
+  3    applied                          datetime           YES              
+
+TABLE: django_session
+Rows: 12
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    session_key                      varchar(40)        YES        YES   
+  1    session_data                     TEXT               YES              
+  2    expire_date                      datetime           YES              
+
+TABLE: resumes_education
+Rows: 14
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    institution                      varchar(200)       YES              
+  2    degree                           varchar(200)       YES              
+  3    field                            varchar(200)       NO               
+  4    start_year                       INTEGER            YES              
+  5    end_year                         INTEGER            NO               
+  6    order                            INTEGER            YES              
+  7    resume_id                        bigint             YES              FK -> resumes_resume.id
+  8    gpa                              decimal            NO               
+  9    honors                           varchar(500)       YES              
+  10   relevant_coursework              TEXT               YES              
+
+TABLE: resumes_experience
+Rows: 14
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    company                          varchar(200)       YES              
+  2    role                             varchar(200)       YES              
+  3    start_date                       date               YES              
+  4    end_date                         date               NO               
+  5    description                      TEXT               YES              
+  6    order                            INTEGER            YES              
+  7    resume_id                        bigint             YES              FK -> resumes_resume.id
+  8    achievements                     TEXT               YES              
+  9    location                         varchar(200)       YES              
+
+TABLE: resumes_optimizationhistory
+Rows: 0
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    job_description                  TEXT               YES              
+  2    optimization_timestamp           datetime           YES              
+  3    original_score                   REAL               YES              
+  4    optimized_score                  REAL               NO               
+  5    improvement_delta                REAL               NO               
+  6    changes_summary                  TEXT               YES              
+  7    detailed_changes                 TEXT               YES              
+  8    accepted_changes                 TEXT               YES              
+  9    rejected_changes                 TEXT               YES              
+  10   user_notes                       TEXT               YES              
+  11   optimized_version_id             bigint             NO               FK -> resumes_resumeversion.id
+  12   original_version_id              bigint             NO               FK -> resumes_resumeversion.id
+  13   resume_id                        bigint             YES              FK -> resumes_resume.id
+
+TABLE: resumes_personalinfo
+Rows: 16
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    full_name                        varchar(200)       YES              
+  2    phone                            varchar(20)        YES              
+  3    email                            varchar(254)       YES              
+  4    github                           varchar(200)       NO               
+  5    location                         varchar(200)       YES              
+  6    resume_id                        bigint             YES              FK -> resumes_resume.id
+  7    linkedin                         varchar(200)       NO               
+
+TABLE: resumes_project
+Rows: 4
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    name                             varchar(200)       YES              
+  2    description                      TEXT               YES              
+  3    technologies                     varchar(500)       YES              
+  4    url                              varchar(200)       YES              
+  5    order                            INTEGER            YES              
+  6    resume_id                        bigint             YES              FK -> resumes_resume.id
+  7    end_date                         date               NO               
+  8    impact                           TEXT               YES              
+  9    start_date                       date               NO               
+
+TABLE: resumes_resume
+Rows: 16
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    title                            varchar(200)       YES              
+  2    template                         varchar(50)        YES              
+  3    created_at                       datetime           YES              
+  4    updated_at                       datetime           YES              
+  5    user_id                          INTEGER            YES              FK -> auth_user.id
+  6    current_version_number           INTEGER            YES              
+  7    last_analyzed_at                 datetime           NO               
+  8    last_optimized_at                datetime           NO               
+  9    color_scheme                     varchar(50)        YES              
+  10   font_family                      varchar(50)        YES              
+  11   is_draft                         bool               YES              
+  12   summary                          TEXT               YES              
+
+TABLE: resumes_resumeanalysis
+Rows: 5
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    job_description                  TEXT               YES              
+  2    analysis_timestamp               datetime           YES              
+  3    keyword_match_score              REAL               YES              
+  4    skill_relevance_score            REAL               YES              
+  5    section_completeness_score       REAL               YES              
+  6    experience_impact_score          REAL               YES              
+  7    quantification_score             REAL               YES              
+  8    action_verb_score                REAL               YES              
+  9    final_score                      REAL               YES              
+  10   matched_keywords                 TEXT               YES              
+  11   missing_keywords                 TEXT               YES              
+  12   weak_action_verbs                TEXT               YES              
+  13   missing_quantifications          TEXT               YES              
+  14   suggestions                      TEXT               YES              
+  15   resume_id                        bigint             YES              FK -> resumes_resume.id
+
+TABLE: resumes_resumeversion
+Rows: 2
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    version_number                   INTEGER            YES              
+  2    created_at                       datetime           YES              
+  3    modification_type                varchar(20)        YES              
+  4    ats_score                        REAL               NO               
+  5    snapshot_data                    TEXT               YES              
+  6    user_notes                       TEXT               YES              
+  7    resume_id                        bigint             YES              FK -> resumes_resume.id
+
+TABLE: resumes_skill
+Rows: 118
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    name                             varchar(100)       YES              
+  2    category                         varchar(50)        YES              
+  3    resume_id                        bigint             YES              FK -> resumes_resume.id
+  4    proficiency_level                varchar(20)        YES              
+  5    years_of_experience              INTEGER            NO               
+
+TABLE: resumes_uploadedresume
+Rows: 18
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    original_filename                varchar(255)       YES              
+  2    file_path                        varchar(100)       YES              
+  3    uploaded_at                      datetime           YES              
+  4    file_size                        INTEGER            YES              
+  5    extracted_text                   TEXT               YES              
+  6    parsing_confidence               REAL               NO               
+  7    parsed_data                      TEXT               NO               
+  8    status                           varchar(20)        YES              
+  9    error_message                    TEXT               YES              
+  10   user_id                          INTEGER            YES              FK -> auth_user.id
+
+TABLE: sqlite_sequence
+Rows: 17
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    name                                                NO               
+  1    seq                                                 NO               
+
+TABLE: templates_mgmt_resumetemplate
+Rows: 5
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    name                             varchar(100)       YES              
+  2    description                      TEXT               YES              
+  3    template_file                    varchar(200)       YES              
+  4    thumbnail                        varchar(100)       NO               
+  5    is_active                        bool               YES              
+  6    is_default                       bool               YES              
+  7    created_at                       datetime           YES              
+  8    updated_at                       datetime           YES              
+  9    usage_count                      INTEGER            YES              
+  10   supports_color_customization     bool               YES              
+  11   supports_font_customization      bool               YES              
+  12   available_colors                 TEXT               YES              
+  13   available_fonts                  TEXT               YES              
+
+TABLE: templates_mgmt_templatecustomization
+Rows: 2
+--------------------------------------------------------------------------------
+  #    Column Name                      Data Type          Not Null   PK    Default / FK
+  ----------------------------------------------------------------------------
+  0    id                               INTEGER            YES        YES   
+  1    color_scheme                     varchar(50)        YES              
+  2    font_family                      varchar(100)       YES              
+  3    custom_css                       TEXT               YES              
+  4    created_at                       datetime           YES              
+  5    resume_id                        bigint             YES              FK -> resumes_resume.id
+  6    template_id                      bigint             YES              FK -> templates_mgmt_resumetemplate.id

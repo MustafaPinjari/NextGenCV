@@ -22,7 +22,7 @@
     <!-- Sidebar Navigation -->
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
         <div class="sidebar__header">
-            <a href="{% url 'dashboard' %}" class="sidebar__logo">
+                <a href="{% url 'dashboard' %}" class="sidebar__logo">
                 <span class="sidebar__logo-icon">
                     <i class="bi bi-file-earmark-text"></i>
                 </span>
@@ -96,14 +96,6 @@
                     <i class="bi bi-list"></i>
                 </button>
 
-                <!-- Search -->
-                <div class="topbar__search">
-                    <div class="search-input">
-                        <i class="bi bi-search search-input__icon"></i>
-                        <input type="text" class="search-input__field" placeholder="Search resumes..." aria-label="Search">
-                    </div>
-                </div>
-
                 <!-- Right side actions -->
                 <div class="topbar__actions">
                     <!-- Notifications -->
@@ -116,7 +108,7 @@
                     <div class="topbar__profile" id="profileDropdown">
                         <button class="topbar__profile-btn" aria-label="User menu" aria-expanded="false" aria-haspopup="true">
                             <div class="topbar__avatar">
-                                <i class="bi bi-person-circle"></i>
+                                {{ user.username|slice:":1"|upper }}
                             </div>
                             <span class="topbar__username">{{ user.username|default:"User" }}</span>
                             <i class="bi bi-chevron-down topbar__dropdown-icon"></i>

@@ -1,409 +1,286 @@
-{% extends 'layouts/public.html' %}
+﻿{% extends 'layouts/public.html' %}
+{% load static %}
+{% block title %}Sign In — NextGenCV{% endblock %}
 
-{% block title %}Login - NextGenCV{% endblock %}
-
-{% block content %}
-<div class="auth-page">
-    <div class="auth-container">
-        <!-- Auth Card -->
-        <div class="auth-card">
-            <!-- Logo and Welcome -->
-            <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="bi bi-file-earmark-text"></i>
-                </div>
-                <h1 class="auth-title">Welcome back</h1>
-                <p class="auth-subtitle">Sign in to your NextGenCV account</p>
-            </div>
-
-            <!-- Login Form -->
-            <form method="post" class="auth-form" novalidate>
-                {% csrf_token %}
-                
-                {% if form.non_field_errors %}
-                    <div class="alert alert--error" role="alert">
-                        <div class="alert__icon">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                        <div class="alert__content">
-                            {{ form.non_field_errors }}
-                        </div>
-                    </div>
-                {% endif %}
-                
-                <!-- Username Field -->
-                <div class="form-group {% if form.username.errors %}form-input-error{% endif %}">
-                    <input 
-                        type="text" 
-                        name="username" 
-                        id="{{ form.username.id_for_label }}" 
-                        class="form-input" 
-                        placeholder=" "
-                        value="{{ form.username.value|default:'' }}"
-                        required
-                        aria-describedby="{% if form.username.errors %}username-error{% endif %}"
-                    >
-                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                    {% if form.username.errors %}
-                        <div class="form-error" id="username-error" role="alert">
-                            {{ form.username.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Password Field -->
-                <div class="form-group {% if form.password.errors %}form-input-error{% endif %}">
-                    <div class="password-input-wrapper">
-                        <input 
-                            type="password" 
-                            name="password" 
-                            id="{{ form.password.id_for_label }}" 
-                            class="form-input" 
-                            placeholder=" "
-                            required
-                            aria-describedby="{% if form.password.errors %}password-error{% endif %}"
-                        >
-                        <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
-                        <button 
-                            type="button" 
-                            class="password-toggle" 
-                            aria-label="Toggle password visibility"
-                            data-target="{{ form.password.id_for_label }}"
-                        >
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password.errors %}
-                        <div class="form-error" id="password-error" role="alert">
-                            {{ form.password.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Remember Me & Forgot Password -->
-                <div class="auth-options">
-                    <div class="form-checkbox">
-                        <input type="checkbox" id="remember-me" name="remember" class="checkbox-input">
-                        <label for="remember-me" class="checkbox-label">Remember me</label>
-                    </div>
-                    <a href="#" class="auth-link">Forgot password?</a>
-                </div>
-                
-                <!-- Submit Button -->
-                <button type="submit" class="btn btn--primary btn--block">
-                    Sign In
-                </button>
-                
-                {% if request.GET.next %}
-                    <input type="hidden" name="next" value="{{ request.GET.next }}">
-                {% endif %}
-            </form>
-            
-            <!-- Divider -->
-            <div class="auth-divider">
-                <span class="auth-divider__text">or</span>
-            </div>
-            
-            <!-- Social Login Buttons -->
-            <div class="auth-social">
-                <button type="button" class="btn btn--outline btn--block btn--social">
-                    <i class="bi bi-google"></i>
-                    <span>Continue with Google</span>
-                </button>
-                <button type="button" class="btn btn--outline btn--block btn--social">
-                    <i class="bi bi-linkedin"></i>
-                    <span>Continue with LinkedIn</span>
-                </button>
-            </div>
-            
-            <!-- Sign Up Link -->
-            <div class="auth-footer">
-                <p class="auth-footer__text">
-                    Don't have an account? 
-                    <a href="{% url 'register' %}" class="auth-link auth-link--primary">Sign up</a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- v1776360570 -->
 <style>
-/* Auth Page Styles */
-.auth-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-4);
-    background: var(--color-base-bg);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030712;--surface:#0d1117;--border:#21262d;--border-focus:#6366f1;
+  --primary:#6366f1;--primary-light:#818cf8;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --error:#f87171;--success:#34d399;
+  --font:'Inter',-apple-system,sans-serif;
+}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* hide public nav on auth pages */
+.public-nav{display:none!important}
+.public-footer{display:none!important}
+
+.auth-shell{
+  min-height:100vh;display:grid;grid-template-columns:1fr 1fr;
 }
 
-.auth-container {
-    width: 100%;
-    max-width: 480px;
+/* LEFT PANEL */
+.auth-left{
+  background:linear-gradient(135deg,#0d1117 0%,#0a0f1e 100%);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px;position:relative;overflow:hidden;
+}
+.auth-left::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(99,102,241,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.07) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+}
+.auth-left-orb{
+  position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(99,102,241,.2) 0%,transparent 70%);
+  top:-100px;left:-100px;pointer-events:none;
+}
+.auth-brand{position:relative;z-index:1;display:flex;align-items:center;gap:10px;text-decoration:none}
+.auth-brand-icon{
+  width:40px;height:40px;border-radius:10px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6);
+  display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;
+}
+.auth-brand-name{font-size:1.1rem;font-weight:800;color:var(--text)}
+
+.auth-left-body{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.auth-left-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);
+  color:var(--primary-light);padding:5px 14px;border-radius:99px;
+  font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:24px;
+}
+.auth-left-title{font-size:2.4rem;font-weight:900;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+.auth-left-title span{
+  background:linear-gradient(135deg,#818cf8,#06b6d4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.auth-left-sub{font-size:.95rem;color:var(--text2);line-height:1.7;max-width:380px;margin-bottom:40px}
+
+.auth-testimonial{
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
+  border-radius:16px;padding:24px;max-width:400px;
+}
+.auth-testimonial-text{font-size:.9rem;color:var(--text2);line-height:1.7;margin-bottom:16px;font-style:italic}
+.auth-testimonial-author{display:flex;align-items:center;gap:10px}
+.auth-testimonial-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#6366f1,#06b6d4);
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;
+}
+.auth-testimonial-name{font-size:.85rem;font-weight:600}
+.auth-testimonial-role{font-size:.75rem;color:var(--text3)}
+
+.auth-left-stats{display:flex;gap:32px;position:relative;z-index:1}
+.auth-stat-num{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--text),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-stat-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+
+/* RIGHT PANEL */
+.auth-right{
+  background:var(--bg);display:flex;align-items:center;justify-content:center;
+  padding:48px 40px;
+}
+.auth-form-wrap{width:100%;max-width:420px}
+
+.auth-form-header{margin-bottom:36px}
+.auth-form-title{font-size:1.8rem;font-weight:800;letter-spacing:-.025em;margin-bottom:8px}
+.auth-form-sub{font-size:.9rem;color:var(--text2)}
+.auth-form-sub a{color:var(--primary-light);font-weight:600;text-decoration:none}
+.auth-form-sub a:hover{text-decoration:underline}
+
+/* FORM FIELDS */
+.field{margin-bottom:20px}
+.field-label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:8px;letter-spacing:.01em}
+.field-input-wrap{position:relative}
+.field-input{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;font-size:.95rem;color:var(--text);
+  font-family:var(--font);transition:border-color .2s,box-shadow .2s;outline:none;
+}
+.field-input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.field-input.has-icon{padding-right:44px}
+.field-input.error{border-color:var(--error)}
+.field-icon{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;
+  display:flex;align-items:center;font-size:1rem;transition:color .2s;
+}
+.field-icon:hover{color:var(--text)}
+.field-error{font-size:.78rem;color:var(--error);margin-top:6px;display:flex;align-items:center;gap:4px}
+.field-error i{font-size:.8rem}
+
+/* ALERT */
+.form-alert{
+  background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);
+  border-radius:10px;padding:12px 16px;margin-bottom:20px;
+  display:flex;align-items:flex-start;gap:10px;font-size:.85rem;color:var(--error);
 }
 
-.auth-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-6);
-    box-shadow: var(--shadow-lg);
+/* OPTIONS ROW */
+.field-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.check-wrap{display:flex;align-items:center;gap:8px;cursor:pointer}
+.check-wrap input[type=checkbox]{
+  width:16px;height:16px;accent-color:var(--primary);cursor:pointer;
 }
+.check-label{font-size:.82rem;color:var(--text2)}
+.forgot-link{font-size:.82rem;color:var(--primary-light);text-decoration:none;font-weight:500}
+.forgot-link:hover{text-decoration:underline}
 
-.auth-header {
-    text-align: center;
-    margin-bottom: var(--spacing-6);
+/* SUBMIT */
+.btn-submit{
+  width:100%;padding:13px;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--primary),#8b5cf6);
+  color:#fff;font-size:.95rem;font-weight:700;font-family:var(--font);
+  transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;gap:8px;
 }
+.btn-submit:hover{opacity:.9;transform:translateY(-1px)}
+.btn-submit:active{transform:translateY(0)}
 
-.auth-logo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
-    border-radius: var(--radius-lg);
-    margin-bottom: var(--spacing-3);
-    box-shadow: var(--glow-primary);
+/* DIVIDER */
+.or-divider{display:flex;align-items:center;gap:12px;margin:24px 0;color:var(--text3);font-size:.8rem}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* SOCIAL */
+.social-btn{
+  width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:.88rem;font-weight:600;
+  font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:border-color .2s,background .2s;margin-bottom:10px;text-decoration:none;
 }
+.social-btn:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.05)}
 
-.auth-logo i {
-    font-size: 2rem;
-    color: white;
-}
-
-.auth-title {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-2);
-    letter-spacing: var(--letter-spacing-tight);
-}
-
-.auth-subtitle {
-    font-size: var(--font-size-base);
-    color: var(--color-text-secondary);
-}
-
-.auth-form {
-    margin-bottom: var(--spacing-4);
-}
-
-.form-group {
-    position: relative;
-    margin-bottom: var(--spacing-4);
-}
-
-.password-input-wrapper {
-    position: relative;
-}
-
-.password-toggle {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    padding: 0.5rem;
-    transition: color var(--duration-fast) var(--easing-default);
-    z-index: 10;
-}
-
-.password-toggle:hover {
-    color: var(--color-text-primary);
-}
-
-.password-toggle:focus {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
-}
-
-.auth-options {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-4);
-}
-
-.form-checkbox {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-}
-
-.checkbox-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--easing-default);
-}
-
-.checkbox-input:checked {
-    background: var(--color-primary-solid);
-    border-color: var(--color-primary-solid);
-}
-
-.checkbox-input:focus {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
-}
-
-.checkbox-label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    user-select: none;
-}
-
-.auth-link {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    transition: color var(--duration-fast) var(--easing-default);
-}
-
-.auth-link:hover {
-    color: var(--color-text-primary);
-}
-
-.auth-link--primary {
-    color: var(--color-primary-solid);
-    font-weight: var(--font-weight-medium);
-}
-
-.auth-link--primary:hover {
-    text-decoration: underline;
-}
-
-.auth-divider {
-    position: relative;
-    text-align: center;
-    margin: var(--spacing-4) 0;
-}
-
-.auth-divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--color-border);
-}
-
-.auth-divider__text {
-    position: relative;
-    display: inline-block;
-    padding: 0 var(--spacing-2);
-    background: var(--color-surface);
-    color: var(--color-text-tertiary);
-    font-size: var(--font-size-sm);
-}
-
-.auth-social {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-    margin-bottom: var(--spacing-4);
-}
-
-.btn--social {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-2);
-}
-
-.btn--social i {
-    font-size: 1.25rem;
-}
-
-.auth-footer {
-    text-align: center;
-    padding-top: var(--spacing-4);
-    border-top: 1px solid var(--color-border);
-}
-
-.auth-footer__text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-    .auth-page {
-        padding: var(--spacing-2);
-    }
-    
-    .auth-card {
-        padding: var(--spacing-4);
-    }
-    
-    .auth-title {
-        font-size: var(--font-size-2xl);
-    }
+/* RESPONSIVE */
+@media(max-width:900px){
+  .auth-shell{grid-template-columns:1fr}
+  .auth-left{display:none}
+  .auth-right{padding:32px 24px;min-height:100vh}
 }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+  <!-- LEFT: Brand panel -->
+  <div class="auth-left">
+    <div class="auth-left-orb"></div>
+    <a href="{% url 'landing' %}" class="auth-brand">
+      <div class="auth-brand-icon"><i class="bi bi-file-earmark-text"></i></div>
+      <span class="auth-brand-name">NextGenCV</span>
+    </a>
+
+    <div class="auth-left-body">
+      <div class="auth-left-tag"><i class="bi bi-stars"></i> AI-Powered Resume Builder</div>
+      <h2 class="auth-left-title">Land your dream job<br>with a <span>smarter resume</span></h2>
+      <p class="auth-left-sub">Join 10,000+ professionals who use NextGenCV to beat ATS systems and get more interviews at top companies.</p>
+
+      <div class="auth-testimonial">
+        <p class="auth-testimonial-text">"My ATS score jumped from 54 to 89 after one optimization session. Got a call from Amazon the same week."</p>
+        <div class="auth-testimonial-author">
+          <div class="auth-testimonial-avatar">SL</div>
+          <div>
+            <div class="auth-testimonial-name">Sarah Lin</div>
+            <div class="auth-testimonial-role">Data Scientist → Amazon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-left-stats">
+      <div><div class="auth-stat-num">10K+</div><div class="auth-stat-label">Users</div></div>
+      <div><div class="auth-stat-num">94%</div><div class="auth-stat-label">ATS Pass Rate</div></div>
+      <div><div class="auth-stat-num">3.2x</div><div class="auth-stat-label">More Interviews</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Form panel -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-form-header">
+        <h1 class="auth-form-title">Welcome back</h1>
+        <p class="auth-form-sub">Don't have an account? <a href="{% url 'register' %}">Sign up free</a></p>
+      </div>
+
+      {% if form.non_field_errors %}
+      <div class="form-alert">
+        <i class="bi bi-exclamation-circle"></i>
+        <span>{{ form.non_field_errors.0 }}</span>
+      </div>
+      {% endif %}
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <div class="field">
+          <label class="field-label" for="{{ form.username.id_for_label }}">Username</label>
+          <div class="field-input-wrap">
+            <input type="text" name="username" id="{{ form.username.id_for_label }}"
+              class="field-input {% if form.username.errors %}error{% endif %}"
+              value="{{ form.username.value|default:'' }}" autocomplete="username" autofocus>
+          </div>
+          {% if form.username.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.password.id_for_label }}">Password</label>
+          <div class="field-input-wrap">
+            <input type="password" name="password" id="{{ form.password.id_for_label }}"
+              class="field-input has-icon {% if form.password.errors %}error{% endif %}"
+              autocomplete="current-password">
+            <button type="button" class="field-icon" id="togglePwd" aria-label="Toggle password">
+              <i class="bi bi-eye" id="pwdIcon"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.password.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <div class="field-row">
+          <label class="check-wrap">
+            <input type="checkbox" name="remember"><span class="check-label">Remember me</span>
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}
+
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-box-arrow-in-right"></i> Sign In
+        </button>
+      </form>
+
+      <div class="or-divider">or continue with</div>
+
+      <button class="social-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </button>
+      <button class="social-btn" type="button">
+        <i class="bi bi-linkedin" style="color:#0077b5;font-size:1.1rem"></i>
+        Continue with LinkedIn
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
-// Password toggle functionality
-document.querySelectorAll('.password-toggle').forEach(button => {
-    button.addEventListener('click', function() {
-        const targetId = this.getAttribute('data-target');
-        const input = document.getElementById(targetId);
-        const icon = this.querySelector('i');
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.className = 'bi bi-eye-slash';
-            this.setAttribute('aria-label', 'Hide password');
-        } else {
-            input.type = 'password';
-            icon.className = 'bi bi-eye';
-            this.setAttribute('aria-label', 'Show password');
-        }
-    });
+const pwd = document.getElementById('{{ form.password.id_for_label }}');
+const icon = document.getElementById('pwdIcon');
+document.getElementById('togglePwd').addEventListener('click', () => {
+  const show = pwd.type === 'password';
+  pwd.type = show ? 'text' : 'password';
+  icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
 });
-
-// Form validation
-const form = document.querySelector('.auth-form');
-if (form) {
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-        
-        // Validate username
-        const usernameInput = form.querySelector('[name="username"]');
-        if (usernameInput && !usernameInput.value.trim()) {
-            isValid = false;
-            usernameInput.closest('.form-group').classList.add('form-input-error');
-        }
-        
-        // Validate password
-        const passwordInput = form.querySelector('[name="password"]');
-        if (passwordInput && !passwordInput.value) {
-            isValid = false;
-            passwordInput.closest('.form-group').classList.add('form-input-error');
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-        }
-    });
-    
-    // Remove error state on input
-    form.querySelectorAll('.form-input').forEach(input => {
-        input.addEventListener('input', function() {
-            this.closest('.form-group').classList.remove('form-input-error');
-        });
-    });
-}
 </script>
 {% endblock %}

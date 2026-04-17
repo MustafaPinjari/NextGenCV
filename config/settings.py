@@ -165,7 +165,13 @@ STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Static files optimization
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+# Use ManifestStaticFilesStorage in production only
+# In development, use the default storage to avoid needing collectstatic
+import os as _os
+if _os.environ.get('DJANGO_ENV') == 'production':
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+else:
+    STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 # Static file finders
 STATICFILES_FINDERS = [

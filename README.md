@@ -87,6 +87,8 @@ cd nextgencv-v2
 ```bash
 python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
+.\venv\bin\Activate.ps1
+
 ```
 
 3. **Install dependencies**:

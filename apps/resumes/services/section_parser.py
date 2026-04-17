@@ -288,7 +288,7 @@ class SectionParserService:
                 try:
                     doc = nlp(entry[:300])
                     for ent in doc.ents:
-                        if ent.label__ == 'ORG':
+                        if ent.label_ == 'ORG':
                             exp['company'] = ent.text
                             break
                 except Exception as e:

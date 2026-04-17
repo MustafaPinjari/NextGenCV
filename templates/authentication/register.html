@@ -1,539 +1,284 @@
-{% extends 'layouts/public.html' %}
+﻿{% extends 'layouts/public.html' %}
+{% load static %}
+{% block title %}Create Account — NextGenCV{% endblock %}
 
-{% block title %}Sign Up - NextGenCV{% endblock %}
-
-{% block content %}
-<div class="auth-page">
-    <div class="auth-container">
-        <!-- Auth Card -->
-        <div class="auth-card">
-            <!-- Logo and Welcome -->
-            <div class="auth-header">
-                <div class="auth-logo">
-                    <i class="bi bi-file-earmark-text"></i>
-                </div>
-                <h1 class="auth-title">Create your account</h1>
-                <p class="auth-subtitle">Start building your perfect resume today</p>
-            </div>
-
-            <!-- Register Form -->
-            <form method="post" class="auth-form" novalidate>
-                {% csrf_token %}
-                
-                {% if form.non_field_errors %}
-                    <div class="alert alert--error" role="alert">
-                        <div class="alert__icon">
-                            <i class="bi bi-x-circle"></i>
-                        </div>
-                        <div class="alert__content">
-                            {{ form.non_field_errors }}
-                        </div>
-                    </div>
-                {% endif %}
-                
-                <!-- Username Field -->
-                <div class="form-group {% if form.username.errors %}form-input-error{% endif %}">
-                    <input 
-                        type="text" 
-                        name="username" 
-                        id="{{ form.username.id_for_label }}" 
-                        class="form-input" 
-                        placeholder=" "
-                        value="{{ form.username.value|default:'' }}"
-                        required
-                        aria-describedby="{% if form.username.errors %}username-error{% endif %}"
-                    >
-                    <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
-                    {% if form.username.errors %}
-                        <div class="form-error" id="username-error" role="alert">
-                            {{ form.username.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Email Field -->
-                <div class="form-group {% if form.email.errors %}form-input-error{% endif %}">
-                    <input 
-                        type="email" 
-                        name="email" 
-                        id="{{ form.email.id_for_label }}" 
-                        class="form-input" 
-                        placeholder=" "
-                        value="{{ form.email.value|default:'' }}"
-                        required
-                        aria-describedby="{% if form.email.errors %}email-error{% endif %}"
-                    >
-                    <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
-                    {% if form.email.errors %}
-                        <div class="form-error" id="email-error" role="alert">
-                            {{ form.email.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Password Field -->
-                <div class="form-group {% if form.password1.errors %}form-input-error{% endif %}">
-                    <div class="password-input-wrapper">
-                        <input 
-                            type="password" 
-                            name="password1" 
-                            id="{{ form.password1.id_for_label }}" 
-                            class="form-input" 
-                            placeholder=" "
-                            required
-                            aria-describedby="password-help {% if form.password1.errors %}password1-error{% endif %}"
-                        >
-                        <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
-                        <button 
-                            type="button" 
-                            class="password-toggle" 
-                            aria-label="Toggle password visibility"
-                            data-target="{{ form.password1.id_for_label }}"
-                        >
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password1.errors %}
-                        <div class="form-error" id="password1-error" role="alert">
-                            {{ form.password1.errors.0 }}
-                        </div>
-                    {% else %}
-                        <div class="form-help" id="password-help">
-                            Your password must contain at least 8 characters and can't be entirely numeric.
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Confirm Password Field -->
-                <div class="form-group {% if form.password2.errors %}form-input-error{% endif %}">
-                    <div class="password-input-wrapper">
-                        <input 
-                            type="password" 
-                            name="password2" 
-                            id="{{ form.password2.id_for_label }}" 
-                            class="form-input" 
-                            placeholder=" "
-                            required
-                            aria-describedby="{% if form.password2.errors %}password2-error{% endif %}"
-                        >
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
-                        <button 
-                            type="button" 
-                            class="password-toggle" 
-                            aria-label="Toggle password visibility"
-                            data-target="{{ form.password2.id_for_label }}"
-                        >
-                            <i class="bi bi-eye"></i>
-                        </button>
-                    </div>
-                    {% if form.password2.errors %}
-                        <div class="form-error" id="password2-error" role="alert">
-                            {{ form.password2.errors.0 }}
-                        </div>
-                    {% endif %}
-                </div>
-                
-                <!-- Terms Acceptance -->
-                <div class="form-group">
-                    <div class="form-checkbox">
-                        <input 
-                            type="checkbox" 
-                            id="terms" 
-                            name="terms" 
-                            class="checkbox-input" 
-                            required
-                            aria-describedby="terms-error"
-                        >
-                        <label for="terms" class="checkbox-label">
-                            I agree to the <a href="#" class="auth-link auth-link--primary">Terms of Service</a> and <a href="#" class="auth-link auth-link--primary">Privacy Policy</a>
-                        </label>
-                    </div>
-                    <div class="form-error" id="terms-error" style="display: none;">
-                        You must accept the terms and conditions
-                    </div>
-                </div>
-                
-                <!-- Submit Button -->
-                <button type="submit" class="btn btn--primary btn--block">
-                    Create Account
-                </button>
-            </form>
-            
-            <!-- Divider -->
-            <div class="auth-divider">
-                <span class="auth-divider__text">or</span>
-            </div>
-            
-            <!-- Social Login Buttons -->
-            <div class="auth-social">
-                <button type="button" class="btn btn--outline btn--block btn--social">
-                    <i class="bi bi-google"></i>
-                    <span>Sign up with Google</span>
-                </button>
-                <button type="button" class="btn btn--outline btn--block btn--social">
-                    <i class="bi bi-linkedin"></i>
-                    <span>Sign up with LinkedIn</span>
-                </button>
-            </div>
-            
-            <!-- Login Link -->
-            <div class="auth-footer">
-                <p class="auth-footer__text">
-                    Already have an account? 
-                    <a href="{% url 'login' %}" class="auth-link auth-link--primary">Sign in</a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- v1776360570 -->
 <style>
-/* Auth Page Styles */
-.auth-page {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--spacing-4);
-    background: var(--color-base-bg);
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030712;--surface:#0d1117;--border:#21262d;--border-focus:#6366f1;
+  --primary:#6366f1;--primary-light:#818cf8;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --error:#f87171;--success:#34d399;
+  --font:'Inter',-apple-system,sans-serif;
 }
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+.public-nav{display:none!important}
+.public-footer{display:none!important}
 
-.auth-container {
-    width: 100%;
-    max-width: 480px;
+.auth-shell{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+
+.auth-left{
+  background:linear-gradient(135deg,#0d1117 0%,#0a0f1e 100%);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px;position:relative;overflow:hidden;
 }
-
-.auth-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-6);
-    box-shadow: var(--shadow-lg);
+.auth-left::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(99,102,241,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.07) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
 }
+.auth-left-orb{position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.2) 0%,transparent 70%);top:-100px;left:-100px;pointer-events:none}
+.auth-brand{position:relative;z-index:1;display:flex;align-items:center;gap:10px;text-decoration:none}
+.auth-brand-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.auth-brand-name{font-size:1.1rem;font-weight:800;color:var(--text)}
 
-.auth-header {
-    text-align: center;
-    margin-bottom: var(--spacing-6);
-}
+.auth-left-body{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.auth-left-tag{display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);color:var(--primary-light);padding:5px 14px;border-radius:99px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:24px}
+.auth-left-title{font-size:2.4rem;font-weight:900;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+.auth-left-title span{background:linear-gradient(135deg,#818cf8,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-left-sub{font-size:.95rem;color:var(--text2);line-height:1.7;max-width:380px;margin-bottom:40px}
 
-.auth-logo {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    height: 64px;
-    background: linear-gradient(135deg, #0066ff 0%, #00ccff 100%);
-    border-radius: var(--radius-lg);
-    margin-bottom: var(--spacing-3);
-    box-shadow: var(--glow-primary);
-}
+.feature-list{display:flex;flex-direction:column;gap:14px}
+.feature-item{display:flex;align-items:flex-start;gap:12px}
+.feature-check{width:22px;height:22px;border-radius:6px;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);display:flex;align-items:center;justify-content:center;color:#34d399;font-size:.75rem;flex-shrink:0;margin-top:1px}
+.feature-text{font-size:.88rem;color:var(--text2);line-height:1.5}
+.feature-text strong{color:var(--text);font-weight:600}
 
-.auth-logo i {
-    font-size: 2rem;
-    color: white;
-}
+.auth-left-stats{display:flex;gap:32px;position:relative;z-index:1}
+.auth-stat-num{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--text),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-stat-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
 
-.auth-title {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-2);
-    letter-spacing: var(--letter-spacing-tight);
-}
+.auth-right{background:var(--bg);display:flex;align-items:center;justify-content:center;padding:48px 40px}
+.auth-form-wrap{width:100%;max-width:420px}
+.auth-form-header{margin-bottom:32px}
+.auth-form-title{font-size:1.8rem;font-weight:800;letter-spacing:-.025em;margin-bottom:8px}
+.auth-form-sub{font-size:.9rem;color:var(--text2)}
+.auth-form-sub a{color:var(--primary-light);font-weight:600;text-decoration:none}
+.auth-form-sub a:hover{text-decoration:underline}
 
-.auth-subtitle {
-    font-size: var(--font-size-base);
-    color: var(--color-text-secondary);
-}
+.field{margin-bottom:18px}
+.field-label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:7px;letter-spacing:.01em}
+.field-input-wrap{position:relative}
+.field-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 16px;font-size:.93rem;color:var(--text);font-family:var(--font);transition:border-color .2s,box-shadow .2s;outline:none}
+.field-input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.field-input.has-icon{padding-right:44px}
+.field-input.error{border-color:var(--error)}
+.field-input.success{border-color:var(--success)}
+.field-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;display:flex;align-items:center;font-size:1rem;transition:color .2s}
+.field-icon:hover{color:var(--text)}
+.field-error{font-size:.78rem;color:var(--error);margin-top:5px;display:flex;align-items:center;gap:4px}
+.field-hint{font-size:.76rem;color:var(--text3);margin-top:5px}
 
-.auth-form {
-    margin-bottom: var(--spacing-4);
-}
+/* password strength */
+.pwd-strength{margin-top:8px}
+.pwd-strength-bars{display:flex;gap:4px;margin-bottom:4px}
+.pwd-bar{height:3px;flex:1;border-radius:99px;background:var(--border);transition:background .3s}
+.pwd-bar.weak{background:#f87171}
+.pwd-bar.fair{background:#f59e0b}
+.pwd-bar.good{background:#34d399}
+.pwd-label{font-size:.72rem;color:var(--text3)}
 
-.form-group {
-    position: relative;
-    margin-bottom: var(--spacing-4);
-}
+.form-alert{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:10px;padding:12px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:10px;font-size:.85rem;color:var(--error)}
 
-.password-input-wrapper {
-    position: relative;
-}
+.terms-wrap{display:flex;align-items:flex-start;gap:10px;margin-bottom:20px}
+.terms-wrap input[type=checkbox]{width:16px;height:16px;accent-color:var(--primary);cursor:pointer;margin-top:2px;flex-shrink:0}
+.terms-label{font-size:.82rem;color:var(--text2);line-height:1.5}
+.terms-label a{color:var(--primary-light);text-decoration:none;font-weight:500}
+.terms-label a:hover{text-decoration:underline}
 
-.password-toggle {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    padding: 0.5rem;
-    transition: color var(--duration-fast) var(--easing-default);
-    z-index: 10;
-}
+.btn-submit{width:100%;padding:13px;border-radius:10px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff;font-size:.95rem;font-weight:700;font-family:var(--font);transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{opacity:.9;transform:translateY(-1px)}
 
-.password-toggle:hover {
-    color: var(--color-text-primary);
-}
+.or-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--text3);font-size:.8rem}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
 
-.password-toggle:focus {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
-    border-radius: var(--radius-sm);
-}
+.social-btn{width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:.88rem;font-weight:600;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:border-color .2s,background .2s;margin-bottom:10px;text-decoration:none}
+.social-btn:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.05)}
 
-.form-help {
-    margin-top: var(--spacing-1);
-    font-size: var(--font-size-sm);
-    color: var(--color-text-tertiary);
-    line-height: var(--line-height-normal);
-}
-
-.form-checkbox {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--spacing-2);
-}
-
-.checkbox-input {
-    width: 1.25rem;
-    height: 1.25rem;
-    min-width: 1.25rem;
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    background: var(--color-surface);
-    cursor: pointer;
-    transition: all var(--duration-fast) var(--easing-default);
-    margin-top: 0.125rem;
-}
-
-.checkbox-input:checked {
-    background: var(--color-primary-solid);
-    border-color: var(--color-primary-solid);
-}
-
-.checkbox-input:focus {
-    outline: 2px solid var(--color-border-focus);
-    outline-offset: 2px;
-}
-
-.checkbox-label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    user-select: none;
-    line-height: var(--line-height-normal);
-}
-
-.auth-link {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    text-decoration: none;
-    transition: color var(--duration-fast) var(--easing-default);
-}
-
-.auth-link:hover {
-    color: var(--color-text-primary);
-}
-
-.auth-link--primary {
-    color: var(--color-primary-solid);
-    font-weight: var(--font-weight-medium);
-}
-
-.auth-link--primary:hover {
-    text-decoration: underline;
-}
-
-.auth-divider {
-    position: relative;
-    text-align: center;
-    margin: var(--spacing-4) 0;
-}
-
-.auth-divider::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: var(--color-border);
-}
-
-.auth-divider__text {
-    position: relative;
-    display: inline-block;
-    padding: 0 var(--spacing-2);
-    background: var(--color-surface);
-    color: var(--color-text-tertiary);
-    font-size: var(--font-size-sm);
-}
-
-.auth-social {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-2);
-    margin-bottom: var(--spacing-4);
-}
-
-.btn--social {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-2);
-}
-
-.btn--social i {
-    font-size: 1.25rem;
-}
-
-.auth-footer {
-    text-align: center;
-    padding-top: var(--spacing-4);
-    border-top: 1px solid var(--color-border);
-}
-
-.auth-footer__text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-    .auth-page {
-        padding: var(--spacing-2);
-    }
-    
-    .auth-card {
-        padding: var(--spacing-4);
-    }
-    
-    .auth-title {
-        font-size: var(--font-size-2xl);
-    }
+@media(max-width:900px){
+  .auth-shell{grid-template-columns:1fr}
+  .auth-left{display:none}
+  .auth-right{padding:32px 24px;min-height:100vh}
 }
 </style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+  <div class="auth-left">
+    <div class="auth-left-orb"></div>
+    <a href="{% url 'landing' %}" class="auth-brand">
+      <div class="auth-brand-icon"><i class="bi bi-file-earmark-text"></i></div>
+      <span class="auth-brand-name">NextGenCV</span>
+    </a>
+
+    <div class="auth-left-body">
+      <div class="auth-left-tag"><i class="bi bi-stars"></i> Free to get started</div>
+      <h2 class="auth-left-title">Your resume,<br><span>supercharged by AI</span></h2>
+      <p class="auth-left-sub">Build ATS-optimized resumes that get you noticed. Everything you need to land more interviews.</p>
+
+      <div class="feature-list">
+        <div class="feature-item">
+          <div class="feature-check"><i class="bi bi-check"></i></div>
+          <div class="feature-text"><strong>Real-time ATS scoring</strong> — see your score update as you type</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check"><i class="bi bi-check"></i></div>
+          <div class="feature-text"><strong>AI optimizer</strong> — rewrites bullet points and injects keywords</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check"><i class="bi bi-check"></i></div>
+          <div class="feature-text"><strong>Version control</strong> — track every change with full history</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check"><i class="bi bi-check"></i></div>
+          <div class="feature-text"><strong>PDF upload & parse</strong> — import your existing resume instantly</div>
+        </div>
+        <div class="feature-item">
+          <div class="feature-check"><i class="bi bi-check"></i></div>
+          <div class="feature-text"><strong>Export to PDF, DOCX, text</strong> — any format you need</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-left-stats">
+      <div><div class="auth-stat-num">10K+</div><div class="auth-stat-label">Users</div></div>
+      <div><div class="auth-stat-num">94%</div><div class="auth-stat-label">ATS Pass Rate</div></div>
+      <div><div class="auth-stat-num">4.9★</div><div class="auth-stat-label">Rating</div></div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+      <div class="auth-form-header">
+        <h1 class="auth-form-title">Create your account</h1>
+        <p class="auth-form-sub">Already have one? <a href="{% url 'login' %}">Sign in</a></p>
+      </div>
+
+      {% if form.non_field_errors %}
+      <div class="form-alert"><i class="bi bi-exclamation-circle"></i><span>{{ form.non_field_errors.0 }}</span></div>
+      {% endif %}
+
+      <form method="post" novalidate id="regForm">
+        {% csrf_token %}
+
+        <div class="field">
+          <label class="field-label" for="{{ form.username.id_for_label }}">Username</label>
+          <input type="text" name="username" id="{{ form.username.id_for_label }}"
+            class="field-input {% if form.username.errors %}error{% endif %}"
+            value="{{ form.username.value|default:'' }}" autocomplete="username" autofocus>
+          {% if form.username.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.username.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.email.id_for_label }}">Email address</label>
+          <input type="email" name="email" id="{{ form.email.id_for_label }}"
+            class="field-input {% if form.email.errors %}error{% endif %}"
+            value="{{ form.email.value|default:'' }}" autocomplete="email">
+          {% if form.email.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.email.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.password1.id_for_label }}">Password</label>
+          <div class="field-input-wrap">
+            <input type="password" name="password1" id="{{ form.password1.id_for_label }}"
+              class="field-input has-icon {% if form.password1.errors %}error{% endif %}"
+              autocomplete="new-password" id="pwd1">
+            <button type="button" class="field-icon" id="togglePwd1"><i class="bi bi-eye" id="pwd1Icon"></i></button>
+          </div>
+          <div class="pwd-strength" id="pwdStrength" style="display:none">
+            <div class="pwd-strength-bars">
+              <div class="pwd-bar" id="bar1"></div>
+              <div class="pwd-bar" id="bar2"></div>
+              <div class="pwd-bar" id="bar3"></div>
+              <div class="pwd-bar" id="bar4"></div>
+            </div>
+            <div class="pwd-label" id="pwdLabel">Enter a password</div>
+          </div>
+          {% if form.password1.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.password1.errors.0 }}</div>
+          {% else %}<div class="field-hint">Min 8 characters, not entirely numeric</div>{% endif %}
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+          <div class="field-input-wrap">
+            <input type="password" name="password2" id="{{ form.password2.id_for_label }}"
+              class="field-input has-icon {% if form.password2.errors %}error{% endif %}"
+              autocomplete="new-password">
+            <button type="button" class="field-icon" id="togglePwd2"><i class="bi bi-eye" id="pwd2Icon"></i></button>
+          </div>
+          {% if form.password2.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.password2.errors.0 }}</div>{% endif %}
+        </div>
+
+        <div class="terms-wrap">
+          <input type="checkbox" id="terms" name="terms">
+          <label class="terms-label" for="terms">
+            I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>
+          </label>
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-person-plus"></i> Create Account
+        </button>
+      </form>
+
+      <div class="or-divider">or sign up with</div>
+      <button class="social-btn" type="button">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </button>
+      <button class="social-btn" type="button">
+        <i class="bi bi-linkedin" style="color:#0077b5;font-size:1.1rem"></i>
+        Continue with LinkedIn
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
-// Password toggle functionality
-document.querySelectorAll('.password-toggle').forEach(button => {
-    button.addEventListener('click', function() {
-        const targetId = this.getAttribute('data-target');
-        const input = document.getElementById(targetId);
-        const icon = this.querySelector('i');
-        
-        if (input.type === 'password') {
-            input.type = 'text';
-            icon.className = 'bi bi-eye-slash';
-            this.setAttribute('aria-label', 'Hide password');
-        } else {
-            input.type = 'password';
-            icon.className = 'bi bi-eye';
-            this.setAttribute('aria-label', 'Show password');
-        }
-    });
+// Password toggles
+function togglePwd(inputId, iconId) {
+  const i = document.getElementById(inputId), ic = document.getElementById(iconId);
+  const show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  ic.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+document.getElementById('togglePwd1').onclick = () => togglePwd('{{ form.password1.id_for_label }}','pwd1Icon');
+document.getElementById('togglePwd2').onclick = () => togglePwd('{{ form.password2.id_for_label }}','pwd2Icon');
+
+// Password strength
+const pwdInput = document.getElementById('{{ form.password1.id_for_label }}');
+const bars = [document.getElementById('bar1'),document.getElementById('bar2'),document.getElementById('bar3'),document.getElementById('bar4')];
+const pwdLabel = document.getElementById('pwdLabel');
+const pwdStrength = document.getElementById('pwdStrength');
+const levels = [{label:'Too weak',cls:'weak',count:1},{label:'Weak',cls:'weak',count:2},{label:'Fair',cls:'fair',count:3},{label:'Strong',cls:'good',count:4}];
+
+pwdInput.addEventListener('input', function() {
+  const v = this.value;
+  pwdStrength.style.display = v ? 'block' : 'none';
+  let score = 0;
+  if(v.length >= 8) score++;
+  if(/[A-Z]/.test(v)) score++;
+  if(/[0-9]/.test(v)) score++;
+  if(/[^A-Za-z0-9]/.test(v)) score++;
+  const lvl = levels[Math.max(0,score-1)];
+  bars.forEach((b,i) => { b.className = 'pwd-bar' + (i < lvl.count ? ' '+lvl.cls : ''); });
+  pwdLabel.textContent = lvl.label;
 });
 
-// Form validation
-const form = document.querySelector('.auth-form');
-if (form) {
-    form.addEventListener('submit', function(e) {
-        let isValid = true;
-        
-        // Validate username
-        const usernameInput = form.querySelector('[name="username"]');
-        if (usernameInput && !usernameInput.value.trim()) {
-            isValid = false;
-            usernameInput.closest('.form-group').classList.add('form-input-error');
-        }
-        
-        // Validate email
-        const emailInput = form.querySelector('[name="email"]');
-        if (emailInput && !emailInput.value.trim()) {
-            isValid = false;
-            emailInput.closest('.form-group').classList.add('form-input-error');
-        } else if (emailInput && !isValidEmail(emailInput.value)) {
-            isValid = false;
-            emailInput.closest('.form-group').classList.add('form-input-error');
-        }
-        
-        // Validate password
-        const password1Input = form.querySelector('[name="password1"]');
-        if (password1Input && !password1Input.value) {
-            isValid = false;
-            password1Input.closest('.form-group').classList.add('form-input-error');
-        } else if (password1Input && password1Input.value.length < 8) {
-            isValid = false;
-            password1Input.closest('.form-group').classList.add('form-input-error');
-        }
-        
-        // Validate password confirmation
-        const password2Input = form.querySelector('[name="password2"]');
-        if (password2Input && !password2Input.value) {
-            isValid = false;
-            password2Input.closest('.form-group').classList.add('form-input-error');
-        } else if (password1Input && password2Input && password1Input.value !== password2Input.value) {
-            isValid = false;
-            password2Input.closest('.form-group').classList.add('form-input-error');
-        }
-        
-        // Validate terms acceptance
-        const termsCheckbox = form.querySelector('[name="terms"]');
-        const termsError = document.getElementById('terms-error');
-        if (termsCheckbox && !termsCheckbox.checked) {
-            isValid = false;
-            termsError.style.display = 'block';
-        } else if (termsError) {
-            termsError.style.display = 'none';
-        }
-        
-        if (!isValid) {
-            e.preventDefault();
-        }
-    });
-    
-    // Remove error state on input
-    form.querySelectorAll('.form-input').forEach(input => {
-        input.addEventListener('input', function() {
-            this.closest('.form-group').classList.remove('form-input-error');
-        });
-    });
-    
-    // Remove terms error on checkbox change
-    const termsCheckbox = form.querySelector('[name="terms"]');
-    if (termsCheckbox) {
-        termsCheckbox.addEventListener('change', function() {
-            const termsError = document.getElementById('terms-error');
-            if (this.checked && termsError) {
-                termsError.style.display = 'none';
-            }
-        });
-    }
-}
-
-// Email validation helper
-function isValidEmail(email) {
-    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
-}
-
-// Real-time password strength indicator (optional enhancement)
-const password1Input = document.querySelector('[name="password1"]');
-if (password1Input) {
-    password1Input.addEventListener('input', function() {
-        const value = this.value;
-        const formGroup = this.closest('.form-group');
-        
-        // Remove previous validation states
-        formGroup.classList.remove('form-input-error', 'form-input-success');
-        
-        // Add success state if password meets requirements
-        if (value.length >= 8 && !/^\d+$/.test(value)) {
-            formGroup.classList.add('form-input-success');
-        }
-    });
-}
+// Terms validation
+document.getElementById('regForm').addEventListener('submit', function(e) {
+  if(!document.getElementById('terms').checked) {
+    e.preventDefault();
+    alert('Please accept the Terms of Service to continue.');
+  }
+});
 </script>
 {% endblock %}

@@ -1,0 +1,259 @@
+﻿<mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+  <root>
+    <mxCell id="0"/>
+    <mxCell id="1" parent="0"/>
+
+    <!-- ══════════════════════════════════════
+         TITLE
+    ══════════════════════════════════════ -->
+    <mxCell id="title" value="NextGenCV — Website Mapping Diagram" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=22;fontStyle=1;fontColor=#6366f1;" vertex="1" parent="1">
+      <mxGeometry x="400" y="20" width="700" height="40" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         LANDING PAGE (root)
+    ══════════════════════════════════════ -->
+    <mxCell id="landing" value="🌐  Landing Page&#xa;/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+      <mxGeometry x="677" y="100" width="200" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         PUBLIC PAGES
+    ══════════════════════════════════════ -->
+    <mxCell id="pub_group" value="PUBLIC PAGES" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="100" y="220" width="280" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="help" value="/help/&#xa;Help &amp; Documentation" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="pub_group">
+      <mxGeometry x="20" y="40" width="240" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="design" value="/design-system-test/&#xa;Design System (Dev Only)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="pub_group">
+      <mxGeometry x="20" y="85" width="240" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         AUTH MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="auth_group" value="🔐  AUTHENTICATION  /auth/" style="swimlane;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="450" y="220" width="280" height="230" as="geometry"/>
+    </mxCell>
+    <mxCell id="register" value="/auth/register/&#xa;Register" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="auth_group">
+      <mxGeometry x="20" y="40" width="240" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="login" value="/auth/login/&#xa;Login" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="auth_group">
+      <mxGeometry x="20" y="85" width="240" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="logout" value="/auth/logout/&#xa;Logout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="auth_group">
+      <mxGeometry x="20" y="130" width="240" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="profile" value="/auth/profile/  |  /auth/settings/&#xa;Profile &amp; Settings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="auth_group">
+      <mxGeometry x="20" y="175" width="240" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         DASHBOARD
+    ══════════════════════════════════════ -->
+    <mxCell id="dashboard" value="🏠  Dashboard&#xa;/auth/dashboard/" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;arcSize=8;" vertex="1" parent="1">
+      <mxGeometry x="677" y="320" width="200" height="60" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         RESUME MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="res_group" value="📄  RESUME MANAGEMENT  /resumes/" style="swimlane;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="60" y="450" width="320" height="560" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_list" value="/resumes/&#xa;Resume List" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="40" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_create" value="/resumes/create/&#xa;Create Resume (5-Step Wizard)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;fontStyle=1;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="85" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_detail" value="/resumes/&lt;id&gt;/&#xa;Resume Detail" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="130" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_edit" value="/resumes/&lt;id&gt;/edit/&#xa;Edit Resume" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="175" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_del" value="/resumes/&lt;id&gt;/delete/  |  /duplicate/&#xa;Delete / Duplicate" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="220" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_export" value="/resumes/&lt;id&gt;/export/  .../docx/  .../text/&#xa;Export: PDF | DOCX | Text" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="265" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_batch" value="/resumes/batch-export/  |  batch-analysis/&#xa;Batch Export / Batch Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="310" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_sections" value="/resumes/&lt;id&gt;/experience|education|skill|project/&#xa;add / edit / delete (12 routes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="355" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_kw" value="/resumes/&lt;id&gt;/keywords/  .../add/&#xa;Keyword Suggestions" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="400" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_custom" value="/resumes/&lt;id&gt;/customize/&#xa;Template Customization" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="445" width="280" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="res_ver" value="/resumes/&lt;id&gt;/versions/  compare/  restore/&#xa;Version Control (4 routes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="res_group">
+      <mxGeometry x="20" y="490" width="280" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         PDF UPLOAD MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="pdf_group" value="📤  PDF UPLOAD &amp; PARSING  /resumes/upload/" style="swimlane;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="420" y="450" width="300" height="175" as="geometry"/>
+    </mxCell>
+    <mxCell id="pdf_up" value="/resumes/upload/&#xa;Upload PDF (max 10MB)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="pdf_group">
+      <mxGeometry x="20" y="40" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="pdf_rev" value="/resumes/upload/&lt;id&gt;/review/&#xa;Review Parsed Data" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="pdf_group">
+      <mxGeometry x="20" y="85" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="pdf_conf" value="/resumes/upload/&lt;id&gt;/confirm/  |  /file/&#xa;Confirm Import | Serve File" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="pdf_group">
+      <mxGeometry x="20" y="130" width="260" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         AI OPTIMIZATION MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="fix_group" value="🤖  AI OPTIMIZATION  /resumes/&lt;id&gt;/fix/" style="swimlane;startSize=30;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="760" y="450" width="300" height="175" as="geometry"/>
+    </mxCell>
+    <mxCell id="fix_start" value="/resumes/&lt;id&gt;/fix/&#xa;Start — Enter Job Description" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="fix_group">
+      <mxGeometry x="20" y="40" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="fix_prev" value="/resumes/&lt;id&gt;/fix/preview/&#xa;Preview Side-by-Side Comparison" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="fix_group">
+      <mxGeometry x="20" y="85" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="fix_acc" value="/fix/accept/  |  /fix/reject/&#xa;Accept or Reject Changes" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="fix_group">
+      <mxGeometry x="20" y="130" width="260" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         ATS ANALYZER MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="ats_group" value="🎯  ATS ANALYZER  /analyzer/" style="swimlane;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="420" y="680" width="300" height="130" as="geometry"/>
+    </mxCell>
+    <mxCell id="ats_analyze" value="/analyzer/&lt;resume_id&gt;/analyze/&#xa;6-Factor ATS Score Analysis" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;fontStyle=1;" vertex="1" parent="ats_group">
+      <mxGeometry x="20" y="40" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="ats_batch" value="/resumes/batch-analysis/&#xa;Batch Analysis (Multiple Resumes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="ats_group">
+      <mxGeometry x="20" y="85" width="260" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         ANALYTICS MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="ana_group" value="📊  ANALYTICS  /analytics/" style="swimlane;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="760" y="680" width="300" height="175" as="geometry"/>
+    </mxCell>
+    <mxCell id="ana_dash" value="/analytics/dashboard/&#xa;Analytics Dashboard" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="ana_group">
+      <mxGeometry x="20" y="40" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="ana_trend" value="/analytics/trends/&#xa;Score Trends &amp; Moving Average" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="ana_group">
+      <mxGeometry x="20" y="85" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="ana_report" value="/analytics/improvement-report/&#xa;Improvement Report" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="ana_group">
+      <mxGeometry x="20" y="130" width="260" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         TEMPLATES MODULE
+    ══════════════════════════════════════ -->
+    <mxCell id="tmpl_group" value="🎨  TEMPLATE MANAGEMENT  /templates/" style="swimlane;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="450" width="300" height="220" as="geometry"/>
+    </mxCell>
+    <mxCell id="tmpl_gal" value="/templates/gallery/&#xa;Template Gallery" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="tmpl_group">
+      <mxGeometry x="20" y="40" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="tmpl_prev" value="/templates/preview/&lt;id&gt;/&#xa;Template Preview" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="tmpl_group">
+      <mxGeometry x="20" y="85" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="tmpl_sel" value="/templates/select/&lt;tmpl_id&gt;/&lt;res_id&gt;/&#xa;Select Template for Resume" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="tmpl_group">
+      <mxGeometry x="20" y="130" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="tmpl_cust" value="/templates/customize/&lt;res_id&gt;/&#xa;Customize (Color, Font, CSS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="tmpl_group">
+      <mxGeometry x="20" y="175" width="260" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         ADMIN & API
+    ══════════════════════════════════════ -->
+    <mxCell id="api_group" value="⚙️  ADMIN &amp; API" style="swimlane;startSize=30;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+      <mxGeometry x="1100" y="720" width="300" height="175" as="geometry"/>
+    </mxCell>
+    <mxCell id="admin" value="/admin/&#xa;Django Admin Panel (Staff Only)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;" vertex="1" parent="api_group">
+      <mxGeometry x="20" y="40" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="api_metrics" value="/api/performance/metrics/&#xa;Collect Web Vitals (POST)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="api_group">
+      <mxGeometry x="20" y="85" width="260" height="35" as="geometry"/>
+    </mxCell>
+    <mxCell id="api_summary" value="/api/performance/summary/&#xa;Performance Summary (GET)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;" vertex="1" parent="api_group">
+      <mxGeometry x="20" y="130" width="260" height="35" as="geometry"/>
+    </mxCell>
+
+    <!-- ══════════════════════════════════════
+         EDGES / CONNECTIONS
+    ══════════════════════════════════════ -->
+    <!-- Landing → Public -->
+    <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="landing" target="pub_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Landing → Auth -->
+    <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;" edge="1" source="landing" target="auth_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Auth → Dashboard -->
+    <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6366f1;strokeWidth=2;" edge="1" source="login" target="dashboard" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <mxCell id="e3b" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6366f1;strokeWidth=2;" edge="1" source="register" target="dashboard" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Dashboard → Resume List -->
+    <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="dashboard" target="res_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Dashboard → PDF Upload -->
+    <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d6b656;" edge="1" source="dashboard" target="pdf_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Dashboard → Analytics -->
+    <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#82b366;" edge="1" source="dashboard" target="ana_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Dashboard → Templates -->
+    <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d6b656;" edge="1" source="dashboard" target="tmpl_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Resume Detail → ATS Analyzer -->
+    <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#82b366;strokeWidth=2;" edge="1" source="res_detail" target="ats_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Resume Detail → AI Fix -->
+    <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#9673a6;strokeWidth=2;" edge="1" source="res_detail" target="fix_group" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Resume Detail → Version Control -->
+    <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6c8ebf;" edge="1" source="res_detail" target="res_ver" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- ATS → Analytics -->
+    <mxCell id="e11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#82b366;dashed=1;" edge="1" source="ats_analyze" target="ana_dash" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- AI Fix → Version -->
+    <mxCell id="e12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#9673a6;dashed=1;" edge="1" source="fix_acc" target="res_ver" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- PDF Upload → Resume Detail -->
+    <mxCell id="e13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d6b656;" edge="1" source="pdf_conf" target="res_detail" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+    <!-- Templates → Resume -->
+    <mxCell id="e14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d6b656;dashed=1;" edge="1" source="tmpl_sel" target="res_detail" parent="1">
+      <mxGeometry relative="1" as="geometry"/>
+    </mxCell>
+
+  </root>
+</mxGraphModel>

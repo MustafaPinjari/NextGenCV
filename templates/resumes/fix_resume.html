@@ -1,225 +1,209 @@
-{% extends 'base.html' %}
-
-{% block title %}Fix My Resume - {{ resume.title }} - ATS Resume Builder{% endblock %}
+﻿{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}Fix My Resume — {{ resume.title }}{% endblock %}
 
 {% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-.instruction-card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--accent:#06b6d4;--green:#10b981;--amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;--ease:cubic-bezier(.4,0,.2,1)}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
 
-.instruction-card h3 {
-    color: white;
-    margin-bottom: 20px;
-}
+.fix-wrap{max-width:900px;margin:0 auto;padding:32px}
 
-.tip-box {
-    background-color: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-}
+/* ── PAGE HEADER ── */
+.fix-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;gap:16px;flex-wrap:wrap}
+.fix-hdr-left h1{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.fix-hdr-left h1 .icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1rem;color:#fff;flex-shrink:0}
+.fix-hdr-left p{font-size:.85rem;color:var(--text3)}
+.btn-back{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r8);background:var(--surface);border:1px solid var(--border2);color:var(--text2);font-size:.85rem;font-weight:600;font-family:var(--font);text-decoration:none;transition:all .2s}
+.btn-back:hover{border-color:var(--primary);color:var(--primary-light)}
 
-.tip-box i {
-    color: #667eea;
-    margin-right: 10px;
-}
+/* ── HOW IT WORKS BANNER ── */
+.how-banner{background:linear-gradient(135deg,rgba(99,102,241,.15) 0%,rgba(139,92,246,.12) 100%);border:1px solid rgba(99,102,241,.3);border-radius:var(--r20);padding:28px 32px;margin-bottom:24px;position:relative;overflow:hidden}
+.how-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 0% 50%,rgba(99,102,241,.12),transparent);pointer-events:none}
+.how-banner-title{font-size:1.05rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px;position:relative}
+.how-banner-sub{font-size:.83rem;color:rgba(240,246,252,.7);margin-bottom:18px;position:relative}
+.how-badges{display:flex;flex-wrap:wrap;gap:8px;position:relative}
+.how-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:99px;padding:5px 12px;font-size:.78rem;font-weight:500;color:#fff}
+.how-badge i{font-size:.75rem;color:#a5f3fc}
 
-.feature-badge {
-    display: inline-block;
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 5px 15px;
-    border-radius: 20px;
-    margin: 5px;
-    font-size: 0.9rem;
-}
+/* ── RESUME INFO CARD ── */
+.resume-info{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px}
+.resume-info-icon{width:44px;height:44px;border-radius:var(--r12);background:rgba(99,102,241,.12);display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:var(--primary-light);flex-shrink:0}
+.resume-info-title{font-size:1rem;font-weight:700;margin-bottom:3px}
+.resume-info-meta{font-size:.78rem;color:var(--text3)}
 
-.char-counter {
-    font-size: 0.875rem;
-    color: #6c757d;
-    text-align: right;
-    margin-top: 5px;
-}
+/* ── FORM CARD ── */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r20);overflow:hidden;margin-bottom:20px}
+.form-card-hdr{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.form-card-hdr-icon{width:32px;height:32px;border-radius:var(--r8);background:rgba(99,102,241,.15);display:flex;align-items:center;justify-content:center;font-size:.9rem;color:var(--primary-light)}
+.form-card-hdr-title{font-size:.95rem;font-weight:700}
+.form-card-body{padding:24px}
 
-.char-counter.warning {
-    color: #ffc107;
-}
+/* ── TEXTAREA ── */
+.jd-label{font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:8px;display:block}
+.jd-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r12);padding:16px;font-size:.9rem;color:var(--text);font-family:var(--font);line-height:1.7;resize:vertical;min-height:280px;outline:none;transition:border-color .2s,box-shadow .2s}
+.jd-textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.jd-textarea::placeholder{color:var(--text3)}
+.char-row{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.char-hint{font-size:.75rem;color:var(--text3)}
+.char-count{font-size:.75rem;font-weight:600;color:var(--text3);transition:color .2s}
+.char-count.ok{color:var(--green)}
+.char-count.warn{color:var(--amber)}
+.char-count.err{color:var(--red)}
 
-.char-counter.error {
-    color: #dc3545;
-}
+/* ── TIPS ── */
+.tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:20px}
+.tip{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px;display:flex;align-items:flex-start;gap:10px}
+.tip-num{width:24px;height:24px;border-radius:50%;background:rgba(99,102,241,.15);color:var(--primary-light);font-size:.72rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tip-text{font-size:.8rem;color:var(--text2);line-height:1.5}
+.tip-text strong{color:var(--text);font-weight:600;display:block;margin-bottom:2px}
 
-.char-counter.success {
-    color: #28a745;
+/* ── SUBMIT ── */
+.submit-row{display:flex;justify-content:flex-end;margin-top:24px}
+.btn-optimize{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:var(--r8);background:linear-gradient(135deg,var(--primary),#8b5cf6);border:none;color:#fff;font-size:.95rem;font-weight:700;font-family:var(--font);cursor:pointer;transition:all .2s}
+.btn-optimize:hover:not(:disabled){opacity:.92;transform:translateY(-1px)}
+.btn-optimize:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+/* ── PRIVACY NOTE ── */
+.privacy-note{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:var(--r12);padding:14px 18px;display:flex;align-items:flex-start;gap:10px;font-size:.82rem;color:var(--text2);line-height:1.5}
+.privacy-note i{color:var(--green);font-size:1rem;flex-shrink:0;margin-top:1px}
+
+@media(max-width:768px){
+  .fix-wrap{padding:20px}
+  .tips-grid{grid-template-columns:1fr}
+  .how-banner{padding:20px}
+  .submit-row{justify-content:stretch}
+  .btn-optimize{width:100%;justify-content:center}
 }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="mb-0">
-                <i class="bi bi-magic"></i> Fix My Resume
-            </h2>
-            <a href="{% url 'resume_detail' resume.id %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Resume
-            </a>
-        </div>
-        
-        <!-- Instruction Card -->
-        <div class="instruction-card">
-            <h3><i class="bi bi-lightbulb"></i> How AI Resume Optimization Works</h3>
-            <p class="mb-3">
-                Our AI-powered optimization engine will analyze your resume against the job description and automatically improve it by:
-            </p>
-            <div class="row">
-                <div class="col-md-6">
-                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Rewriting weak bullet points</span>
-                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Inserting missing keywords</span>
-                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Adding quantification</span>
-                </div>
-                <div class="col-md-6">
-                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Standardizing formatting</span>
-                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Strengthening action verbs</span>
-                    <span class="feature-badge"><i class="bi bi-check-circle"></i> Improving ATS compatibility</span>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Resume Info -->
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="bi bi-file-earmark-text"></i> Resume: {{ resume.title }}
-                </h5>
-                <p class="text-muted mb-0">
-                    <small>
-                        Last updated: {{ resume.updated_at|date:"F d, Y g:i A" }}
-                        {% if resume.current_version_number %}
-                        | Current version: {{ resume.current_version_number }}
-                        {% endif %}
-                    </small>
-                </p>
-            </div>
-        </div>
-        
-        <!-- Job Description Form -->
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Enter Job Description</h5>
-            </div>
-            <div class="card-body">
-                <form method="post" id="fixResumeForm">
-                    {% csrf_token %}
-                    
-                    <div class="mb-4">
-                        <label for="job_description" class="form-label">
-                            <strong>Paste the complete job description below:</strong>
-                        </label>
-                        <textarea 
-                            class="form-control" 
-                            id="job_description" 
-                            name="job_description" 
-                            rows="15" 
-                            placeholder="Paste the full job description here, including responsibilities, requirements, and qualifications..."
-                            required>{{ job_description|default:"" }}</textarea>
-                        <div class="char-counter" id="charCounter">
-                            <span id="charCount">0</span> characters (minimum 50 required)
-                        </div>
-                    </div>
-                    
-                    <!-- Tips Section -->
-                    <div class="mb-4">
-                        <h6><i class="bi bi-info-circle"></i> Tips for Best Results:</h6>
-                        
-                        <div class="tip-box">
-                            <i class="bi bi-1-circle-fill"></i>
-                            <strong>Include the complete job posting:</strong> Copy the entire job description, including title, responsibilities, requirements, and qualifications.
-                        </div>
-                        
-                        <div class="tip-box">
-                            <i class="bi bi-2-circle-fill"></i>
-                            <strong>Don't edit or summarize:</strong> Paste the original text as-is for the most accurate keyword matching.
-                        </div>
-                        
-                        <div class="tip-box">
-                            <i class="bi bi-3-circle-fill"></i>
-                            <strong>Focus on relevant positions:</strong> The AI will prioritize optimizing experiences that match the job description.
-                        </div>
-                        
-                        <div class="tip-box">
-                            <i class="bi bi-4-circle-fill"></i>
-                            <strong>Review before accepting:</strong> You'll see all changes before they're applied, and you can accept or reject them.
-                        </div>
-                    </div>
-                    
-                    <!-- Submit Button -->
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" disabled>
-                            <i class="bi bi-magic"></i> Optimize My Resume
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Additional Info -->
-        <div class="alert alert-info mt-4">
-            <i class="bi bi-shield-check"></i>
-            <strong>Privacy Note:</strong> Your job description is only used for this optimization session and is not stored permanently. 
-            Your original resume is never modified - all changes create a new version that you can review before accepting.
-        </div>
+<div class="fix-wrap">
+
+  <!-- Header -->
+  <div class="fix-hdr">
+    <div class="fix-hdr-left">
+      <h1><div class="icon"><i class="bi bi-magic"></i></div> Fix My Resume</h1>
+      <p>AI-powered optimization against a specific job description</p>
     </div>
+    <a href="{% url 'resume_detail' resume.id %}" class="btn-back">
+      <i class="bi bi-arrow-left"></i> Back to Resume
+    </a>
+  </div>
+
+  <!-- How it works banner -->
+  <div class="how-banner">
+    <div class="how-banner-title"><i class="bi bi-stars"></i> How AI Resume Optimization Works</div>
+    <div class="how-banner-sub">Our engine analyzes your resume against the job description and automatically improves it by:</div>
+    <div class="how-badges">
+      <span class="how-badge"><i class="bi bi-check-circle-fill"></i> Rewriting weak bullet points</span>
+      <span class="how-badge"><i class="bi bi-check-circle-fill"></i> Inserting missing keywords</span>
+      <span class="how-badge"><i class="bi bi-check-circle-fill"></i> Adding quantification</span>
+      <span class="how-badge"><i class="bi bi-check-circle-fill"></i> Standardizing formatting</span>
+      <span class="how-badge"><i class="bi bi-check-circle-fill"></i> Strengthening action verbs</span>
+      <span class="how-badge"><i class="bi bi-check-circle-fill"></i> Improving ATS compatibility</span>
+    </div>
+  </div>
+
+  <!-- Resume info -->
+  <div class="resume-info">
+    <div class="resume-info-icon"><i class="bi bi-file-earmark-text"></i></div>
+    <div>
+      <div class="resume-info-title">{{ resume.title }}</div>
+      <div class="resume-info-meta">
+        Last updated: {{ resume.updated_at|date:"F d, Y g:i A" }}
+        {% if resume.current_version_number %} &nbsp;·&nbsp; Version {{ resume.current_version_number }}{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Form -->
+  <div class="form-card">
+    <div class="form-card-hdr">
+      <div class="form-card-hdr-icon"><i class="bi bi-briefcase"></i></div>
+      <span class="form-card-hdr-title">Enter Job Description</span>
+    </div>
+    <div class="form-card-body">
+      <form method="post" id="fixForm">
+        {% csrf_token %}
+
+        <label class="jd-label" for="job_description">
+          Paste the complete job description below <span style="color:var(--red)">*</span>
+        </label>
+        <textarea
+          id="job_description"
+          name="job_description"
+          class="jd-textarea"
+          placeholder="Paste the full job description here, including responsibilities, requirements, and qualifications..."
+          required>{{ job_description|default:"" }}</textarea>
+        <div class="char-row">
+          <span class="char-hint">Minimum 50 characters required for accurate analysis</span>
+          <span class="char-count err" id="charCount">0 chars</span>
+        </div>
+
+        <!-- Tips -->
+        <div class="tips-grid">
+          <div class="tip">
+            <div class="tip-num">1</div>
+            <div class="tip-text"><strong>Include the complete posting</strong>Copy the entire job description — title, responsibilities, requirements, and qualifications.</div>
+          </div>
+          <div class="tip">
+            <div class="tip-num">2</div>
+            <div class="tip-text"><strong>Don't edit or summarize</strong>Paste the original text as-is for the most accurate keyword matching.</div>
+          </div>
+          <div class="tip">
+            <div class="tip-num">3</div>
+            <div class="tip-text"><strong>Focus on relevant positions</strong>The AI prioritizes optimizing experiences that match the job description.</div>
+          </div>
+          <div class="tip">
+            <div class="tip-num">4</div>
+            <div class="tip-text"><strong>Review before accepting</strong>You'll see all changes before they're applied — accept or reject each one.</div>
+          </div>
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="btn-optimize" id="submitBtn" disabled>
+            <i class="bi bi-magic"></i> Optimize My Resume
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Privacy note -->
+  <div class="privacy-note">
+    <i class="bi bi-shield-check"></i>
+    <span><strong style="color:var(--text)">Privacy:</strong> Your job description is only used for this session and is not stored permanently. Your original resume is never modified — all changes create a new version you can review before accepting.</span>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('job_description');
-    const charCounter = document.getElementById('charCounter');
-    const charCount = document.getElementById('charCount');
-    const submitBtn = document.getElementById('submitBtn');
-    const form = document.getElementById('fixResumeForm');
-    
-    // Update character count and button state
-    function updateCharCount() {
-        const length = textarea.value.trim().length;
-        charCount.textContent = length;
-        
-        // Update styling based on length
-        charCounter.classList.remove('error', 'warning', 'success');
-        
-        if (length < 50) {
-            charCounter.classList.add('error');
-            submitBtn.disabled = true;
-        } else if (length < 100) {
-            charCounter.classList.add('warning');
-            submitBtn.disabled = false;
-        } else {
-            charCounter.classList.add('success');
-            submitBtn.disabled = false;
-        }
-    }
-    
-    // Initialize on page load
-    updateCharCount();
-    
-    // Update on input
-    textarea.addEventListener('input', updateCharCount);
-    
-    // Show loading state on submit
-    form.addEventListener('submit', function() {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analyzing...';
-    });
+const ta = document.getElementById('job_description');
+const cc = document.getElementById('charCount');
+const btn = document.getElementById('submitBtn');
+
+function update() {
+  const n = ta.value.trim().length;
+  cc.textContent = n + ' chars';
+  cc.className = 'char-count ' + (n < 50 ? 'err' : n < 100 ? 'warn' : 'ok');
+  btn.disabled = n < 50;
+}
+
+ta.addEventListener('input', update);
+update();
+
+document.getElementById('fixForm').addEventListener('submit', () => {
+  btn.disabled = true;
+  btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></span> Analyzing...';
 });
+
+const s = document.createElement('style');
+s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
+document.head.appendChild(s);
 </script>
 {% endblock %}

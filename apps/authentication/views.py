@@ -101,7 +101,7 @@ def dashboard(request):
         from apps.resumes.models import ResumeAnalysis
         analyses = ResumeAnalysis.objects.filter(resume__user=request.user).order_by('analysis_timestamp')
         
-        if analyses.count() >= 2:
+        if analyses.count() >= 1:
             show_charts = True
             
             # Score trend data

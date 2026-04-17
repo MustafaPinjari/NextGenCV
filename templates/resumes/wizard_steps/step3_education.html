@@ -1,140 +1,119 @@
-{% extends 'resumes/resume_wizard.html' %}
-
+﻿{% extends 'resumes/resume_wizard.html' %}
 {% block wizard_step %}
-<div class="form-step">
-    <h2 class="form-step__title">Education</h2>
-    <p class="form-step__description">Add your educational background. Include degrees, certifications, and relevant coursework.</p>
+<div style="animation:fadeIn .35s ease">
 
-    <!-- Added Education -->
-    {% if education %}
-        <div class="added-items" id="educationList">
-            {% for edu in education %}
-                <div class="added-item" data-index="{{ forloop.counter0 }}">
-                    <div class="added-item__header">
-                        <div class="added-item__info">
-                            <h4 class="added-item__title">{{ edu.degree }} in {{ edu.field }}</h4>
-                            <p class="added-item__subtitle">{{ edu.institution }}</p>
-                            <p class="added-item__meta">{{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</p>
-                        </div>
-                        <div class="added-item__actions">
-                            <button type="button" class="btn-icon btn-icon--danger" onclick="removeEducation({{ forloop.counter0 }})" title="Remove">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+<h2 class="wiz-title">Education</h2>
+<p class="wiz-sub">Add your educational background — degrees, diplomas, certifications, and relevant coursework.</p>
 
-    <!-- Add Education Form -->
-    <div class="collapsible-section" id="addEducationSection">
-        <button type="button" class="collapsible-section__toggle" onclick="toggleSection('addEducationSection')">
-            <i class="bi bi-plus-circle"></i>
-            <span>Add Education</span>
-            <i class="bi bi-chevron-down collapsible-section__icon"></i>
-        </button>
-        
-        <div class="collapsible-section__content">
-            <form method="post" id="addEducationForm">
-                {% csrf_token %}
-                
-                <div class="form-group">
-                    <label for="{{ form.institution.id_for_label }}" class="form-label">Institution *</label>
-                    <div class="form-input-wrapper">
-                        {{ form.institution }}
-                    </div>
-                    {% if form.institution.errors %}
-                        <div class="form-error">{{ form.institution.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.degree.id_for_label }}" class="form-label">Degree *</label>
-                        <div class="form-input-wrapper">
-                            {{ form.degree }}
-                        </div>
-                        <small class="form-help">e.g., Bachelor of Science, Master of Arts</small>
-                        {% if form.degree.errors %}
-                            <div class="form-error">{{ form.degree.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.field.id_for_label }}" class="form-label">Field of Study *</label>
-                        <div class="form-input-wrapper">
-                            {{ form.field }}
-                        </div>
-                        {% if form.field.errors %}
-                            <div class="form-error">{{ form.field.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.start_year.id_for_label }}" class="form-label">Start Year *</label>
-                        <div class="form-input-wrapper">
-                            <i class="bi bi-calendar form-input-icon"></i>
-                            {{ form.start_year }}
-                        </div>
-                        {% if form.start_year.errors %}
-                            <div class="form-error">{{ form.start_year.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.end_year.id_for_label }}" class="form-label">End Year</label>
-                        <div class="form-input-wrapper">
-                            <i class="bi bi-calendar form-input-icon"></i>
-                            {{ form.end_year }}
-                        </div>
-                        <small class="form-help">Leave blank if currently enrolled</small>
-                        {% if form.end_year.errors %}
-                            <div class="form-error">{{ form.end_year.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <button type="submit" name="action" value="add_education" class="btn btn-success">
-                    <i class="bi bi-plus-circle"></i>
-                    <span>Add Education</span>
-                </button>
-            </form>
-        </div>
+{% if education %}
+<div class="added-list">
+  {% for edu in education %}
+  <div class="added-item">
+    <div class="added-item-content">
+      <div class="added-item-title">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+      <div class="added-item-sub"><i class="bi bi-building" style="font-size:.7rem"></i> {{ edu.institution }}</div>
+      <div class="added-item-sub"><i class="bi bi-calendar3" style="font-size:.7rem"></i> {{ edu.start_year }} — {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</div>
     </div>
-
-    <!-- Continue Form -->
-    <form method="post" id="wizardForm" style="display: none;">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="next">
+    <form method="post" style="display:inline">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="remove_education">
+      <input type="hidden" name="index" value="{{ forloop.counter0 }}">
+      <button type="submit" class="added-item-remove" title="Remove"><i class="bi bi-trash"></i></button>
     </form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="add-section">
+  <div class="add-section-hdr" id="eduToggle" onclick="toggleAdd()">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="add-section-icon"><i class="bi bi-plus"></i></div>
+      <span class="add-section-title">Add Education</span>
+    </div>
+    <i class="bi bi-chevron-down" id="eduChevron" style="color:var(--text3);transition:transform .2s"></i>
+  </div>
+
+  <div id="eduForm" style="{% if education %}display:none{% endif %}padding:0 24px 24px">
+    <form method="post" id="wizForm">
+      {% csrf_token %}
+
+      <div class="field" style="margin-top:20px">
+        <label class="field-label">Institution <span class="req">*</span></label>
+        <div class="field-input-wrap">
+          <i class="bi bi-building field-icon"></i>
+          <input type="text" name="institution" class="field-input has-icon" placeholder="e.g. MIT, Stanford University" value="{{ form.institution.value|default:'' }}" required>
+        </div>
+        {% if form.institution.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.institution.errors.0 }}</div>{% endif %}
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Degree <span class="req">*</span></label>
+          <input type="text" name="degree" class="field-input" placeholder="e.g. Bachelor of Science" value="{{ form.degree.value|default:'' }}" required>
+          {% if form.degree.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.degree.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="field">
+          <label class="field-label">Field of Study</label>
+          <input type="text" name="field" class="field-input" placeholder="e.g. Computer Science" value="{{ form.field.value|default:'' }}">
+          {% if form.field.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.field.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Start Year <span class="req">*</span></label>
+          <div class="field-input-wrap">
+            <i class="bi bi-calendar3 field-icon"></i>
+            <input type="number" name="start_year" class="field-input has-icon" placeholder="2018" min="1950" max="2030" value="{{ form.start_year.value|default:'' }}" required>
+          </div>
+          {% if form.start_year.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.start_year.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="field">
+          <label class="field-label">End Year</label>
+          <div class="field-input-wrap">
+            <i class="bi bi-calendar3 field-icon"></i>
+            <input type="number" name="end_year" class="field-input has-icon" placeholder="2022" min="1950" max="2030" value="{{ form.end_year.value|default:'' }}">
+          </div>
+          <div class="field-hint">Leave blank if currently enrolled</div>
+          {% if form.end_year.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.end_year.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <button type="submit" name="action" value="add_education" class="btn-add">
+        <i class="bi bi-plus-circle"></i> Add Education
+      </button>
+    </form>
+  </div>
 </div>
 
+<form method="post" id="wizFormNext" style="display:none">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="next">
+</form>
+
+</div>
+<style>
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.add-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden;margin-top:8px}
+.add-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;cursor:pointer;transition:background .18s}
+.add-section-hdr:hover{background:var(--surface2)}
+.add-section-icon{width:28px;height:28px;border-radius:6px;background:rgba(99,102,241,.15);color:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.add-section-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.btn-add{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px}
+.btn-add:hover{background:rgba(99,102,241,.25);border-color:var(--primary)}
+</style>
 <script>
-    function toggleSection(sectionId) {
-        const section = document.getElementById(sectionId);
-        section.classList.toggle('collapsible-section--open');
-    }
-
-    function removeEducation(index) {
-        if (confirm('Are you sure you want to remove this education entry?')) {
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.innerHTML = `
-                {% csrf_token %}
-                <input type="hidden" name="action" value="remove_education">
-                <input type="hidden" name="index" value="${index}">
-            `;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-
-    // Auto-open the add section if no education exists
-    {% if not education %}
-        document.getElementById('addEducationSection').classList.add('collapsible-section--open');
-    {% endif %}
+function toggleAdd(){
+  const f=document.getElementById('eduForm');
+  const c=document.getElementById('eduChevron');
+  const open=f.style.display==='none'||f.style.display==='';
+  f.style.display=open?'block':'none';
+  c.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+document.addEventListener('DOMContentLoaded',()=>{
+  const nextBtn=document.querySelector('[form="wizForm"]');
+  if(nextBtn) nextBtn.setAttribute('form','wizFormNext');
+});
 </script>
 {% endblock %}

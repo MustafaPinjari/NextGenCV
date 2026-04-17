@@ -1,290 +1,128 @@
-{% extends 'resumes/resume_wizard.html' %}
-
+﻿{% extends 'resumes/resume_wizard.html' %}
 {% block wizard_step %}
-<div class="form-step">
-    <h2 class="form-step__title">Work Experience</h2>
-    <p class="form-step__description">Add your work history. Start with your most recent position.</p>
+<div style="animation:fadeIn .35s ease">
 
-    <!-- Added Experiences -->
-    {% if experiences %}
-        <div class="added-items" id="experiencesList">
-            {% for exp in experiences %}
-                <div class="added-item" data-index="{{ forloop.counter0 }}">
-                    <div class="added-item__header">
-                        <div class="added-item__info">
-                            <h4 class="added-item__title">{{ exp.role }}</h4>
-                            <p class="added-item__subtitle">{{ exp.company }}</p>
-                            <p class="added-item__meta">{{ exp.start_date }} - {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}</p>
-                        </div>
-                        <div class="added-item__actions">
-                            <button type="button" class="btn-icon" onclick="editExperience({{ forloop.counter0 }})" title="Edit">
-                                <i class="bi bi-pencil"></i>
-                            </button>
-                            <button type="button" class="btn-icon btn-icon--danger" onclick="removeExperience({{ forloop.counter0 }})" title="Remove">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {% if exp.description %}
-                        <div class="added-item__description">{{ exp.description|truncatewords:20 }}</div>
-                    {% endif %}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
+<h2 class="wiz-title">Work Experience</h2>
+<p class="wiz-sub">Add your work history starting with the most recent position. You can add multiple entries.</p>
 
-    <!-- Add Experience Form -->
-    <div class="collapsible-section" id="addExperienceSection">
-        <button type="button" class="collapsible-section__toggle" onclick="toggleSection('addExperienceSection')">
-            <i class="bi bi-plus-circle"></i>
-            <span>Add Work Experience</span>
-            <i class="bi bi-chevron-down collapsible-section__icon"></i>
-        </button>
-        
-        <div class="collapsible-section__content">
-            <form method="post" id="addExperienceForm">
-                {% csrf_token %}
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.company.id_for_label }}" class="form-label">Company *</label>
-                        <div class="form-input-wrapper">
-                            {{ form.company }}
-                        </div>
-                        {% if form.company.errors %}
-                            <div class="form-error">{{ form.company.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.role.id_for_label }}" class="form-label">Job Title *</label>
-                        <div class="form-input-wrapper">
-                            {{ form.role }}
-                        </div>
-                        {% if form.role.errors %}
-                            <div class="form-error">{{ form.role.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date *</label>
-                        <div class="form-input-wrapper">
-                            <i class="bi bi-calendar form-input-icon"></i>
-                            {{ form.start_date }}
-                        </div>
-                        {% if form.start_date.errors %}
-                            <div class="form-error">{{ form.start_date.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-
-                    <div class="form-group">
-                        <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
-                        <div class="form-input-wrapper">
-                            <i class="bi bi-calendar form-input-icon"></i>
-                            {{ form.end_date }}
-                        </div>
-                        <small class="form-help">Leave blank if current position</small>
-                        {% if form.end_date.errors %}
-                            <div class="form-error">{{ form.end_date.errors.0 }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
-                    <div class="form-input-wrapper">
-                        {{ form.description }}
-                    </div>
-                    <small class="form-help">Use bullet points to describe your responsibilities and achievements</small>
-                    {% if form.description.errors %}
-                        <div class="form-error">{{ form.description.errors.0 }}</div>
-                    {% endif %}
-                </div>
-
-                <button type="submit" name="action" value="add_experience" class="btn btn-success">
-                    <i class="bi bi-plus-circle"></i>
-                    <span>Add Experience</span>
-                </button>
-            </form>
-        </div>
+<!-- Added experiences -->
+{% if experiences %}
+<div class="added-list">
+  {% for exp in experiences %}
+  <div class="added-item">
+    <div class="added-item-content">
+      <div class="added-item-title">{{ exp.role }} <span style="color:var(--text3);font-weight:400">at</span> {{ exp.company }}</div>
+      <div class="added-item-sub">
+        <i class="bi bi-calendar3" style="font-size:.7rem"></i>
+        {{ exp.start_date }} — {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}
+      </div>
+      {% if exp.description %}<div class="added-item-sub" style="margin-top:4px">{{ exp.description|truncatewords:15 }}</div>{% endif %}
     </div>
-
-    <!-- Continue Form -->
-    <form method="post" id="wizardForm" style="display: none;">
-        {% csrf_token %}
-        <input type="hidden" name="action" value="next">
+    <form method="post" style="display:inline">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="remove_experience">
+      <input type="hidden" name="index" value="{{ forloop.counter0 }}">
+      <button type="submit" class="added-item-remove" title="Remove"><i class="bi bi-trash"></i></button>
     </form>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Add form -->
+<div class="add-section">
+  <div class="add-section-hdr" id="expToggle" onclick="toggleAdd()">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="add-section-icon"><i class="bi bi-plus"></i></div>
+      <span class="add-section-title">Add Work Experience</span>
+    </div>
+    <i class="bi bi-chevron-down" id="expChevron" style="color:var(--text3);transition:transform .2s"></i>
+  </div>
+
+  <div id="expForm" style="{% if experiences %}display:none{% endif %}padding:0 24px 24px">
+    <form method="post" id="wizForm">
+      {% csrf_token %}
+
+      <div class="field-row" style="margin-top:20px">
+        <div class="field">
+          <label class="field-label">Company <span class="req">*</span></label>
+          <input type="text" name="company" class="field-input" placeholder="e.g. Google" value="{{ form.company.value|default:'' }}" required>
+          {% if form.company.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.company.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="field">
+          <label class="field-label">Job Title <span class="req">*</span></label>
+          <input type="text" name="role" class="field-input" placeholder="e.g. Senior Software Engineer" value="{{ form.role.value|default:'' }}" required>
+          {% if form.role.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.role.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label class="field-label">Start Date <span class="req">*</span></label>
+          <div class="field-input-wrap">
+            <i class="bi bi-calendar3 field-icon"></i>
+            <input type="date" name="start_date" class="field-input has-icon" value="{{ form.start_date.value|default:'' }}" required>
+          </div>
+          {% if form.start_date.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.start_date.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="field">
+          <label class="field-label">End Date</label>
+          <div class="field-input-wrap">
+            <i class="bi bi-calendar3 field-icon"></i>
+            <input type="date" name="end_date" class="field-input has-icon" value="{{ form.end_date.value|default:'' }}">
+          </div>
+          <div class="field-hint">Leave blank if this is your current role</div>
+          {% if form.end_date.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.end_date.errors.0 }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="field-label">Description</label>
+        <textarea name="description" class="field-input" rows="4" placeholder="Describe your key responsibilities and achievements. Use bullet points for clarity.">{{ form.description.value|default:'' }}</textarea>
+        <div class="field-hint">Tip: Start each bullet with a strong action verb (Led, Built, Improved, Reduced...)</div>
+        {% if form.description.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.description.errors.0 }}</div>{% endif %}
+      </div>
+
+      <button type="submit" name="action" value="add_experience" class="btn-add">
+        <i class="bi bi-plus-circle"></i> Add Experience
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Hidden next form -->
+<form method="post" id="wizFormNext" style="display:none">
+  {% csrf_token %}
+  <input type="hidden" name="action" value="next">
+</form>
+
 </div>
 
 <style>
-    .added-items {
-        display: flex;
-        flex-direction: column;
-        gap: var(--spacing-3);
-        margin-bottom: var(--spacing-5);
-    }
-
-    .added-item {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-4);
-        transition: all 250ms var(--easing-default);
-    }
-
-    .added-item:hover {
-        border-color: var(--color-border-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    }
-
-    .added-item__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: var(--spacing-3);
-    }
-
-    .added-item__info {
-        flex: 1;
-    }
-
-    .added-item__title {
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-semibold);
-        color: var(--color-text-primary);
-        margin-bottom: var(--spacing-1);
-    }
-
-    .added-item__subtitle {
-        font-size: var(--font-size-base);
-        color: var(--color-text-secondary);
-        margin-bottom: var(--spacing-1);
-    }
-
-    .added-item__meta {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-tertiary);
-    }
-
-    .added-item__description {
-        margin-top: var(--spacing-2);
-        padding-top: var(--spacing-2);
-        border-top: 1px solid var(--color-border);
-        color: var(--color-text-secondary);
-        font-size: var(--font-size-sm);
-    }
-
-    .added-item__actions {
-        display: flex;
-        gap: var(--spacing-2);
-    }
-
-    .btn-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-border);
-        background: transparent;
-        color: var(--color-text-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: all 250ms var(--easing-default);
-    }
-
-    .btn-icon:hover {
-        background: var(--color-surface-elevated);
-        color: var(--color-text-primary);
-        border-color: var(--color-border-hover);
-    }
-
-    .btn-icon--danger:hover {
-        background: var(--color-error);
-        color: white;
-        border-color: var(--color-error);
-    }
-
-    .collapsible-section {
-        background: var(--color-surface);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
-        overflow: hidden;
-        margin-bottom: var(--spacing-4);
-    }
-
-    .collapsible-section__toggle {
-        width: 100%;
-        padding: var(--spacing-4);
-        background: transparent;
-        border: none;
-        color: var(--color-text-primary);
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-semibold);
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-2);
-        cursor: pointer;
-        transition: all 250ms var(--easing-default);
-    }
-
-    .collapsible-section__toggle:hover {
-        background: var(--color-surface-elevated);
-    }
-
-    .collapsible-section__icon {
-        margin-left: auto;
-        transition: transform 250ms var(--easing-default);
-    }
-
-    .collapsible-section--open .collapsible-section__icon {
-        transform: rotate(180deg);
-    }
-
-    .collapsible-section__content {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 350ms var(--easing-default);
-    }
-
-    .collapsible-section--open .collapsible-section__content {
-        max-height: 2000px;
-        padding: 0 var(--spacing-4) var(--spacing-4);
-    }
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.add-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden;margin-top:8px}
+.add-section-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;cursor:pointer;transition:background .18s}
+.add-section-hdr:hover{background:var(--surface2)}
+.add-section-icon{width:28px;height:28px;border-radius:6px;background:rgba(99,102,241,.15);color:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.add-section-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.btn-add{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px}
+.btn-add:hover{background:rgba(99,102,241,.25);border-color:var(--primary)}
 </style>
 
 <script>
-    function toggleSection(sectionId) {
-        const section = document.getElementById(sectionId);
-        section.classList.toggle('collapsible-section--open');
-    }
-
-    function removeExperience(index) {
-        if (confirm('Are you sure you want to remove this experience?')) {
-            // Submit form to remove experience
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.innerHTML = `
-                {% csrf_token %}
-                <input type="hidden" name="action" value="remove_experience">
-                <input type="hidden" name="index" value="${index}">
-            `;
-            document.body.appendChild(form);
-            form.submit();
-        }
-    }
-
-    function editExperience(index) {
-        // For now, just show a message. Full edit functionality would require more complex state management
-        alert('Edit functionality coming soon! For now, you can remove and re-add the experience.');
-    }
-
-    // Auto-open the add section if no experiences exist
-    {% if not experiences %}
-        document.getElementById('addExperienceSection').classList.add('collapsible-section--open');
-    {% endif %}
+function toggleAdd(){
+  const f=document.getElementById('expForm');
+  const c=document.getElementById('expChevron');
+  const open=f.style.display==='none'||f.style.display==='';
+  f.style.display=open?'block':'none';
+  c.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+// Override the wiz nav "Next" button to submit the next form
+document.addEventListener('DOMContentLoaded',()=>{
+  const nextBtn=document.querySelector('[form="wizForm"]');
+  if(nextBtn){
+    nextBtn.setAttribute('form','wizFormNext');
+  }
+});
 </script>
 {% endblock %}
