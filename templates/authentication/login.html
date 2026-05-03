@@ -250,7 +250,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
           <label class="check-wrap">
             <input type="checkbox" name="remember"><span class="check-label">Remember me</span>
           </label>
-          <a href="#" class="forgot-link">Forgot password?</a>
+          <a href="{% url 'password_reset' %}" class="forgot-link">Forgot password?</a>
         </div>
 
         {% if request.GET.next %}<input type="hidden" name="next" value="{{ request.GET.next }}">{% endif %}

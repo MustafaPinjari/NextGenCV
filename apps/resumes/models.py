@@ -23,6 +23,13 @@ class Resume(models.Model):
     last_analyzed_at = models.DateTimeField(null=True, blank=True)
     last_optimized_at = models.DateTimeField(null=True, blank=True)
     
+    # Cached scores (updated on every analysis/save)
+    latest_ats_score = models.FloatField(null=True, blank=True, help_text='Most recent ATS score')
+    completeness_score = models.IntegerField(default=0, help_text='Resume completeness 0-100')
+
+    # Public sharing
+    share_token = models.CharField(max_length=64, blank=True, db_index=True)
+
     # Template customization (Requirements: 13.4, 14.4)
     color_scheme = models.CharField(
         max_length=50, 

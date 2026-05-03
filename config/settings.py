@@ -199,6 +199,14 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'landing'
 
+# Session settings
+SESSION_SAVE_EVERY_REQUEST = True  # Prevent wizard data loss on refresh
+SESSION_COOKIE_AGE = 86400  # 24 hours
+
+# Email backend (console for dev — swap to SMTP in production)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'NextGenCV <noreply@nextgencv.com>'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

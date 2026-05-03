@@ -1,179 +1,185 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
 {% load static %}
+{% block title %}Batch Resume Analysis — NextGenCV{% endblock %}
 
-{% block title %}Batch Resume Analysis - NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1000px;margin:0 auto}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.6rem;font-weight:800;letter-spacing:-.03em}
+.page-sub{font-size:.85rem;color:var(--text3);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-lg{padding:12px 24px;font-size:.92rem}
+/* How it works banner */
+.how-banner{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:var(--r16);padding:20px 24px;margin-bottom:24px;display:flex;gap:20px;flex-wrap:wrap}
+.how-step{display:flex;align-items:flex-start;gap:10px;flex:1;min-width:180px}
+.how-num{width:28px;height:28px;border-radius:50%;background:rgba(99,102,241,.2);color:var(--primary-light);font-size:.8rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.how-text{font-size:.82rem;color:var(--text2);line-height:1.5}
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r20);padding:24px;margin-bottom:20px}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px}
+.card-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--primary-light)}
+.selected-badge{font-size:.78rem;font-weight:600;padding:4px 12px;border-radius:99px;background:rgba(99,102,241,.12);color:var(--primary-light)}
+/* Resume grid */
+.resume-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.resume-option{background:var(--surface2);border:2px solid var(--border2);border-radius:var(--r12);padding:16px;cursor:pointer;transition:all .18s;position:relative}
+.resume-option:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.04)}
+.resume-option.selected{border-color:var(--primary);background:rgba(99,102,241,.08)}
+.resume-option input[type=checkbox]{position:absolute;top:14px;right:14px;width:18px;height:18px;accent-color:var(--primary);cursor:pointer}
+.resume-option-title{font-size:.92rem;font-weight:700;color:var(--text);margin-bottom:4px;padding-right:28px}
+.resume-option-meta{font-size:.75rem;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.resume-option-meta span{display:flex;align-items:center;gap:3px}
+.resume-option-score{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.score-high{background:rgba(16,185,129,.12);color:var(--green)}
+.score-mid{background:rgba(99,102,241,.12);color:var(--primary-light)}
+.score-none{background:rgba(139,146,158,.1);color:var(--text3)}
+/* Toolbar */
+.select-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.select-toolbar button{font-size:.78rem;padding:5px 12px}
+.count-label{font-size:.82rem;color:var(--text3);margin-left:auto}
+/* JD textarea */
+textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:14px;color:var(--text);font-family:var(--font);font-size:.88rem;line-height:1.7;resize:vertical;box-sizing:border-box;transition:border-color .15s}
+textarea:focus{outline:none;border-color:var(--primary)}
+.char-count{font-size:.75rem;color:var(--text3);margin-top:5px;text-align:right}
+/* Form actions */
+.form-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+/* Empty */
+.empty{padding:48px 20px;text-align:center}
+.empty i{font-size:2.5rem;color:var(--text3);display:block;margin-bottom:12px;opacity:.5}
+@media(max-width:700px){.wrap{padding:16px}.resume-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2><i class="bi bi-graph-up-arrow"></i> Batch Resume Analysis</h2>
-            <p class="text-muted">Compare multiple resumes against the same job description to find the best match</p>
-        </div>
-        <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Resumes
-        </a>
+<div class="wrap">
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">Batch Resume Analysis</div>
+      <div class="page-sub">Compare multiple resumes against the same job description to find your best match</div>
+    </div>
+    <a href="{% url 'resume_list' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Back</a>
+  </div>
+
+  <!-- How it works -->
+  <div class="how-banner">
+    <div class="how-step"><div class="how-num">1</div><div class="how-text">Select 2+ resumes to compare</div></div>
+    <div class="how-step"><div class="how-num">2</div><div class="how-text">Paste the job description</div></div>
+    <div class="how-step"><div class="how-num">3</div><div class="how-text">See which resume scores highest</div></div>
+    <div class="how-step"><div class="how-num">4</div><div class="how-text">Optimize the gaps with AI</div></div>
+  </div>
+
+  <form method="post" action="{% url 'batch_analysis' %}">
+    {% csrf_token %}
+
+    <!-- Step 1: Select Resumes -->
+    <div class="card">
+      <div class="card-hdr">
+        <div class="card-title"><i class="bi bi-file-earmark-text"></i> Step 1 — Select Resumes</div>
+        <span class="selected-badge" id="selectedBadge">0 selected</span>
+      </div>
+
+      {% if resumes %}
+      <div class="select-toolbar">
+        <button type="button" class="btn btn-ghost" id="selectAllBtn"><i class="bi bi-check-square"></i> Select All</button>
+        <button type="button" class="btn btn-ghost" id="deselectAllBtn"><i class="bi bi-square"></i> Clear</button>
+      </div>
+      <div class="resume-grid" id="resumeGrid">
+        {% for resume in resumes %}
+        <label class="resume-option" for="resume_{{ resume.id }}">
+          <input type="checkbox" name="resume_ids" value="{{ resume.id }}" id="resume_{{ resume.id }}" class="resume-checkbox">
+          <div class="resume-option-title">{{ resume.title }}</div>
+          <div class="resume-option-meta">
+            <span><i class="bi bi-clock"></i> {{ resume.updated_at|date:"M d, Y" }}</span>
+            <span><i class="bi bi-layers"></i> v{{ resume.current_version_number }}</span>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            {% if resume.latest_ats_score %}
+              <span class="resume-option-score {% if resume.latest_ats_score >= 75 %}score-high{% else %}score-mid{% endif %}">
+                <i class="bi bi-graph-up"></i> {{ resume.latest_ats_score|floatformat:0 }} ATS
+              </span>
+            {% else %}
+              <span class="resume-option-score score-none"><i class="bi bi-question-circle"></i> Not analyzed</span>
+            {% endif %}
+            {% if resume.experiences.count %}<span style="font-size:.72rem;color:var(--text3)"><i class="bi bi-briefcase"></i> {{ resume.experiences.count }} exp</span>{% endif %}
+            {% if resume.skills.count %}<span style="font-size:.72rem;color:var(--text3)"><i class="bi bi-star"></i> {{ resume.skills.count }} skills</span>{% endif %}
+          </div>
+        </label>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty">
+        <i class="bi bi-inbox"></i>
+        <div style="font-size:.95rem;font-weight:600;margin-bottom:6px">No resumes yet</div>
+        <a href="{% url 'resume_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Create Resume</a>
+      </div>
+      {% endif %}
     </div>
 
-    <!-- Instructions -->
-    <div class="alert alert-info mb-4">
-        <h5 class="alert-heading"><i class="bi bi-info-circle"></i> How it works</h5>
-        <ol class="mb-0">
-            <li>Select 2 or more resumes you want to compare</li>
-            <li>Paste the job description you're applying for</li>
-            <li>Click "Analyze Resumes" to see which resume scores highest</li>
-            <li>Review the comparison table to understand the differences</li>
-        </ol>
+    <!-- Step 2: Job Description -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:14px"><i class="bi bi-briefcase"></i> Step 2 — Job Description</div>
+      <textarea id="jobDescription" name="job_description" rows="12"
+        placeholder="Paste the complete job description here. Include requirements, responsibilities, and qualifications for the most accurate analysis."
+        required minlength="50"></textarea>
+      <div class="char-count"><span id="charCount">0</span> characters (min 50)</div>
     </div>
 
-    <form method="post" action="{% url 'batch_analysis' %}">
-        {% csrf_token %}
-        
-        <!-- Resume Selection -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-file-earmark-text"></i> Step 1: Select Resumes</h5>
-            </div>
-            <div class="card-body">
-                {% if resumes %}
-                    <div class="mb-3">
-                        <button type="button" class="btn btn-sm btn-outline-primary" id="selectAllBtn">
-                            <i class="bi bi-check-square"></i> Select All
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAllBtn">
-                            <i class="bi bi-square"></i> Deselect All
-                        </button>
-                        <span class="ms-3 text-muted" id="selectedCount">0 resumes selected</span>
-                    </div>
-                    
-                    <div class="row">
-                        {% for resume in resumes %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <div class="form-check">
-                                            <input class="form-check-input resume-checkbox" 
-                                                   type="checkbox" 
-                                                   name="resume_ids" 
-                                                   value="{{ resume.id }}" 
-                                                   id="resume_{{ resume.id }}">
-                                            <label class="form-check-label w-100" for="resume_{{ resume.id }}">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        <h6 class="mb-1">{{ resume.title }}</h6>
-                                                        <small class="text-muted">
-                                                            <i class="bi bi-calendar3"></i> Updated {{ resume.updated_at|date:"M d, Y" }}
-                                                        </small>
-                                                    </div>
-                                                    <span class="badge bg-primary">{{ resume.template|title }}</span>
-                                                </div>
-                                                <div class="mt-2">
-                                                    <small class="text-muted">
-                                                        {% if resume.experiences.count > 0 %}
-                                                            <i class="bi bi-briefcase"></i> {{ resume.experiences.count }} experience(s)
-                                                        {% endif %}
-                                                        {% if resume.skills.count > 0 %}
-                                                            <i class="bi bi-star ms-2"></i> {{ resume.skills.count }} skill(s)
-                                                        {% endif %}
-                                                    </small>
-                                                </div>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="bi bi-inbox display-1 text-muted"></i>
-                        <p class="text-muted mt-3">You don't have any resumes yet.</p>
-                        <a href="{% url 'resume_create' %}" class="btn btn-primary">
-                            <i class="bi bi-plus-circle"></i> Create Your First Resume
-                        </a>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Job Description -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="bi bi-briefcase"></i> Step 2: Enter Job Description</h5>
-            </div>
-            <div class="card-body">
-                <div class="form-group">
-                    <label for="job_description" class="form-label">
-                        Job Description <span class="text-danger">*</span>
-                    </label>
-                    <textarea 
-                        class="form-control" 
-                        id="job_description" 
-                        name="job_description" 
-                        rows="12" 
-                        placeholder="Paste the complete job description here. Include requirements, responsibilities, and qualifications for best results."
-                        required
-                        minlength="50"></textarea>
-                    <small class="form-text text-muted">
-                        <i class="bi bi-info-circle"></i> Minimum 50 characters required. Include as much detail as possible for accurate analysis.
-                    </small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Submit Button -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{% url 'resume_list' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-x-circle"></i> Cancel
-            </a>
-            <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn" disabled>
-                <i class="bi bi-graph-up-arrow"></i> Analyze Resumes
-            </button>
-        </div>
-    </form>
+    <!-- Actions -->
+    <div class="form-actions">
+      <a href="{% url 'resume_list' %}" class="btn btn-ghost"><i class="bi bi-x"></i> Cancel</a>
+      <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn" disabled>
+        <i class="bi bi-graph-up-arrow"></i> Analyze Resumes
+      </button>
+    </div>
+  </form>
 </div>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.resume-checkbox');
-    const selectAllBtn = document.getElementById('selectAllBtn');
-    const deselectAllBtn = document.getElementById('deselectAllBtn');
-    const selectedCount = document.getElementById('selectedCount');
-    const analyzeBtn = document.getElementById('analyzeBtn');
-    const jobDescription = document.getElementById('job_description');
-    
-    function updateSelectedCount() {
-        const checked = document.querySelectorAll('.resume-checkbox:checked').length;
-        selectedCount.textContent = `${checked} resume${checked !== 1 ? 's' : ''} selected`;
-        
-        // Enable analyze button only if at least 1 resume is selected and job description is filled
-        const jobDescValid = jobDescription.value.trim().length >= 50;
-        analyzeBtn.disabled = !(checked >= 1 && jobDescValid);
-    }
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelectedCount);
-    });
-    
-    jobDescription.addEventListener('input', updateSelectedCount);
-    
-    selectAllBtn.addEventListener('click', function() {
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = true;
-        });
-        updateSelectedCount();
-    });
-    
-    deselectAllBtn.addEventListener('click', function() {
-        checkboxes.forEach(checkbox => {
-            checkbox.checked = false;
-        });
-        updateSelectedCount();
-    });
-    
-    // Initial update
-    updateSelectedCount();
+const checkboxes = document.querySelectorAll('.resume-checkbox');
+const badge = document.getElementById('selectedBadge');
+const analyzeBtn = document.getElementById('analyzeBtn');
+const jdField = document.getElementById('jobDescription');
+const charCount = document.getElementById('charCount');
+
+function update() {
+  const checked = [...checkboxes].filter(c => c.checked).length;
+  badge.textContent = checked + ' selected';
+  const jdOk = jdField.value.trim().length >= 50;
+  analyzeBtn.disabled = !(checked >= 1 && jdOk);
+  // Visual feedback on cards
+  checkboxes.forEach(cb => {
+    cb.closest('.resume-option').classList.toggle('selected', cb.checked);
+  });
+}
+
+checkboxes.forEach(cb => cb.addEventListener('change', update));
+jdField.addEventListener('input', () => {
+  charCount.textContent = jdField.value.length;
+  update();
 });
+
+document.getElementById('selectAllBtn')?.addEventListener('click', () => {
+  checkboxes.forEach(cb => cb.checked = true);
+  update();
+});
+document.getElementById('deselectAllBtn')?.addEventListener('click', () => {
+  checkboxes.forEach(cb => cb.checked = false);
+  update();
+});
+
+update();
 </script>
 {% endblock %}

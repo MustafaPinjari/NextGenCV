@@ -25,16 +25,17 @@ class KeywordExtractorService:
     
     @classmethod
     def _get_nlp(cls):
-        """Lazy load spaCy model."""
+        """Lazy load spaCy model once per process."""
         if cls._nlp is None:
             try:
                 cls._nlp = spacy.load('en_core_web_sm')
             except OSError:
-                # If model not found, download it
-                import subprocess
-                subprocess.run(['python', '-m', 'spacy', 'download', 'en_core_web_sm'])
-                cls._nlp = spacy.load('en_core_web_sm')
-        return cls._nlp
+                import logging
+                logging.getLogger(__name__).warning(
+                    "spaCy model 'en_core_web_sm' not found. Run: python -m spacy download en_core_web_sm"
+                )
+                cls._nlp = False  # sentinel so we don't retry every call
+        return cls._nlp if cls._nlp else None
     
     @staticmethod
     def extract_keywords(text: str, min_length: int = 3) -> Set[str]:
@@ -50,8 +51,14 @@ class KeywordExtractorService:
         """
         if not text or not text.strip():
             return set()
-        
+
         nlp = KeywordExtractorService._get_nlp()
+        if not nlp:
+            # Fallback: simple tokenization without NLP
+            import string
+            tokens = text.lower().translate(str.maketrans('', '', string.punctuation)).split()
+            return {t for t in tokens if len(t) >= min_length and t not in KeywordExtractorService.STOP_WORDS}
+
         doc = nlp(text.lower())
         
         keywords = set()

@@ -10,58 +10,85 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _compute_completeness(resume):
+    """Return 0-100 completeness score based on filled sections."""
+    score = 0
+    try:
+        pi = resume.personal_info
+        if pi.full_name: score += 15
+        if pi.email: score += 10
+        if pi.phone: score += 5
+        if pi.location: score += 5
+        if pi.linkedin: score += 5
+    except Exception:
+        pass
+    if resume.summary: score += 10
+    if resume.experiences.exists(): score += 20
+    if resume.education.exists(): score += 15
+    if resume.skills.exists(): score += 10
+    if resume.projects.exists(): score += 5
+    return min(score, 100)
+
+
 @login_required
 def analyze_resume(request, resume_id):
-    """
-    Analyze resume against job description using ATS keyword matching.
-    
-    Displays a form for job description input and shows analysis results
-    including match score, matched keywords, missing keywords, and suggestions.
-    
-    Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.6
-    """
-    # Get the resume and verify ownership
     resume = get_object_or_404(Resume, id=resume_id)
-    
-    # Authorization check - ensure resume belongs to authenticated user
+
     if resume.user != request.user:
-        logger.warning(f'Unauthorized access attempt: User {request.user.username} tried to analyze resume {resume_id} owned by {resume.user.username}')
+        logger.warning(f'Unauthorized: {request.user.username} tried to analyze resume {resume_id}')
         return HttpResponseForbidden("You do not have permission to access this resume.")
-    
+
     analysis_result = None
-    
+
     if request.method == 'POST':
         form = JobDescriptionForm(request.POST)
         if form.is_valid():
             job_description = form.cleaned_data['job_description']
-            
-            # Call the ATS analyzer service
             try:
                 analysis_result = ATSAnalyzerService.analyze_resume(resume_id, job_description)
-                
-                # Calculate stroke-dashoffset for circular progress (452.39 is circumference for r=72)
-                # Formula: circumference * (1 - score/100)
+
                 if analysis_result:
                     score_decimal = analysis_result['score'] / 100
                     analysis_result['stroke_dashoffset'] = 452.39 * (1 - score_decimal)
-                
-                logger.info(f'ATS analysis completed for resume {resume_id} by user {request.user.username}')
+
+                    # Save score back to Resume (no duplicate analyses)
+                    from apps.resumes.models import ResumeAnalysis
+                    from django.utils import timezone
+                    ResumeAnalysis.objects.update_or_create(
+                        resume=resume,
+                        job_description=job_description,
+                        defaults={
+                            'keyword_match_score': analysis_result['score'],
+                            'skill_relevance_score': analysis_result['score'],
+                            'section_completeness_score': analysis_result['score'],
+                            'experience_impact_score': analysis_result['score'],
+                            'quantification_score': analysis_result['score'],
+                            'action_verb_score': analysis_result['score'],
+                            'final_score': analysis_result['score'],
+                            'matched_keywords': analysis_result['matched_keywords'],
+                            'missing_keywords': analysis_result['missing_keywords'],
+                            'suggestions': analysis_result['suggestions'],
+                        }
+                    )
+                    # Cache score + completeness on Resume row
+                    resume.latest_ats_score = round(analysis_result['score'], 1)
+                    resume.last_analyzed_at = timezone.now()
+                    resume.completeness_score = _compute_completeness(resume)
+                    resume.save(update_fields=['latest_ats_score', 'last_analyzed_at', 'completeness_score'])
+
+                logger.info(f'ATS analysis completed for resume {resume_id} by {request.user.username}')
                 messages.success(request, 'Resume analysis completed successfully!')
             except Exception as e:
-                # Handle any analysis errors
                 logger.error(f'ATS analysis failed for resume {resume_id}: {str(e)}', exc_info=True)
-                messages.error(request, f"Analysis failed: {str(e)}")
-                form.add_error(None, f"Analysis failed: {str(e)}")
+                messages.error(request, f'Analysis failed: {str(e)}')
         else:
             messages.error(request, 'Please correct the errors in the form.')
     else:
         form = JobDescriptionForm()
-    
+
     context = {
         'form': form,
         'resume': resume,
         'analysis_result': analysis_result,
     }
-    
-    # Use new redesigned template
     return render(request, 'analyzer/analyze_new.html', context)

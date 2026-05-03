@@ -12,6 +12,8 @@ urlpatterns = [
     path('<int:pk>/delete/', views.resume_delete, name='resume_delete'),
     path('<int:pk>/duplicate/', views.resume_duplicate, name='resume_duplicate'),
     path('<int:pk>/export/', views.resume_export, name='resume_export'),
+    path('<int:pk>/share/', views.resume_share, name='resume_share'),
+    path('public/<str:token>/', views.resume_public_view, name='resume_public'),
     path('<int:pk>/export/docx/', views.resume_export_docx, name='resume_export_docx'),
     path('<int:pk>/export/text/', views.resume_export_text, name='resume_export_text'),
     

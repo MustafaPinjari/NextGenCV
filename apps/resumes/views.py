@@ -18,14 +18,26 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def resume_list(request):
-    """
-    Display all resumes for the authenticated user.
-    Shows resume title, template, last updated timestamp.
-    Handles empty state with welcome message.
-    """
-    resumes = ResumeService.get_user_resumes(request.user)
+    from django.core.paginator import Paginator
+    from django.utils import timezone
+
+    all_resumes = ResumeService.get_user_resumes(request.user)
+
+    # Update completeness scores in bulk (cheap, no external calls)
+    from apps.analyzer.views import _compute_completeness
+    for r in all_resumes:
+        new_score = _compute_completeness(r)
+        if r.completeness_score != new_score:
+            r.completeness_score = new_score
+            r.save(update_fields=['completeness_score'])
+
+    paginator = Paginator(all_resumes, 12)
+    page_obj = paginator.get_page(request.GET.get('page'))
+
     context = {
-        'resumes': resumes,
+        'resumes': page_obj,
+        'page_obj': page_obj,
+        'is_paginated': paginator.num_pages > 1,
     }
     return render(request, 'resumes/resume_list.html', context)
 
@@ -41,6 +53,9 @@ def resume_create(request):
             'step': 1,
             'data': {}
         }
+        request.session.modified = True
+    # Force session to be saved on every request (prevents data loss on refresh)
+    request.session.modified = True
     
     wizard_data = request.session['resume_wizard']
     current_step = wizard_data['step']
@@ -1364,19 +1379,65 @@ def project_delete(request, resume_pk, project_pk):
 
 
 # ============================================================================
+# Resume Sharing
+# ============================================================================
+
+@login_required
+def resume_share(request, pk):
+    """Generate or revoke a public share link for a resume."""
+    import secrets
+    resume = get_object_or_404(Resume, id=pk, user=request.user)
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'generate':
+            resume.share_token = secrets.token_urlsafe(32)
+            resume.save(update_fields=['share_token'])
+            messages.success(request, 'Share link generated.')
+        elif action == 'revoke':
+            resume.share_token = ''
+            resume.save(update_fields=['share_token'])
+            messages.success(request, 'Share link revoked.')
+    return redirect('resume_detail', pk=pk)
+
+
+def resume_public_view(request, token):
+    """Public read-only resume view via share token."""
+    resume = get_object_or_404(Resume, share_token=token)
+    if not resume.share_token:
+        from django.http import Http404
+        raise Http404
+    context = {
+        'resume': resume,
+        'personal_info': getattr(resume, 'personal_info', None),
+        'experiences': resume.experiences.all(),
+        'education': resume.education.all(),
+        'skills': resume.skills.all(),
+        'projects': resume.projects.all(),
+        'is_public': True,
+    }
+    return render(request, 'resumes/resume_public.html', context)
+
+
+# ============================================================================
 # PDF Upload Module Views
 # ============================================================================
 
 @login_required
 def pdf_upload(request):
     """
-    Handle PDF resume upload with validation and parsing.
-    
-    GET: Display upload form
-    POST: Validate file, extract text, parse sections, redirect to review
-    
-    Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.8
+    Handle PDF resume upload with validation, rate limiting, and parsing.
     """
+    # Rate limiting: max 5 uploads per hour per user
+    from django.utils import timezone
+    from datetime import timedelta
+    recent_uploads = UploadedResume.objects.filter(
+        user=request.user,
+        uploaded_at__gte=timezone.now() - timedelta(hours=1)
+    ).count()
+    if recent_uploads >= 5:
+        messages.error(request, 'Upload limit reached (5 per hour). Please try again later.')
+        return render(request, 'resumes/pdf_upload.html')
+
     if request.method == 'POST':
         # Check if file was uploaded
         if 'resume_file' not in request.FILES:
@@ -1590,26 +1651,22 @@ def pdf_import_confirm(request, upload_id):
         }
 
         # Personal info — read from POST (user may have edited the review form)
-        full_name = request.POST.get('full_name', '').strip()
-        email = request.POST.get('email', '').strip()
-        if not full_name and personal_info:
-            full_name = personal_info.get('name', '')
-        if not email and personal_info:
-            email = personal_info.get('email', '')
+        personal_info = parsed_data.get('personal_info') or {}
+        full_name = request.POST.get('full_name', '').strip() or personal_info.get('name', '')
+        email = request.POST.get('email', '').strip() or personal_info.get('email', '')
+        phone = request.POST.get('phone', '').strip() or personal_info.get('phone', '')
+        location = request.POST.get('location', '').strip() or personal_info.get('location', '')
+        linkedin = request.POST.get('linkedin', '').strip() or personal_info.get('linkedin', '') or None
+        github = request.POST.get('github', '').strip() or personal_info.get('website', '') or None
 
         resume_data['personal_info'] = {
             'full_name': full_name or 'Unknown',
             'email': email or '',
-            'phone': request.POST.get('phone', '') or personal_info.get('phone', '') if personal_info else '',
-            'location': request.POST.get('location', '') or personal_info.get('location', '') if personal_info else '',
-            'linkedin': request.POST.get('linkedin', '') or personal_info.get('linkedin', '') if personal_info else '' or None,
-            'github': request.POST.get('github', '') or personal_info.get('website', '') if personal_info else '' or None,
+            'phone': phone,
+            'location': location,
+            'linkedin': linkedin if linkedin else None,
+            'github': github if github else None,
         }
-        # Ensure linkedin/github are None not empty string (URLField)
-        if not resume_data['personal_info']['linkedin']:
-            resume_data['personal_info']['linkedin'] = None
-        if not resume_data['personal_info']['github']:
-            resume_data['personal_info']['github'] = None
         
         # Add experiences if available
         experiences = parsed_data.get('experiences', [])
