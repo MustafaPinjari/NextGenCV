@@ -30,53 +30,98 @@ class PDFParserService:
     @staticmethod
     def extract_text_from_pdf(pdf_file) -> str:
         """
-        Extract text from PDF file using pdfplumber.
-        
-        Args:
-            pdf_file: File object or file path
-            
-        Returns:
-            str: Extracted text from all pages
-            
-        Raises:
-            Exception: If PDF cannot be read or parsed
+        Extract text from PDF using pdfplumber with layout-aware extraction.
+        Handles multi-column layouts by sorting words by position.
         """
         try:
-            text = ""
-            
-            # Handle both file objects and file paths
+            text_pages = []
+
             if hasattr(pdf_file, 'read'):
-                # It's a file object, read it into BytesIO
                 pdf_bytes = BytesIO(pdf_file.read())
-                pdf_file.seek(0)  # Reset file pointer for potential reuse
+                pdf_file.seek(0)
                 pdf_source = pdf_bytes
             else:
-                # It's a file path
                 pdf_source = pdf_file
-            
+
             with pdfplumber.open(pdf_source) as pdf:
                 for page_num, page in enumerate(pdf.pages, 1):
                     try:
-                        # Extract text from page
-                        page_text = page.extract_text()
-                        
+                        page_text = PDFParserService._extract_page_text(page)
                         if page_text:
-                            text += page_text + "\n\n"
+                            text_pages.append(page_text)
                         else:
                             logger.warning(f"No text extracted from page {page_num}")
-                            
                     except Exception as e:
                         logger.error(f"Error extracting text from page {page_num}: {e}")
                         continue
-            
-            if not text.strip():
+
+            full_text = "\n\n".join(text_pages)
+            if not full_text.strip():
                 raise ValueError("No text could be extracted from the PDF. It may be a scanned image or empty.")
-            
-            return text
-            
+            return full_text
+
         except Exception as e:
             logger.error(f"PDF extraction failed: {e}")
             raise Exception(f"Failed to extract text from PDF: {str(e)}")
+
+    @staticmethod
+    def _extract_page_text(page) -> str:
+        """
+        Extract text from a single page with layout awareness.
+        Tries word-position sorting first, falls back to basic extraction.
+        """
+        try:
+            words = page.extract_words(
+                x_tolerance=3,
+                y_tolerance=3,
+                keep_blank_chars=False,
+                use_text_flow=True,
+            )
+            if not words:
+                return page.extract_text() or ''
+
+            # Detect if page has two columns by checking x-position distribution
+            page_width = page.width
+            mid = page_width / 2
+            left_words = [w for w in words if float(w['x0']) < mid - 20]
+            right_words = [w for w in words if float(w['x0']) >= mid + 20]
+
+            # If significant content in both halves, treat as two-column
+            if len(left_words) > 10 and len(right_words) > 10 and len(right_words) > len(left_words) * 0.3:
+                left_text = PDFParserService._words_to_text(left_words)
+                right_text = PDFParserService._words_to_text(right_words)
+                return left_text + '\n\n' + right_text
+
+            # Single column — sort by top then left
+            return PDFParserService._words_to_text(words)
+
+        except Exception:
+            return page.extract_text() or ''
+
+    @staticmethod
+    def _words_to_text(words: list) -> str:
+        """Convert word dicts (with x0, top, text) into readable lines."""
+        if not words:
+            return ''
+        # Sort by vertical position then horizontal
+        words = sorted(words, key=lambda w: (round(float(w['top']) / 5) * 5, float(w['x0'])))
+        lines = []
+        current_line = []
+        current_top = None
+        for word in words:
+            top = round(float(word['top']) / 5) * 5
+            if current_top is None:
+                current_top = top
+            if abs(top - current_top) > 8:
+                if current_line:
+                    lines.append(' '.join(current_line))
+                current_line = [word['text']]
+                current_top = top
+            else:
+                current_line.append(word['text'])
+        if current_line:
+            lines.append(' '.join(current_line))
+        return '\n'.join(lines)
     
     @staticmethod
     def clean_extracted_text(text: str) -> str:

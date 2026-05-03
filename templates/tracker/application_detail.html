@@ -1,0 +1,128 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}{{ application.company }} — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:900px;margin:0 auto}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:.85rem;margin-bottom:20px;transition:color .15s}
+.back:hover{color:var(--primary-light)}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.page-sub{font-size:.9rem;color:var(--text3);margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r8);font-size:.82rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-danger{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;margin-bottom:16px}
+.card-title{font-size:.95rem;font-weight:700;margin-bottom:16px}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.meta-item label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:4px}
+.meta-item .val{font-size:.9rem;color:var(--text)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:4px 12px;border-radius:99px;font-size:.78rem;font-weight:700}
+.badge-saved{background:rgba(139,146,158,.12);color:var(--text3)}
+.badge-applied{background:rgba(6,182,212,.12);color:var(--cyan)}
+.badge-interview{background:rgba(99,102,241,.12);color:var(--primary-light)}
+.badge-offer{background:rgba(16,185,129,.12);color:var(--green)}
+.badge-rejected{background:rgba(248,113,113,.12);color:var(--red)}
+.badge-withdrawn{background:rgba(139,146,158,.12);color:var(--text3)}
+.jd-text{font-size:.85rem;color:var(--text2);line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;background:var(--surface2);border-radius:var(--r8);padding:14px}
+.cl-preview{font-size:.85rem;color:var(--text2);line-height:1.8;white-space:pre-wrap;background:var(--surface2);border-radius:var(--r8);padding:16px;max-height:400px;overflow-y:auto}
+.score-big{font-size:2rem;font-weight:900;color:var(--primary-light)}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <a href="{% url 'application_list' %}" class="back"><i class="bi bi-arrow-left"></i> All Applications</a>
+
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">{{ application.company }}</div>
+      <div class="page-sub">{{ application.role }}</div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'generate_cover_letter' application.pk %}" class="btn btn-primary">
+        <i class="bi bi-file-text"></i> {% if cover_letter %}Edit{% else %}Generate{% endif %} Cover Letter
+      </a>
+      <a href="{% url 'interview_prep' application.pk %}" class="btn btn-ghost"><i class="bi bi-chat-dots"></i> Interview Prep</a>
+      <a href="{% url 'followup_email' application.pk %}" class="btn btn-ghost"><i class="bi bi-envelope"></i> Follow-Up</a>
+      <a href="{% url 'salary_intelligence' %}?app_id={{ application.pk }}" class="btn btn-ghost"><i class="bi bi-currency-dollar"></i> Salary</a>
+      <a href="{% url 'application_update' application.pk %}" class="btn btn-ghost"><i class="bi bi-pencil"></i> Edit</a>
+      <a href="{% url 'application_delete' application.pk %}" class="btn btn-danger"><i class="bi bi-trash"></i></a>
+    </div>
+  </div>
+
+  <!-- Meta -->
+  <div class="card">
+    <div class="meta-grid">
+      <div class="meta-item">
+        <label>Status</label>
+        <span class="badge badge-{{ application.status }}">{{ application.get_status_display }}</span>
+      </div>
+      <div class="meta-item">
+        <label>ATS Score at Apply</label>
+        <div class="val">
+          {% if application.ats_score_at_apply %}
+            <span class="score-big">{{ application.ats_score_at_apply|floatformat:0 }}</span><span style="color:var(--text3)">/100</span>
+          {% else %}—{% endif %}
+        </div>
+      </div>
+      <div class="meta-item">
+        <label>Applied Date</label>
+        <div class="val">{{ application.applied_date|default:"Not set" }}</div>
+      </div>
+      <div class="meta-item">
+        <label>Resume Used</label>
+        <div class="val">
+          {% if application.resume %}
+            <a href="{% url 'resume_detail' application.resume.pk %}" style="color:var(--primary-light);text-decoration:none">{{ application.resume.title }}</a>
+          {% else %}—{% endif %}
+        </div>
+      </div>
+      <div class="meta-item">
+        <label>Job URL</label>
+        <div class="val">
+          {% if application.job_url %}
+            <a href="{{ application.job_url }}" target="_blank" style="color:var(--primary-light);text-decoration:none;font-size:.82rem">View posting <i class="bi bi-box-arrow-up-right"></i></a>
+          {% else %}—{% endif %}
+        </div>
+      </div>
+      <div class="meta-item">
+        <label>Added</label>
+        <div class="val" style="color:var(--text3);font-size:.82rem">{{ application.created_at|date:"M j, Y" }}</div>
+      </div>
+    </div>
+    {% if application.notes %}
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+      <label style="font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Notes</label>
+      <div style="font-size:.85rem;color:var(--text2);line-height:1.6">{{ application.notes }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Job Description -->
+  {% if application.job_description %}
+  <div class="card">
+    <div class="card-title">Job Description</div>
+    <div class="jd-text">{{ application.job_description }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Cover Letter -->
+  {% if cover_letter %}
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:0">Cover Letter</div>
+      <a href="{% url 'generate_cover_letter' application.pk %}" class="btn btn-ghost" style="font-size:.78rem;padding:6px 12px"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+    <div class="cl-preview">{{ cover_letter.content }}</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

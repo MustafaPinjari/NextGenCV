@@ -1,277 +1,225 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
+{% block title %}Review Parsed Resume — NextGenCV{% endblock %}
 
-{% block title %}Review Parsed Resume - NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1000px;margin:0 auto}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.page-sub{font-size:.85rem;color:var(--text3);margin-top:4px}
+/* Stats bar */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:16px;text-align:center}
+.stat-val{font-size:1.8rem;font-weight:900;letter-spacing:-.04em;color:var(--primary-light)}
+.stat-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+/* Alert */
+.alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:var(--r8);margin-bottom:20px;font-size:.85rem}
+.alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.alert-ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green)}
+.alert-info{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);color:var(--primary-light)}
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;margin-bottom:18px}
+.card-title{font-size:1rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.card-title i{color:var(--primary-light)}
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:9px 13px;color:var(--text);font-family:var(--font);font-size:.88rem;transition:border-color .15s;width:100%;box-sizing:border-box}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+select option{background:var(--surface2)}
+/* Experience blocks */
+.exp-block{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r12);padding:18px;margin-bottom:14px}
+.exp-header{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.exp-meta{font-size:.78rem;color:var(--text3);margin-bottom:12px;display:flex;gap:14px;flex-wrap:wrap}
+.exp-meta span{display:flex;align-items:center;gap:4px}
+.achievements-text{font-size:.82rem;color:var(--text2);line-height:1.7;white-space:pre-wrap;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.1);border-radius:var(--r8);padding:10px 12px;margin-top:8px}
+/* Skills */
+.skills-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.skill-tag{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:var(--primary-light);padding:4px 12px;border-radius:99px;font-size:.8rem;font-weight:500}
+.skill-tag .cat{opacity:.6;font-size:.72rem;margin-left:4px}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.form-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.empty-section{color:var(--text3);font-size:.85rem;padding:12px 0;font-style:italic}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.wrap{padding:16px}}
+</style>
+{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="page-header">
-    <div class="page-header__content">
-        <div class="page-header__title-section">
-            <h1 class="page-header__title">
-                <i class="bi bi-file-earmark-check"></i>
-                Review Parsed Resume
-            </h1>
-            <p class="page-header__subtitle">Review and edit the extracted information before importing</p>
-        </div>
-        <div class="page-header__actions">
-            <a href="{% url 'pdf_upload' %}" class="btn btn-ghost">
-                <i class="bi bi-arrow-left"></i>
-                <span>Upload Different File</span>
-            </a>
-        </div>
+<div class="wrap">
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">Review Parsed Resume</div>
+      <div class="page-sub">Edit any fields before importing — all changes are saved</div>
     </div>
-</div>
+    <a href="{% url 'pdf_upload' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Upload Different File</a>
+  </div>
 
-<!-- Parsing Stats -->
-<div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-    <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--spacing-4, 2rem); color: white;">
-            <div style="text-align: center;">
-                <div style="font-size: var(--font-size-4xl, 2.25rem); font-weight: var(--font-weight-bold, 700);">{{ confidence_percent }}%</div>
-                <div style="font-size: var(--font-size-sm, 0.875rem); opacity: 0.9;">Overall Confidence</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: var(--font-size-4xl, 2.25rem); font-weight: var(--font-weight-bold, 700);">
-                    {% if personal_info %}1{% else %}0{% endif %}{% if experiences %}+{{ experiences|length }}{% endif %}{% if education %}+{{ education|length }}{% endif %}{% if skills %}+{{ skills|length }}{% endif %}
-                </div>
-                <div style="font-size: var(--font-size-sm, 0.875rem); opacity: 0.9;">Sections Found</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: var(--font-size-4xl, 2.25rem); font-weight: var(--font-weight-bold, 700);">{{ uploaded_resume.file_size|filesizeformat }}</div>
-                <div style="font-size: var(--font-size-sm, 0.875rem); opacity: 0.9;">File Size</div>
-            </div>
-            <div style="text-align: center;">
-                <div style="font-size: var(--font-size-4xl, 2.25rem); font-weight: var(--font-weight-bold, 700);">{{ uploaded_resume.uploaded_at|date:"M d" }}</div>
-                <div style="font-size: var(--font-size-sm, 0.875rem); opacity: 0.9;">Upload Date</div>
-            </div>
-        </div>
-    </div>
-</div>
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-val">{{ confidence_percent }}%</div><div class="stat-lbl">Confidence</div></div>
+    <div class="stat"><div class="stat-val">{{ experiences|length }}</div><div class="stat-lbl">Experiences</div></div>
+    <div class="stat"><div class="stat-val">{{ education|length }}</div><div class="stat-lbl">Education</div></div>
+    <div class="stat"><div class="stat-val">{{ skills|length }}</div><div class="stat-lbl">Skills</div></div>
+  </div>
 
-<!-- Confidence Alert -->
-{% if confidence < 0.7 %}
-<div class="alert alert--warning" role="alert" style="margin-bottom: var(--spacing-4, 2rem);">
-    <div class="alert__icon"><i class="bi bi-exclamation-triangle"></i></div>
-    <div class="alert__content">
-        <strong>Low Parsing Confidence:</strong> We had some difficulty parsing your resume. Please carefully review the extracted information below.
-    </div>
-</div>
-{% elif confidence < 0.85 %}
-<div class="alert alert--info" role="alert" style="margin-bottom: var(--spacing-4, 2rem);">
-    <div class="alert__icon"><i class="bi bi-info-circle"></i></div>
-    <div class="alert__content">
-        <strong>Medium Parsing Confidence:</strong> Most of your resume was parsed successfully. Please review for accuracy.
-    </div>
-</div>
-{% else %}
-<div class="alert alert--success" role="alert" style="margin-bottom: var(--spacing-4, 2rem);">
-    <div class="alert__icon"><i class="bi bi-check-circle"></i></div>
-    <div class="alert__content">
-        <strong>High Parsing Confidence:</strong> Your resume was parsed successfully! Please review and confirm.
-    </div>
-</div>
-{% endif %}
+  <!-- Confidence alert -->
+  {% if confidence < 0.7 %}
+  <div class="alert alert-warn"><i class="bi bi-exclamation-triangle"></i> Low parsing confidence ({{ confidence_percent }}%). Please review all fields carefully — some may be missing or incorrect.</div>
+  {% elif confidence < 0.85 %}
+  <div class="alert alert-info"><i class="bi bi-info-circle"></i> Medium confidence ({{ confidence_percent }}%). Most fields were extracted correctly. Review before importing.</div>
+  {% else %}
+  <div class="alert alert-ok"><i class="bi bi-check-circle"></i> High confidence ({{ confidence_percent }}%). Your resume was parsed successfully!</div>
+  {% endif %}
 
-<!-- Review Form -->
-<form method="post" action="{% url 'pdf_import_confirm' uploaded_resume.id %}">
+  <form method="post" action="{% url 'pdf_import_confirm' uploaded_resume.id %}">
     {% csrf_token %}
-    
-    <div style="max-width: 1200px; margin: 0 auto;">
-        <!-- Personal Information -->
-        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-4, 2rem);">
-                    <h2 class="card-title" style="margin: 0;">
-                        <i class="bi bi-person"></i> Personal Information
-                    </h2>
-                    <span class="badge {% if confidence >= 0.85 %}badge-success{% elif confidence >= 0.70 %}badge-warning{% else %}badge-error{% endif %}">
-                        {{ confidence_percent }}% Confidence
-                    </span>
-                </div>
-                
-                {% if personal_info %}
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-4, 2rem);">
-                    <div class="form-group">
-                        <input type="text" class="form-input" name="full_name" value="{{ personal_info.name|default:'' }}" placeholder=" " required>
-                        <label class="form-label">Full Name *</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="email" class="form-input" name="email" value="{{ personal_info.email|default:'' }}" placeholder=" " required>
-                        <label class="form-label">Email *</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="tel" class="form-input" name="phone" value="{{ personal_info.phone|default:'' }}" placeholder=" ">
-                        <label class="form-label">Phone</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="text" class="form-input" name="location" value="{{ personal_info.location|default:'' }}" placeholder=" ">
-                        <label class="form-label">Location</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="url" class="form-input" name="linkedin" value="{{ personal_info.linkedin|default:'' }}" placeholder=" ">
-                        <label class="form-label">LinkedIn URL</label>
-                    </div>
-                    <div class="form-group">
-                        <input type="url" class="form-input" name="github" value="{{ personal_info.website|default:'' }}" placeholder=" ">
-                        <label class="form-label">Website/GitHub URL</label>
-                    </div>
-                </div>
-                {% else %}
-                <div class="empty-state empty-state-sm">
-                    <div class="empty-state-icon"><i class="bi bi-person" style="font-size: 60px;"></i></div>
-                    <h3 class="empty-state-title">No Personal Information Detected</h3>
-                    <p class="empty-state-description">Please fill in your details manually</p>
-                </div>
-                {% endif %}
-            </div>
+
+    <!-- ── Personal Information ── -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-person-circle"></i> Personal Information</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" name="full_name" value="{{ personal_info.name|default:'' }}" required placeholder="Your full name">
         </div>
-        
-        <!-- Work Experience -->
-        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-                <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                    <i class="bi bi-briefcase"></i> Work Experience
-                </h2>
-                
-                {% if experiences %}
-                <div style="display: flex; flex-direction: column; gap: var(--spacing-4, 2rem);">
-                    {% for exp in experiences %}
-                    <div style="padding: var(--spacing-4, 2rem); background: var(--color-bg-secondary, #1a1a2e); border-radius: var(--border-radius-lg, 12px); border: 1px solid var(--color-border, #2d2d44);">
-                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-3, 1.5rem);">
-                            <div>
-                                <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); margin-bottom: var(--spacing-1, 0.5rem);">
-                                    {{ exp.title|default:"Position Title" }}
-                                </h3>
-                                <p style="color: var(--color-text-secondary, #a0a0b8); margin-bottom: var(--spacing-1, 0.5rem);">
-                                    <i class="bi bi-building"></i> {{ exp.company|default:"Company Name" }}
-                                </p>
-                                <p style="color: var(--color-text-tertiary, #6b6b80); font-size: var(--font-size-sm, 0.875rem);">
-                                    <i class="bi bi-calendar"></i> {{ exp.start_date|default:"Start" }} - {{ exp.end_date|default:"End" }}
-                                </p>
-                            </div>
-                        </div>
-                        {% if exp.description %}
-                        <div style="color: var(--color-text-secondary, #a0a0b8); font-size: var(--font-size-sm, 0.875rem); line-height: 1.6; white-space: pre-wrap;">{{ exp.description }}</div>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state empty-state-sm">
-                    <div class="empty-state-icon"><i class="bi bi-briefcase" style="font-size: 60px;"></i></div>
-                    <h3 class="empty-state-title">No Work Experience Detected</h3>
-                    <p class="empty-state-description">You can add experience after importing</p>
-                </div>
-                {% endif %}
-            </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" name="email" value="{{ personal_info.email|default:'' }}" required placeholder="you@example.com">
         </div>
-        
-        <!-- Education -->
-        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-                <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                    <i class="bi bi-mortarboard"></i> Education
-                </h2>
-                
-                {% if education %}
-                <div style="display: flex; flex-direction: column; gap: var(--spacing-4, 2rem);">
-                    {% for edu in education %}
-                    <div style="padding: var(--spacing-4, 2rem); background: var(--color-bg-secondary, #1a1a2e); border-radius: var(--border-radius-lg, 12px); border: 1px solid var(--color-border, #2d2d44);">
-                        <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); margin-bottom: var(--spacing-1, 0.5rem);">
-                            {{ edu.degree|default:"Degree" }}
-                        </h3>
-                        <p style="color: var(--color-text-secondary, #a0a0b8); margin-bottom: var(--spacing-1, 0.5rem);">
-                            <i class="bi bi-building"></i> {{ edu.institution|default:"Institution" }}
-                        </p>
-                        {% if edu.field_of_study %}
-                        <p style="color: var(--color-text-tertiary, #6b6b80); font-size: var(--font-size-sm, 0.875rem); margin-bottom: var(--spacing-1, 0.5rem);">
-                            <i class="bi bi-book"></i> {{ edu.field_of_study }}
-                        </p>
-                        {% endif %}
-                        <p style="color: var(--color-text-tertiary, #6b6b80); font-size: var(--font-size-sm, 0.875rem);">
-                            <i class="bi bi-calendar"></i> {{ edu.graduation_date|default:"Graduation Date" }}
-                        </p>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state empty-state-sm">
-                    <div class="empty-state-icon"><i class="bi bi-mortarboard" style="font-size: 60px;"></i></div>
-                    <h3 class="empty-state-title">No Education Detected</h3>
-                    <p class="empty-state-description">You can add education after importing</p>
-                </div>
-                {% endif %}
-            </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" name="phone" value="{{ personal_info.phone|default:'' }}" placeholder="+1 555 000 0000">
         </div>
-        
-        <!-- Skills -->
-        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-                <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                    <i class="bi bi-star"></i> Skills
-                </h2>
-                
-                {% if skills %}
-                <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-2, 1rem);">
-                    {% for skill in skills %}
-                    <span class="badge badge-lg" style="background: var(--color-bg-secondary, #1a1a2e); border: 1px solid var(--color-border, #2d2d44); padding: var(--spacing-2, 1rem) var(--spacing-3, 1.5rem);">
-                        {{ skill.name }}
-                        {% if skill.category %}
-                        <span style="opacity: 0.6; margin-left: var(--spacing-1, 0.5rem);">• {{ skill.category }}</span>
-                        {% endif %}
-                    </span>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="empty-state empty-state-sm">
-                    <div class="empty-state-icon"><i class="bi bi-star" style="font-size: 60px;"></i></div>
-                    <h3 class="empty-state-title">No Skills Detected</h3>
-                    <p class="empty-state-description">You can add skills after importing</p>
-                </div>
-                {% endif %}
-            </div>
+        <div class="form-group">
+          <label>Location</label>
+          <input type="text" name="location" value="{{ personal_info.location|default:'' }}" placeholder="City, State / Country">
         </div>
-        
-        <!-- Resume Title -->
-        <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-                <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                    <i class="bi bi-file-text"></i> Resume Settings
-                </h2>
-                
-                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--spacing-4, 2rem);">
-                    <div class="form-group">
-                        <input type="text" class="form-input" name="title" value="Resume from {{ uploaded_resume.original_filename }}" placeholder=" " required>
-                        <label class="form-label">Resume Title *</label>
-                    </div>
-                    <div class="form-group">
-                        <select class="form-input" name="template" required>
-                            <option value="professional">Professional</option>
-                            <option value="modern">Modern</option>
-                            <option value="creative">Creative</option>
-                        </select>
-                        <label class="form-label">Template *</label>
-                    </div>
-                </div>
-            </div>
+        <div class="form-group">
+          <label>LinkedIn URL</label>
+          <input type="url" name="linkedin" value="{{ personal_info.linkedin|default:'' }}" placeholder="https://linkedin.com/in/...">
         </div>
-        
-        <!-- Action Buttons -->
-        <div class="card-elevated">
-            <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-                <div style="display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-3, 1.5rem); flex-wrap: wrap;">
-                    <a href="{% url 'pdf_upload' %}" class="btn btn-outline btn-lg">
-                        <i class="bi bi-x-circle"></i>
-                        Cancel
-                    </a>
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="bi bi-check-circle"></i>
-                        Confirm and Import Resume
-                    </button>
-                </div>
-            </div>
+        <div class="form-group">
+          <label>GitHub / Website</label>
+          <input type="url" name="github" value="{{ personal_info.website|default:'' }}" placeholder="https://github.com/...">
         </div>
+        {% if summary %}
+        <div class="form-group full">
+          <label>Professional Summary</label>
+          <textarea name="summary" rows="3">{{ summary }}</textarea>
+        </div>
+        {% endif %}
+      </div>
     </div>
-</form>
+
+    <!-- ── Work Experience (read-only preview, editable after import) ── -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-briefcase"></i> Work Experience
+        <span style="font-size:.75rem;font-weight:400;color:var(--text3);margin-left:auto">{{ experiences|length }} found · editable after import</span>
+      </div>
+      {% if experiences %}
+        {% for exp in experiences %}
+        <div class="exp-block">
+          <div class="exp-header">
+            <i class="bi bi-building" style="color:var(--cyan)"></i>
+            {{ exp.title|default:"Unknown Role" }}
+            {% if exp.company %}<span style="color:var(--text3);font-weight:400">@ {{ exp.company }}</span>{% endif %}
+          </div>
+          <div class="exp-meta">
+            {% if exp.start_date or exp.end_date %}
+            <span><i class="bi bi-calendar3"></i> {{ exp.start_date|default:"?" }} — {{ exp.end_date|default:"Present" }}</span>
+            {% endif %}
+            {% if exp.location %}<span><i class="bi bi-geo-alt"></i> {{ exp.location }}</span>{% endif %}
+          </div>
+          {% if exp.description %}
+          <div style="font-size:.83rem;color:var(--text2);line-height:1.6;margin-bottom:8px">{{ exp.description }}</div>
+          {% endif %}
+          {% if exp.achievements %}
+          <div class="achievements-text">{{ exp.achievements }}</div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-section"><i class="bi bi-info-circle"></i> No work experience detected. You can add it after importing.</div>
+      {% endif %}
+    </div>
+
+    <!-- ── Education ── -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-mortarboard"></i> Education
+        <span style="font-size:.75rem;font-weight:400;color:var(--text3);margin-left:auto">{{ education|length }} found · editable after import</span>
+      </div>
+      {% if education %}
+        {% for edu in education %}
+        <div class="exp-block">
+          <div class="exp-header"><i class="bi bi-building" style="color:var(--amber)"></i> {{ edu.degree|default:"Degree" }}</div>
+          <div class="exp-meta">
+            {% if edu.institution %}<span><i class="bi bi-bank"></i> {{ edu.institution }}</span>{% endif %}
+            {% if edu.field_of_study %}<span><i class="bi bi-book"></i> {{ edu.field_of_study }}</span>{% endif %}
+            {% if edu.graduation_date %}<span><i class="bi bi-calendar3"></i> {{ edu.graduation_date }}</span>{% endif %}
+            {% if edu.gpa %}<span><i class="bi bi-star"></i> GPA {{ edu.gpa }}</span>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="empty-section"><i class="bi bi-info-circle"></i> No education detected. You can add it after importing.</div>
+      {% endif %}
+    </div>
+
+    <!-- ── Skills ── -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-lightning-charge"></i> Skills
+        <span style="font-size:.75rem;font-weight:400;color:var(--text3);margin-left:auto">{{ skills|length }} found · editable after import</span>
+      </div>
+      {% if skills %}
+        <div class="skills-wrap">
+          {% for skill in skills %}
+          <span class="skill-tag">{{ skill.name }}{% if skill.category %}<span class="cat">· {{ skill.category }}</span>{% endif %}</span>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-section"><i class="bi bi-info-circle"></i> No skills detected. You can add them after importing.</div>
+      {% endif %}
+    </div>
+
+    <!-- ── Resume Settings ── -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-sliders"></i> Resume Settings</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Resume Title *</label>
+          <input type="text" name="title" value="Resume from {{ uploaded_resume.original_filename }}" required>
+        </div>
+        <div class="form-group">
+          <label>Template</label>
+          <select name="template">
+            <option value="professional">Professional</option>
+            <option value="modern">Modern</option>
+            <option value="minimal">Minimal</option>
+            <option value="classic">Classic</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Confirm & Import Resume</button>
+      <a href="{% url 'pdf_upload' %}" class="btn btn-ghost"><i class="bi bi-x"></i> Cancel</a>
+      <span style="font-size:.78rem;color:var(--text3)">Personal info edits above will be saved. Experience/education/skills can be edited after import.</span>
+    </div>
+  </form>
+</div>
 {% endblock %}

@@ -1,0 +1,101 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Salary Intelligence — NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:800px;margin:0 auto}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.page-sub{font-size:.85rem;color:var(--text3);margin-bottom:28px}
+.search-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;margin-bottom:24px}
+.form-row{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:end}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:.9rem;transition:border-color .15s;box-sizing:border-box}
+input:focus{outline:none;border-color:var(--primary)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9}
+.result-card{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(6,182,212,.06));border:1px solid rgba(99,102,241,.25);border-radius:var(--r20);padding:28px;margin-bottom:20px}
+.salary-range{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:20px 0}
+.salary-col{text-align:center;padding:16px;border-radius:var(--r16);background:rgba(255,255,255,.04)}
+.salary-col.mid{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25)}
+.salary-lbl{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.salary-val{font-size:1.8rem;font-weight:900;letter-spacing:-.04em}
+.salary-low .salary-val{color:var(--text2)}
+.salary-mid .salary-val{color:var(--primary-light)}
+.salary-high .salary-val{color:var(--green)}
+.meta-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+.meta-item{font-size:.82rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+.meta-item i{color:var(--text3)}
+.tip-list{list-style:none;padding:0;margin:0}
+.tip-list li{display:flex;align-items:flex-start;gap:8px;font-size:.85rem;color:var(--text2);line-height:1.6;padding:6px 0;border-bottom:1px solid rgba(33,38,45,.5)}
+.tip-list li:last-child{border-bottom:none}
+.tip-list li::before{content:'💡';flex-shrink:0}
+.note{font-size:.75rem;color:var(--text3);margin-top:12px;font-style:italic}
+@media(max-width:600px){.form-row{grid-template-columns:1fr}.salary-range{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-title">Salary Intelligence</div>
+  <div class="page-sub">Get market salary ranges before you apply or negotiate an offer.</div>
+
+  <div class="search-card">
+    <form method="get">
+      {% if application %}<input type="hidden" name="app_id" value="{{ application.pk }}">{% endif %}
+      <div class="form-row">
+        <div>
+          <label>Role / Job Title</label>
+          <input type="text" name="role" value="{{ role }}" placeholder="e.g. Senior Python Developer" required>
+        </div>
+        <div>
+          <label>Location (optional)</label>
+          <input type="text" name="location" value="{{ location }}" placeholder="e.g. San Francisco, Remote">
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Get Range</button>
+      </div>
+    </form>
+  </div>
+
+  {% if result %}
+  <div class="result-card">
+    <div class="meta-row">
+      <div class="meta-item"><i class="bi bi-briefcase"></i> {{ result.role }}</div>
+      <div class="meta-item"><i class="bi bi-geo-alt"></i> {{ result.location }}</div>
+      <div class="meta-item"><i class="bi bi-bar-chart"></i> {{ result.seniority|title }} level</div>
+      <div class="meta-item"><i class="bi bi-currency-dollar"></i> {{ result.currency }}</div>
+    </div>
+
+    <div class="salary-range">
+      <div class="salary-col salary-low">
+        <div class="salary-lbl">Low</div>
+        <div class="salary-val">{{ result.low_fmt }}</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-top:4px">10th percentile</div>
+      </div>
+      <div class="salary-col salary-mid mid">
+        <div class="salary-lbl">Market Rate</div>
+        <div class="salary-val">{{ result.mid_fmt }}</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-top:4px">50th percentile</div>
+      </div>
+      <div class="salary-col salary-high">
+        <div class="salary-lbl">High</div>
+        <div class="salary-val">{{ result.high_fmt }}</div>
+        <div style="font-size:.72rem;color:var(--text3);margin-top:4px">90th percentile</div>
+      </div>
+    </div>
+
+    <div style="font-size:.9rem;font-weight:700;margin-bottom:10px">Negotiation Tips</div>
+    <ul class="tip-list">
+      {% for tip in result.negotiation_tips %}<li>{{ tip }}</li>{% endfor %}
+    </ul>
+    <div class="note">{{ result.note }}</div>
+  </div>
+  {% endif %}
+
+  {% if application %}
+  <a href="{% url 'application_detail' application.pk %}" style="color:var(--primary-light);text-decoration:none;font-size:.85rem"><i class="bi bi-arrow-left"></i> Back to {{ application.company }}</a>
+  {% endif %}
+</div>
+{% endblock %}

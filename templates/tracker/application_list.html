@@ -1,0 +1,126 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Job Applications — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1400px;margin:0 auto}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
+.page-title{font-size:1.6rem;font-weight:800;letter-spacing:-.03em}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:28px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:18px;text-align:center}
+.stat-val{font-size:2rem;font-weight:900;letter-spacing:-.04em}
+.stat-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:4px}
+.stat-green{color:var(--green)}.stat-cyan{color:var(--cyan)}.stat-amber{color:var(--amber)}.stat-red{color:var(--red)}.stat-purple{color:var(--primary-light)}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden}
+.table-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border)}
+.table-title{font-size:1rem;font-weight:700}
+table{width:100%;border-collapse:collapse}
+th{padding:12px 16px;text-align:left;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+td{padding:14px 16px;font-size:.85rem;border-bottom:1px solid rgba(33,38,45,.6);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(99,102,241,.04)}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700}
+.badge-saved{background:rgba(139,146,158,.12);color:var(--text3)}
+.badge-applied{background:rgba(6,182,212,.12);color:var(--cyan)}
+.badge-interview{background:rgba(99,102,241,.12);color:var(--primary-light)}
+.badge-offer{background:rgba(16,185,129,.12);color:var(--green)}
+.badge-rejected{background:rgba(248,113,113,.12);color:var(--red)}
+.badge-withdrawn{background:rgba(139,146,158,.12);color:var(--text3)}
+.score-pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.75rem;font-weight:700;background:rgba(99,102,241,.12);color:var(--primary-light)}
+.empty{padding:60px 20px;text-align:center;color:var(--text3)}
+.empty i{font-size:2.5rem;display:block;margin-bottom:12px;opacity:.5}
+.actions{display:flex;gap:6px}
+.action-link{font-size:.78rem;color:var(--text3);text-decoration:none;padding:4px 8px;border-radius:6px;transition:all .15s}
+.action-link:hover{color:var(--primary-light);background:rgba(99,102,241,.1)}
+.outcome-link{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;color:var(--primary-light);text-decoration:none;font-weight:500}
+.outcome-link:hover{text-decoration:underline}
+@media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}.wrap{padding:16px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page-hdr">
+    <div class="page-title">Job Applications</div>
+    <div style="display:flex;gap:10px">
+      <a href="{% url 'outcome_dashboard' %}" class="btn btn-ghost"><i class="bi bi-graph-up"></i> Outcomes</a>
+      <a href="{% url 'application_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add Application</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat"><div class="stat-val stat-purple">{{ stats.total }}</div><div class="stat-lbl">Total</div></div>
+    <div class="stat"><div class="stat-val stat-cyan">{{ stats.applied }}</div><div class="stat-lbl">Applied</div></div>
+    <div class="stat"><div class="stat-val stat-amber">{{ stats.interviews }}</div><div class="stat-lbl">Interviews</div></div>
+    <div class="stat"><div class="stat-val stat-green">{{ stats.offers }}</div><div class="stat-lbl">Offers</div></div>
+    <div class="stat"><div class="stat-val stat-green">{{ stats.callback_rate }}%</div><div class="stat-lbl">Callback Rate</div></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap">
+    <div class="table-hdr">
+      <span class="table-title">All Applications</span>
+      {% if stats.callback_rate > 0 %}
+      <a href="{% url 'outcome_dashboard' %}" class="outcome-link"><i class="bi bi-bar-chart-line"></i> View score vs outcome analysis</a>
+      {% endif %}
+    </div>
+    {% if applications %}
+    <table>
+      <thead>
+        <tr>
+          <th>Company / Role</th>
+          <th>Status</th>
+          <th>ATS Score</th>
+          <th>Resume</th>
+          <th>Applied</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for app in applications %}
+        <tr>
+          <td>
+            <div style="font-weight:600;color:var(--text)">{{ app.company }}</div>
+            <div style="font-size:.78rem;color:var(--text3)">{{ app.role }}</div>
+          </td>
+          <td><span class="badge badge-{{ app.status }}">{{ app.get_status_display }}</span></td>
+          <td>
+            {% if app.ats_score_at_apply %}
+              <span class="score-pill">{{ app.ats_score_at_apply|floatformat:0 }}</span>
+            {% else %}—{% endif %}
+          </td>
+          <td style="color:var(--text2)">{{ app.resume.title|default:"—" }}</td>
+          <td style="color:var(--text3);font-size:.78rem">{{ app.applied_date|default:"—" }}</td>
+          <td>
+            <div class="actions">
+              <a href="{% url 'application_detail' app.pk %}" class="action-link"><i class="bi bi-eye"></i></a>
+              <a href="{% url 'application_update' app.pk %}" class="action-link"><i class="bi bi-pencil"></i></a>
+              <a href="{% url 'generate_cover_letter' app.pk %}" class="action-link" title="Cover Letter"><i class="bi bi-file-text"></i></a>
+              <a href="{% url 'application_delete' app.pk %}" class="action-link" style="color:var(--red)"><i class="bi bi-trash"></i></a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+      <i class="bi bi-briefcase"></i>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:6px">No applications yet</div>
+      <div style="font-size:.85rem;margin-bottom:16px">Track every job you apply to and measure your callback rate</div>
+      <a href="{% url 'application_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Add First Application</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

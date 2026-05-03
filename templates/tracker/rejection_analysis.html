@@ -1,0 +1,102 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Rejection Analysis — NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1000px;margin:0 auto}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.page-sub{font-size:.85rem;color:var(--text3);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r8);font-size:.82rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:22px}
+.card-title{font-size:.95rem;font-weight:700;margin-bottom:16px}
+.bucket-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bucket-label{font-size:.82rem;color:var(--text2);min-width:60px}
+.bucket-bar{flex:1;height:8px;background:var(--border2);border-radius:99px;overflow:hidden}
+.bucket-fill{height:100%;border-radius:99px;background:var(--red)}
+.bucket-count{font-size:.82rem;font-weight:700;color:var(--text);min-width:20px;text-align:right}
+.role-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(33,38,45,.5);font-size:.85rem}
+.role-row:last-child{border-bottom:none}
+.role-name{color:var(--text2)}
+.role-count{font-weight:700;color:var(--red)}
+.sug-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:18px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+.sug-icon{width:36px;height:36px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.sug-high .sug-icon{background:rgba(248,113,113,.12);color:var(--red)}
+.sug-medium .sug-icon{background:rgba(245,158,11,.12);color:var(--amber)}
+.sug-low .sug-icon{background:rgba(139,146,158,.1);color:var(--text3)}
+.sug-text{font-size:.88rem;color:var(--text2);line-height:1.6}
+.empty{padding:60px 20px;text-align:center;color:var(--text3)}
+.empty i{font-size:2.5rem;display:block;margin-bottom:12px;opacity:.5}
+@media(max-width:700px){.grid2{grid-template-columns:1fr}.wrap{padding:16px}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">Rejection Analysis</div>
+      <div class="page-sub">Patterns in your rejections to help you improve</div>
+    </div>
+    <a href="{% url 'application_list' %}" class="btn btn-ghost"><i class="bi bi-briefcase"></i> All Applications</a>
+  </div>
+
+  {% if total_rejected == 0 %}
+  <div class="card">
+    <div class="empty">
+      <i class="bi bi-emoji-smile"></i>
+      <div style="font-size:1rem;font-weight:600;margin-bottom:6px">No rejections tracked yet</div>
+      <div style="font-size:.85rem">Mark applications as "Rejected" to see patterns and improvement suggestions</div>
+    </div>
+  </div>
+  {% else %}
+
+  <div class="grid2">
+    <!-- Score bucket breakdown -->
+    <div class="card">
+      <div class="card-title">Rejections by ATS Score</div>
+      {% for bucket, count in score_buckets.items %}
+      {% if count > 0 %}
+      <div class="bucket-row">
+        <span class="bucket-label">{{ bucket }}</span>
+        <div class="bucket-bar"><div class="bucket-fill" style="width:{% widthratio count total_rejected 100 %}%"></div></div>
+        <span class="bucket-count">{{ count }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+      <div style="font-size:.75rem;color:var(--text3);margin-top:10px">Total rejections: {{ total_rejected }}</div>
+    </div>
+
+    <!-- Most rejected roles -->
+    <div class="card">
+      <div class="card-title">Most Rejected Roles</div>
+      {% for item in common_roles %}
+      <div class="role-row">
+        <span class="role-name">{{ item.role }}</span>
+        <span class="role-count">{{ item.count }}×</span>
+      </div>
+      {% empty %}
+      <div style="color:var(--text3);font-size:.85rem">No data yet</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Suggestions -->
+  {% if suggestions %}
+  <div style="font-size:.95rem;font-weight:700;margin-bottom:12px">What to do about it</div>
+  {% for sug in suggestions %}
+  <div class="sug-card sug-{{ sug.priority }}">
+    <div class="sug-icon"><i class="bi {{ sug.icon }}"></i></div>
+    <div class="sug-text">{{ sug.text }}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+
+  {% endif %}
+</div>
+{% endblock %}

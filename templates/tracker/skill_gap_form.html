@@ -1,0 +1,67 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Skill Gap Analysis — NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;--r8:8px;--r16:16px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:800px;margin:0 auto}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.page-sub{font-size:.85rem;color:var(--text3);margin-bottom:28px;line-height:1.6}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:28px;margin-bottom:20px}
+.card-title{font-size:1rem;font-weight:700;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:.9rem;transition:border-color .15s;box-sizing:border-box}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+select option{background:var(--surface2)}
+.hint{font-size:.75rem;color:var(--text3);margin-top:5px;line-height:1.5}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:11px 22px;border-radius:var(--r8);font-size:.88rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-title">Skill Gap Analysis</div>
+  <div class="page-sub">Paste up to 10 job descriptions for your target role (separated by <code>---</code>) and we'll show you exactly which skills you're missing from the market.</div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="card">
+      <div class="card-title">Your Target</div>
+      <div class="form-group">
+        <label>Resume</label>
+        <select name="resume_id" required>
+          <option value="">Select a resume...</option>
+          {% for r in resumes %}<option value="{{ r.id }}">{{ r.title }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Target Role</label>
+        <input type="text" name="target_role" placeholder="e.g. Senior Python Developer" required>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Job Descriptions (optional but recommended)</div>
+      <div class="form-group">
+        <label>Paste 1–10 job descriptions</label>
+        <textarea name="job_descriptions" rows="14" placeholder="Paste a job description here...
+
+---
+
+Paste another job description here (separated by ---)
+
+---
+
+Add more..."></textarea>
+        <div class="hint">Separate multiple JDs with <strong>---</strong> on its own line. The more JDs you add, the more accurate the analysis.</div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Analyse Skill Gap</button>
+  </form>
+</div>
+{% endblock %}

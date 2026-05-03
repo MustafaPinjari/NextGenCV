@@ -1,0 +1,59 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Follow-Up Email — NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r16:16px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:800px;margin:0 auto}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:.85rem;margin-bottom:20px}
+.back:hover{color:var(--primary-light)}
+.page-title{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.page-sub{font-size:.85rem;color:var(--text3);margin-bottom:24px}
+.stage-tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.stage-tab{padding:7px 14px;border-radius:99px;font-size:.8rem;font-weight:600;text-decoration:none;border:1px solid var(--border2);color:var(--text3);transition:all .15s}
+.stage-tab.active,.stage-tab:hover{border-color:var(--primary);color:var(--primary-light);background:rgba(99,102,241,.1)}
+.email-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px}
+textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:16px;color:var(--text);font-family:'Georgia',serif;font-size:.92rem;line-height:1.8;min-height:380px;resize:vertical;box-sizing:border-box;transition:border-color .15s}
+textarea:focus{outline:none;border-color:var(--primary)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r8);font-size:.82rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-copy{background:rgba(99,102,241,.1);color:var(--primary-light);border:1px solid rgba(99,102,241,.2)}
+.btn-copy:hover{background:rgba(99,102,241,.18)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <a href="{% url 'application_detail' application.pk %}" class="back"><i class="bi bi-arrow-left"></i> Back to Application</a>
+  <div class="page-title">Follow-Up Email</div>
+  <div class="page-sub">{{ application.role }} at {{ application.company }}</div>
+
+  <div class="stage-tabs">
+    {% for value, label in stages %}
+    <a href="?stage={{ value }}" class="stage-tab {% if stage == value %}active{% endif %}">{{ label }}</a>
+    {% endfor %}
+  </div>
+
+  <div class="email-card">
+    <textarea id="emailContent">{{ email_content }}</textarea>
+    <div class="actions">
+      <button class="btn btn-copy" id="copyBtn"><i class="bi bi-clipboard"></i> Copy to Clipboard</button>
+      <a href="{% url 'application_detail' application.pk %}" class="btn btn-ghost">Back</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+document.getElementById('copyBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(document.getElementById('emailContent').value).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+    setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy to Clipboard'; }, 2000);
+  });
+});
+</script>
+{% endblock %}

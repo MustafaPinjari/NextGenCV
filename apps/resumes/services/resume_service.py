@@ -53,9 +53,15 @@ class ResumeService:
             
             # Create personal info if provided
             if 'personal_info' in data:
+                pi = data['personal_info']
                 PersonalInfo.objects.create(
                     resume=resume,
-                    **data['personal_info']
+                    full_name=pi.get('full_name') or '',
+                    phone=pi.get('phone') or '',
+                    email=pi.get('email') or '',
+                    linkedin=pi.get('linkedin') or None,
+                    github=pi.get('github') or None,
+                    location=pi.get('location') or '',
                 )
             
             # Create experiences if provided
@@ -64,7 +70,13 @@ class ResumeService:
                     Experience.objects.create(
                         resume=resume,
                         order=idx,
-                        **exp_data
+                        company=exp_data.get('company', 'Unknown Company'),
+                        role=exp_data.get('role', 'Unknown Role'),
+                        start_date=exp_data.get('start_date'),
+                        end_date=exp_data.get('end_date'),
+                        description=exp_data.get('description', ''),
+                        achievements=exp_data.get('achievements', ''),
+                        location=exp_data.get('location', ''),
                     )
             
             # Create education entries if provided

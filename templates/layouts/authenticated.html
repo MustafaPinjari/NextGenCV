@@ -65,6 +65,24 @@
                         <span class="sidebar__link-text">Templates</span>
                     </a>
                 </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'application_list' %}" class="sidebar__link {% if 'tracker' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-briefcase"></i>
+                        <span class="sidebar__link-text">Job Tracker</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'skill_gap' %}" class="sidebar__link {% if 'skill-gap' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-bar-chart-steps"></i>
+                        <span class="sidebar__link-text">Skill Gap</span>
+                    </a>
+                </li>
+                <li class="sidebar__menu-item">
+                    <a href="{% url 'salary_intelligence' %}" class="sidebar__link {% if 'salary' in request.path %}sidebar__link--active{% endif %}">
+                        <i class="bi bi-currency-dollar"></i>
+                        <span class="sidebar__link-text">Salary Intel</span>
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar__divider"></div>

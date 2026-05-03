@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.analyzer',
     'apps.analytics',
     'apps.templates_mgmt',
+    'apps.tracker',
 ]
 
 MIDDLEWARE = [

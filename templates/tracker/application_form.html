@@ -1,0 +1,149 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}{{ action }} Application — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:860px;margin:0 auto}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:28px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:28px;margin-bottom:20px}
+.card-title{font-size:1rem;font-weight:700;margin-bottom:18px;color:var(--text)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{margin-bottom:16px}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--text2);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 14px;color:var(--text);font-family:var(--font);font-size:.9rem;transition:border-color .15s;box-sizing:border-box}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+select option{background:var(--surface2)}
+.scrape-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:16px}
+.scrape-row input{flex:1}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-scrape{background:rgba(6,182,212,.12);color:#06b6d4;border:1px solid rgba(6,182,212,.25)}
+.btn-scrape:hover{background:rgba(6,182,212,.2)}
+.scrape-status{font-size:.78rem;color:var(--text3);margin-top:6px;min-height:18px}
+.scrape-status.success{color:var(--green)}
+.scrape-status.error{color:#f87171}
+.form-actions{display:flex;gap:10px;margin-top:8px}
+.errorlist{list-style:none;padding:0;margin:4px 0 0;font-size:.78rem;color:#f87171}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page-title">{{ action }} Application</div>
+
+  <form method="post" id="appForm">
+    {% csrf_token %}
+
+    <div class="card">
+      <div class="card-title">Job Details</div>
+
+      <!-- Job URL Scraper -->
+      <div class="form-group">
+        <label>Job Posting URL (auto-fill description)</label>
+        <div class="scrape-row">
+          <input type="url" id="scrapeUrl" placeholder="https://www.linkedin.com/jobs/view/..." value="{{ form.job_url.value|default:'' }}">
+          <button type="button" class="btn btn-scrape" id="scrapeBtn">
+            <i class="bi bi-cloud-download"></i> Fetch JD
+          </button>
+        </div>
+        <div class="scrape-status" id="scrapeStatus"></div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Company *</label>
+          {{ form.company }}
+          {% if form.company.errors %}<ul class="errorlist">{% for e in form.company.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="form-group">
+          <label>Role *</label>
+          {{ form.role }}
+          {% if form.role.errors %}<ul class="errorlist">{% for e in form.role.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Job URL (saved)</label>
+        {{ form.job_url }}
+      </div>
+
+      <div class="form-group">
+        <label>Job Description</label>
+        {{ form.job_description }}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Tracking</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Status</label>
+          {{ form.status }}
+        </div>
+        <div class="form-group">
+          <label>Applied Date</label>
+          {{ form.applied_date }}
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Resume Used</label>
+        {{ form.resume }}
+      </div>
+      <div class="form-group">
+        <label>Notes</label>
+        {{ form.notes }}
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Save Application</button>
+      <a href="{% url 'application_list' %}" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('scrapeBtn').addEventListener('click', async () => {
+  const url = document.getElementById('scrapeUrl').value.trim();
+  const status = document.getElementById('scrapeStatus');
+  const jdField = document.getElementById('{{ form.job_description.id_for_label }}');
+  const urlField = document.getElementById('{{ form.job_url.id_for_label }}');
+
+  if (!url) { status.textContent = 'Enter a URL first.'; status.className = 'scrape-status error'; return; }
+
+  status.textContent = 'Fetching job description...'; status.className = 'scrape-status';
+  document.getElementById('scrapeBtn').disabled = true;
+
+  try {
+    const resp = await fetch('{% url "scrape_job" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: 'job_url=' + encodeURIComponent(url)
+    });
+    const data = await resp.json();
+    if (data.success) {
+      jdField.value = data.text;
+      if (urlField) urlField.value = url;
+      status.textContent = '✓ Job description extracted successfully.';
+      status.className = 'scrape-status success';
+    } else {
+      status.textContent = 'Could not extract: ' + data.error;
+      status.className = 'scrape-status error';
+    }
+  } catch(e) {
+    status.textContent = 'Network error. Paste the job description manually.';
+    status.className = 'scrape-status error';
+  }
+  document.getElementById('scrapeBtn').disabled = false;
+});
+</script>
+{% endblock %}

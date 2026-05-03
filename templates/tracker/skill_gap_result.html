@@ -1,0 +1,119 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Skill Gap Results — NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1100px;margin:0 auto}
+.page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
+.page-sub{font-size:.85rem;color:var(--text3);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r8);font-size:.82rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.score-card{background:linear-gradient(135deg,rgba(99,102,241,.12),rgba(6,182,212,.08));border:1px solid rgba(99,102,241,.25);border-radius:var(--r20);padding:24px;margin-bottom:24px;display:flex;align-items:center;gap:24px}
+.score-ring{width:80px;height:80px;border-radius:50%;background:conic-gradient(var(--primary) {{ result.coverage_score }}%, var(--border2) 0);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative}
+.score-ring::before{content:'';position:absolute;inset:8px;background:var(--surface);border-radius:50%}
+.score-num{position:relative;z-index:1;font-size:1.1rem;font-weight:900;color:var(--primary-light)}
+.score-label{font-size:1rem;font-weight:700;margin-bottom:4px}
+.score-sub{font-size:.82rem;color:var(--text2)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:22px}
+.card-title{font-size:.95rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.skill-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(33,38,45,.6)}
+.skill-row:last-child{border-bottom:none}
+.skill-name{font-size:.88rem;font-weight:500;color:var(--text)}
+.freq-bar-wrap{display:flex;align-items:center;gap:8px;min-width:120px}
+.freq-bar{height:5px;border-radius:99px;flex:1;background:var(--border2)}
+.freq-fill{height:100%;border-radius:99px}
+.freq-fill-high{background:var(--red)}
+.freq-fill-medium{background:var(--amber)}
+.freq-fill-low{background:var(--text3)}
+.freq-fill-present{background:var(--green)}
+.freq-pct{font-size:.72rem;color:var(--text3);min-width:32px;text-align:right}
+.imp-badge{font-size:.65rem;font-weight:700;padding:2px 6px;border-radius:99px;text-transform:uppercase}
+.imp-high{background:rgba(248,113,113,.12);color:var(--red)}
+.imp-medium{background:rgba(245,158,11,.12);color:var(--amber)}
+.imp-low{background:rgba(139,146,158,.1);color:var(--text3)}
+.rec-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:20px;margin-bottom:12px;display:flex;align-items:flex-start;gap:14px}
+.rec-icon{width:38px;height:38px;border-radius:var(--r8);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.rec-high .rec-icon{background:rgba(248,113,113,.12);color:var(--red)}
+.rec-medium .rec-icon{background:rgba(245,158,11,.12);color:var(--amber)}
+.rec-low .rec-icon{background:rgba(139,146,158,.1);color:var(--text3)}
+.rec-text{font-size:.88rem;color:var(--text2);line-height:1.6}
+@media(max-width:800px){.grid2{grid-template-columns:1fr}.wrap{padding:16px}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">Skill Gap: {{ analysis.target_role }}</div>
+      <div class="page-sub">{{ resume.title }} · {{ analysis.job_descriptions|length }} JD(s) analysed</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="{% url 'skill_gap' %}" class="btn btn-ghost"><i class="bi bi-arrow-clockwise"></i> New Analysis</a>
+      <a href="{% url 'application_list' %}" class="btn btn-ghost">Tracker</a>
+    </div>
+  </div>
+
+  <!-- Coverage score -->
+  <div class="score-card">
+    <div class="score-ring"><span class="score-num">{{ result.coverage_score }}%</span></div>
+    <div>
+      <div class="score-label">Skill Coverage Score</div>
+      <div class="score-sub">You have {{ result.present_skills|length }} of the top skills for this role. {{ result.missing_skills|length }} skills are missing from your resume.</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <!-- Missing skills -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-x-circle" style="color:var(--red)"></i> Missing Skills ({{ result.missing_skills|length }})</div>
+      {% for skill in result.missing_skills %}
+      <div class="skill-row">
+        <div>
+          <div class="skill-name">{{ skill.skill }}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="freq-bar-wrap">
+            <div class="freq-bar"><div class="freq-fill freq-fill-{{ skill.importance }}" style="width:{{ skill.frequency }}%"></div></div>
+            <span class="freq-pct">{{ skill.frequency }}%</span>
+          </div>
+          <span class="imp-badge imp-{{ skill.importance }}">{{ skill.importance }}</span>
+        </div>
+      </div>
+      {% empty %}
+      <div style="color:var(--green);font-size:.88rem;padding:12px 0"><i class="bi bi-check-circle"></i> No major skill gaps found!</div>
+      {% endfor %}
+    </div>
+
+    <!-- Present skills -->
+    <div class="card">
+      <div class="card-title"><i class="bi bi-check-circle" style="color:var(--green)"></i> Skills You Have ({{ result.present_skills|length }})</div>
+      {% for skill in result.present_skills %}
+      <div class="skill-row">
+        <div class="skill-name">{{ skill.skill }}</div>
+        <div class="freq-bar-wrap">
+          <div class="freq-bar"><div class="freq-fill freq-fill-present" style="width:{{ skill.frequency }}%"></div></div>
+          <span class="freq-pct">{{ skill.frequency }}%</span>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Recommendations -->
+  {% if result.recommendations %}
+  <div style="margin-bottom:8px;font-size:.95rem;font-weight:700">Recommendations</div>
+  {% for rec in result.recommendations %}
+  <div class="rec-card rec-{{ rec.priority }}">
+    <div class="rec-icon"><i class="bi bi-lightbulb"></i></div>
+    <div class="rec-text">{{ rec.action }}</div>
+  </div>
+  {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}

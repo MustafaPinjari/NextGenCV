@@ -1,0 +1,141 @@
+{% extends 'layouts/authenticated.html' %}
+{% block title %}Interview Prep — {{ application.company }}{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--cyan:#06b6d4;--red:#f87171;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1000px;margin:0 auto}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:.85rem;margin-bottom:20px}
+.back:hover{color:var(--primary-light)}
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.page-title{font-size:1.4rem;font-weight:800;letter-spacing:-.03em}
+.page-sub{font-size:.85rem;color:var(--text3);margin-top:4px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:var(--r8);font-size:.82rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-regen{background:rgba(99,102,241,.12);color:var(--primary-light);border:1px solid rgba(99,102,241,.2)}
+.btn-regen:hover{background:rgba(99,102,241,.2)}
+.cat-badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.cat-behavioral{background:rgba(245,158,11,.12);color:var(--amber)}
+.cat-technical{background:rgba(6,182,212,.12);color:var(--cyan)}
+.cat-motivation{background:rgba(16,185,129,.12);color:var(--green)}
+.cat-situational{background:rgba(99,102,241,.12);color:var(--primary-light)}
+.cat-introduction{background:rgba(248,113,113,.12);color:var(--red)}
+.cat-self-assessment{background:rgba(139,146,158,.12);color:var(--text3)}
+.cat-closing{background:rgba(139,146,158,.12);color:var(--text3)}
+.q-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);margin-bottom:14px;overflow:hidden}
+.q-header{padding:18px 20px;cursor:pointer;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;user-select:none}
+.q-header:hover{background:rgba(99,102,241,.04)}
+.q-num{font-size:.72rem;font-weight:700;color:var(--text3);min-width:24px}
+.q-text{font-size:.95rem;font-weight:600;color:var(--text);flex:1;line-height:1.5}
+.q-chevron{color:var(--text3);transition:transform .2s;flex-shrink:0;margin-top:2px}
+.q-card.open .q-chevron{transform:rotate(180deg)}
+.q-body{display:none;padding:0 20px 18px;border-top:1px solid var(--border)}
+.q-card.open .q-body{display:block}
+.q-section{margin-top:14px}
+.q-section-title{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.talking-point{display:flex;align-items:flex-start;gap:8px;font-size:.83rem;color:var(--text2);line-height:1.5;margin-bottom:6px}
+.talking-point::before{content:'→';color:var(--primary-light);flex-shrink:0;margin-top:1px}
+.evidence-box{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 14px;font-size:.82rem;color:var(--text2);line-height:1.5;font-style:italic}
+.evidence-box i{color:var(--green);margin-right:6px}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.filter-btn{padding:5px 12px;border-radius:99px;font-size:.75rem;font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--surface2);color:var(--text3);transition:all .15s}
+.filter-btn.active,.filter-btn:hover{border-color:var(--primary);color:var(--primary-light);background:rgba(99,102,241,.1)}
+.progress-bar{background:var(--border2);border-radius:99px;height:6px;margin-bottom:20px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--cyan));border-radius:99px;transition:width .3s}
+.progress-label{font-size:.75rem;color:var(--text3);margin-bottom:6px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="wrap">
+  <a href="{% url 'application_detail' application.pk %}" class="back"><i class="bi bi-arrow-left"></i> Back to Application</a>
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">Interview Prep</div>
+      <div class="page-sub">{{ application.role }} at {{ application.company }} · {{ questions|length }} questions</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <form method="post" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-regen"><i class="bi bi-arrow-clockwise"></i> Regenerate</button></form>
+      <a href="{% url 'application_detail' application.pk %}" class="btn btn-ghost">Back</a>
+    </div>
+  </div>
+
+  <!-- Progress tracker -->
+  <div class="progress-label" id="progressLabel">0 / {{ questions|length }} questions reviewed</div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <button class="filter-btn active" data-cat="all">All ({{ questions|length }})</button>
+    <button class="filter-btn" data-cat="technical">Technical</button>
+    <button class="filter-btn" data-cat="behavioral">Behavioral</button>
+    <button class="filter-btn" data-cat="motivation">Motivation</button>
+    <button class="filter-btn" data-cat="situational">Situational</button>
+    <button class="filter-btn" data-cat="self-assessment">Self-Assessment</button>
+  </div>
+
+  <!-- Questions -->
+  {% for q in questions %}
+  <div class="q-card" data-cat="{{ q.category }}">
+    <div class="q-header" onclick="toggleQ(this)">
+      <span class="q-num">{{ forloop.counter }}</span>
+      <div style="flex:1">
+        <span class="cat-badge cat-{{ q.category }}">{{ q.category|title }}</span>
+        <div class="q-text" style="margin-top:6px">{{ q.question }}</div>
+      </div>
+      <i class="bi bi-chevron-down q-chevron"></i>
+    </div>
+    <div class="q-body">
+      {% if q.talking_points %}
+      <div class="q-section">
+        <div class="q-section-title"><i class="bi bi-lightbulb" style="color:var(--amber)"></i> Talking Points</div>
+        {% for point in q.talking_points %}
+        <div class="talking-point">{{ point }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      {% if q.resume_evidence %}
+      <div class="q-section">
+        <div class="q-section-title"><i class="bi bi-file-earmark-text" style="color:var(--green)"></i> From Your Resume</div>
+        <div class="evidence-box"><i class="bi bi-quote"></i>{{ q.resume_evidence }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+let reviewed = new Set();
+function toggleQ(header) {
+  const card = header.closest('.q-card');
+  card.classList.toggle('open');
+  const idx = [...document.querySelectorAll('.q-card')].indexOf(card);
+  if (card.classList.contains('open')) {
+    reviewed.add(idx);
+  }
+  updateProgress();
+}
+function updateProgress() {
+  const visible = [...document.querySelectorAll('.q-card')].filter(c => c.style.display !== 'none');
+  const rev = visible.filter((c,i) => reviewed.has([...document.querySelectorAll('.q-card')].indexOf(c))).length;
+  const pct = visible.length ? Math.round(rev / visible.length * 100) : 0;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${rev} / ${visible.length} questions reviewed`;
+}
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    document.querySelectorAll('.q-card').forEach(card => {
+      card.style.display = (cat === 'all' || card.dataset.cat === cat) ? '' : 'none';
+    });
+    updateProgress();
+  });
+});
+</script>
+{% endblock %}

@@ -31,6 +31,7 @@ urlpatterns = [
     path('analyzer/', include('apps.analyzer.urls')),
     path('analytics/', include('apps.analytics.urls')),
     path('templates/', include('apps.templates_mgmt.urls')),
+    path('tracker/', include('apps.tracker.urls')),
     
     # Design system test page (development only)
     path('design-system-test/', TemplateView.as_view(template_name='design-system-test.html'), name='design_system_test'),

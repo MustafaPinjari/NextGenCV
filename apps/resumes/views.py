@@ -1588,64 +1588,71 @@ def pdf_import_confirm(request, upload_id):
             'title': request.POST.get('title', f"Resume from {uploaded_resume.original_filename}"),
             'template': request.POST.get('template', 'professional'),
         }
-        
-        # Add personal info if available
-        personal_info = parsed_data.get('personal_info', {})
-        if personal_info and personal_info.get('name'):
-            resume_data['personal_info'] = {
-                'full_name': personal_info.get('name', ''),
-                'email': personal_info.get('email', ''),
-                'phone': personal_info.get('phone', ''),
-                'linkedin': personal_info.get('linkedin', ''),
-                'github': personal_info.get('website', ''),  # Map website to github field
-                'location': personal_info.get('location', ''),
-            }
+
+        # Personal info — read from POST (user may have edited the review form)
+        full_name = request.POST.get('full_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        if not full_name and personal_info:
+            full_name = personal_info.get('name', '')
+        if not email and personal_info:
+            email = personal_info.get('email', '')
+
+        resume_data['personal_info'] = {
+            'full_name': full_name or 'Unknown',
+            'email': email or '',
+            'phone': request.POST.get('phone', '') or personal_info.get('phone', '') if personal_info else '',
+            'location': request.POST.get('location', '') or personal_info.get('location', '') if personal_info else '',
+            'linkedin': request.POST.get('linkedin', '') or personal_info.get('linkedin', '') if personal_info else '' or None,
+            'github': request.POST.get('github', '') or personal_info.get('website', '') if personal_info else '' or None,
+        }
+        # Ensure linkedin/github are None not empty string (URLField)
+        if not resume_data['personal_info']['linkedin']:
+            resume_data['personal_info']['linkedin'] = None
+        if not resume_data['personal_info']['github']:
+            resume_data['personal_info']['github'] = None
         
         # Add experiences if available
         experiences = parsed_data.get('experiences', [])
         if experiences:
             resume_data['experiences'] = []
             for exp in experiences:
-                # Convert date strings to date objects if possible
                 from datetime import datetime
                 start_date = None
                 end_date = None
-                
-                # Try to parse start date
-                if exp.get('start_date'):
-                    try:
-                        # Try various date formats
-                        for fmt in ['%B %Y', '%m/%Y', '%Y']:
-                            try:
-                                start_date = datetime.strptime(exp['start_date'], fmt).date()
-                                break
-                            except ValueError:
-                                continue
-                    except Exception:
-                        pass
-                
-                # Try to parse end date
-                if exp.get('end_date') and exp['end_date'].lower() not in ['present', 'current']:
-                    try:
-                        for fmt in ['%B %Y', '%m/%Y', '%Y']:
-                            try:
-                                end_date = datetime.strptime(exp['end_date'], fmt).date()
-                                break
-                            except ValueError:
-                                continue
-                    except Exception:
-                        pass
-                
-                # Use today's date as fallback for start_date if not parsed
+
+                def _parse_date(s):
+                    if not s:
+                        return None
+                    s = str(s).strip()
+                    if s.lower() in ('present', 'current', 'now'):
+                        return None
+                    for fmt in ('%B %Y', '%b %Y', '%b. %Y', '%m/%Y', '%Y'):
+                        try:
+                            return datetime.strptime(s, fmt).date()
+                        except ValueError:
+                            continue
+                    # Try extracting just the year
+                    ym = re.search(r'(\d{4})', s)
+                    if ym:
+                        try:
+                            return datetime(int(ym.group(1)), 1, 1).date()
+                        except Exception:
+                            pass
+                    return None
+
+                start_date = _parse_date(exp.get('start_date'))
+                end_date = _parse_date(exp.get('end_date'))
                 if not start_date:
                     start_date = datetime.today().date()
-                
+
                 resume_data['experiences'].append({
-                    'company': exp.get('company', 'Unknown Company'),
-                    'role': exp.get('title', 'Unknown Role'),
+                    'company': exp.get('company') or 'Unknown Company',
+                    'role': exp.get('title') or exp.get('role') or 'Unknown Role',
                     'start_date': start_date,
                     'end_date': end_date,
                     'description': exp.get('description', ''),
+                    'achievements': exp.get('achievements', ''),
+                    'location': exp.get('location', ''),
                 })
         
         # Add education if available
