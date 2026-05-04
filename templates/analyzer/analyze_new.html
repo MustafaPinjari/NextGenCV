@@ -348,6 +348,31 @@
                     <!-- Job Description Input -->
                     <form method="post" id="analyzerForm">
                         {% csrf_token %}
+
+                        <!-- Saved JDs -->
+                        {% if saved_jds %}
+                        <div style="margin-bottom:14px">
+                          <label style="display:block;font-size:.78rem;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Recent Job Descriptions</label>
+                          <div style="display:flex;flex-wrap:wrap;gap:6px">
+                            {% for jd in saved_jds %}
+                            <button type="button" class="saved-jd-btn" data-content="{{ jd.content|escapejs }}" title="{{ jd.content|truncatechars:120 }}"
+                              style="padding:4px 10px;border-radius:99px;font-size:.75rem;font-weight:600;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:#818cf8;cursor:pointer;font-family:inherit;transition:all .15s">
+                              {{ jd.title|truncatechars:30 }}
+                            </button>
+                            {% endfor %}
+                          </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- URL Scraper -->
+                        <div style="margin-bottom:12px">
+                          <label style="display:block;font-size:.78rem;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Or fetch from URL</label>
+                          <div style="display:flex;gap:8px">
+                            <input type="url" id="scrapeUrlAnalyze" placeholder="https://linkedin.com/jobs/view/..." style="flex:1;background:#161b22;border:1px solid #30363d;border-radius:8px;padding:8px 12px;color:#f0f6fc;font-size:.85rem;font-family:inherit">
+                            <button type="button" id="scrapeAnalyzeBtn" style="padding:8px 14px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);color:#06b6d4;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap"><i class="bi bi-cloud-download"></i> Fetch</button>
+                          </div>
+                          <div id="scrapeAnalyzeStatus" style="font-size:.75rem;color:#6e7681;margin-top:4px;min-height:16px"></div>
+                        </div>
                         
                         <div class="job-description-input">
                             <div class="form-group">
@@ -538,6 +563,78 @@
         document.getElementById('loadingOverlay').style.display = 'block';
         document.getElementById('analyzeBtn').classList.add('btn-loading');
         document.getElementById('analyzeBtn').disabled = true;
+    });
+
+    // Saved JD buttons
+    document.querySelectorAll('.saved-jd-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('jobDescription').value = btn.dataset.content;
+        });
+    });
+
+    // URL scraper
+    document.getElementById('scrapeAnalyzeBtn')?.addEventListener('click', async () => {
+        const url = document.getElementById('scrapeUrlAnalyze').value.trim();
+        const status = document.getElementById('scrapeAnalyzeStatus');
+        if (!url) { status.textContent = 'Enter a URL first.'; return; }
+        status.textContent = 'Fetching...';
+        document.getElementById('scrapeAnalyzeBtn').disabled = true;
+        try {
+            const resp = await fetch('{% url "scrape_job" %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: 'job_url=' + encodeURIComponent(url)
+            });
+            const data = await resp.json();
+            if (data.success) {
+                document.getElementById('jobDescription').value = data.text;
+                status.textContent = '✓ Extracted successfully.';
+                status.style.color = '#10b981';
+            } else {
+                status.textContent = 'Could not extract: ' + data.error;
+                status.style.color = '#f87171';
+            }
+        } catch(e) {
+            status.textContent = 'Network error. Paste manually.';
+            status.style.color = '#f87171';
+        }
+        document.getElementById('scrapeAnalyzeBtn').disabled = false;
+    });
+
+    // Saved JD buttons
+    document.querySelectorAll('.saved-jd-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('jobDescription').value = btn.dataset.content;
+        });
+    });
+
+    // URL scraper
+    document.getElementById('scrapeAnalyzeBtn')?.addEventListener('click', async () => {
+        const url = document.getElementById('scrapeUrlAnalyze').value.trim();
+        const status = document.getElementById('scrapeAnalyzeStatus');
+        if (!url) { status.textContent = 'Enter a URL first.'; return; }
+        status.textContent = 'Fetching...';
+        document.getElementById('scrapeAnalyzeBtn').disabled = true;
+        try {
+            const resp = await fetch('{% url "scrape_job" %}', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
+                body: 'job_url=' + encodeURIComponent(url)
+            });
+            const data = await resp.json();
+            if (data.success) {
+                document.getElementById('jobDescription').value = data.text;
+                status.textContent = '✓ Extracted successfully.';
+                status.style.color = '#10b981';
+            } else {
+                status.textContent = 'Could not extract: ' + data.error;
+                status.style.color = '#f87171';
+            }
+        } catch(e) {
+            status.textContent = 'Network error. Paste manually.';
+            status.style.color = '#f87171';
+        }
+        document.getElementById('scrapeAnalyzeBtn').disabled = false;
     });
 
     // Animate score on page load if results exist

@@ -2,277 +2,369 @@
 {% load static %}
 {% load section_completeness %}
 
-{% block title %}{{ resume.title }} - NextGenCV{% endblock %}
+{% block title %}{{ resume.title }} — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1000px;margin:0 auto}
+
+/* Header */
+.page-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px;flex-wrap:wrap}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:.85rem;margin-bottom:12px;transition:color .15s}
+.back:hover{color:var(--primary-light)}
+.page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.meta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.meta-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700}
+.badge-template{background:rgba(99,102,241,.12);color:var(--primary-light)}
+.badge-version{background:rgba(139,146,158,.1);color:var(--text3)}
+.badge-analyzed{background:rgba(16,185,129,.12);color:var(--green)}
+.badge-shared{background:rgba(6,182,212,.12);color:var(--cyan)}
+
+/* ATS score pill */
+.ats-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:.82rem;font-weight:700}
+.ats-high{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.ats-mid{background:rgba(99,102,241,.12);color:var(--primary-light);border:1px solid rgba(99,102,241,.2)}
+.ats-low{background:rgba(248,113,113,.12);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+
+/* Completeness bar */
+.completeness-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.completeness-bar{flex:1;height:6px;background:var(--border2);border-radius:99px;overflow:hidden}
+.completeness-fill{height:100%;border-radius:99px;transition:width .4s}
+.fill-high{background:var(--green)}.fill-mid{background:var(--primary-light)}.fill-low{background:var(--amber)}
+.completeness-label{font-size:.78rem;color:var(--text3);white-space:nowrap}
+
+/* Action buttons */
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:var(--r8);font-size:.8rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .15s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-green{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+.btn-green:hover{background:rgba(16,185,129,.18)}
+.btn-danger{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2)}
+.btn-danger:hover{background:rgba(248,113,113,.18)}
+.btn-cyan{background:rgba(6,182,212,.1);color:var(--cyan);border:1px solid rgba(6,182,212,.2)}
+.btn-cyan:hover{background:rgba(6,182,212,.18)}
+
+/* Share modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r20);padding:28px;max-width:480px;width:90%;position:relative}
+.modal-title{font-size:1.1rem;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:.82rem;color:var(--text3);margin-bottom:20px}
+.share-url-box{display:flex;gap:8px;margin-bottom:16px}
+.share-url-box input{flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:9px 12px;color:var(--text);font-size:.82rem;font-family:var(--font)}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem;padding:4px}
+.modal-close:hover{color:var(--text)}
+
+/* Content sections */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;margin-bottom:16px}
+.section-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.section-title{font-size:.95rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.section-title i{color:var(--primary-light)}
+.section-add{font-size:.78rem;color:var(--primary-light);text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.section-add:hover{text-decoration:underline}
+
+/* Personal info */
+.pi-name{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:8px;text-align:center}
+.pi-contacts{display:flex;justify-content:center;flex-wrap:wrap;gap:16px;font-size:.85rem;color:var(--text2);margin-bottom:12px}
+.pi-contacts span{display:flex;align-items:center;gap:5px}
+.pi-links{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+
+/* Timeline */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{position:relative;padding-left:24px;padding-bottom:20px;border-left:2px solid var(--border2)}
+.tl-item:last-child{border-left:2px solid transparent;padding-bottom:0}
+.tl-dot{position:absolute;left:-5px;top:4px;width:8px;height:8px;border-radius:50%;background:var(--primary);border:2px solid var(--bg)}
+.tl-role{font-size:.95rem;font-weight:700;margin-bottom:2px}
+.tl-company{font-size:.85rem;color:var(--primary-light);margin-bottom:4px}
+.tl-dates{font-size:.75rem;color:var(--text3);margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.tl-desc{font-size:.83rem;color:var(--text2);line-height:1.6;margin-bottom:6px}
+.tl-achievements{list-style:none;padding:0;margin:0}
+.tl-achievements li{font-size:.82rem;color:var(--text2);line-height:1.6;padding:2px 0;display:flex;align-items:flex-start;gap:6px}
+.tl-achievements li::before{content:'▸';color:var(--primary-light);flex-shrink:0;font-size:.7rem;margin-top:3px}
+.tl-edit{font-size:.72rem;color:var(--text3);text-decoration:none;margin-left:8px;opacity:0;transition:opacity .15s}
+.tl-item:hover .tl-edit{opacity:1}
+
+/* Education */
+.edu-item{padding:14px 0;border-bottom:1px solid var(--border)}
+.edu-item:last-child{border-bottom:none;padding-bottom:0}
+.edu-degree{font-size:.92rem;font-weight:700}
+.edu-inst{font-size:.85rem;color:var(--primary-light);margin-top:2px}
+.edu-meta{font-size:.75rem;color:var(--text3);margin-top:4px;display:flex;gap:12px;flex-wrap:wrap}
+
+/* Skills */
+.skills-cats{display:flex;flex-direction:column;gap:14px}
+.skill-cat-name{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.skill-tags{display:flex;flex-wrap:wrap;gap:6px}
+.skill-tag{padding:4px 12px;border-radius:99px;font-size:.78rem;font-weight:500;background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.skill-tag.expert{border-color:rgba(16,185,129,.3);color:var(--green)}
+.skill-tag.advanced{border-color:rgba(99,102,241,.3);color:var(--primary-light)}
+.skill-tag.intermediate{border-color:rgba(245,158,11,.2);color:var(--amber)}
+
+/* Projects */
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.proj-card{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r12);padding:16px;transition:all .2s}
+.proj-card:hover{border-color:rgba(99,102,241,.3);transform:translateY(-2px)}
+.proj-name{font-size:.9rem;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:6px}
+.proj-desc{font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:8px}
+.proj-tech{font-size:.72rem;color:var(--text3);display:flex;align-items:center;gap:4px}
+
+/* Certifications */
+.cert-item{display:flex;align-items:flex-start;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);gap:12px}
+.cert-item:last-child{border-bottom:none;padding-bottom:0}
+.cert-name{font-size:.9rem;font-weight:700}
+.cert-issuer{font-size:.8rem;color:var(--primary-light);margin-top:2px}
+.cert-date{font-size:.75rem;color:var(--text3);white-space:nowrap}
+
+/* Empty */
+.empty-section{padding:24px;text-align:center;color:var(--text3);font-size:.85rem}
+.empty-section i{display:block;font-size:1.8rem;margin-bottom:8px;opacity:.4}
+
+@media(max-width:700px){.wrap{padding:16px}.actions{gap:6px}.proj-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
 
 {% block content %}
-<!-- Page Header with Actions -->
-<div class="page-header">
-    <div class="page-header__content">
-        <div class="page-header__title-section">
-            <div style="display: flex; align-items: center; gap: var(--spacing-3, 1.5rem); margin-bottom: var(--spacing-2, 1rem);">
-                <a href="{% url 'resume_list' %}" class="btn btn-ghost btn-sm" style="padding: var(--spacing-2, 1rem);">
-                    <i class="bi bi-arrow-left"></i>
-                </a>
-                <h1 class="page-header__title" style="margin: 0;">{{ resume.title }}</h1>
-            </div>
-            <div style="display: flex; align-items: center; gap: var(--spacing-3, 1.5rem); flex-wrap: wrap;">
-                <span class="badge badge-lg" style="background: var(--color-primary, #667eea);">
-                    <i class="bi bi-file-earmark-text"></i> {{ resume.template|title }}
-                </span>
-                <span class="badge badge-lg" style="background: var(--color-bg-secondary, #1a1a2e); border: 1px solid var(--color-border, #2d2d44);">
-                    <i class="bi bi-clock"></i> Updated {{ resume.updated_at|date:"M d, Y g:i A" }}
-                </span>
-                {% section_completeness_percentage resume as completeness %}
-                <span class="badge badge-lg" style="background: {% if completeness < 50 %}#dc3545{% elif completeness < 75 %}#ffc107{% else %}#28a745{% endif %};">
-                    <i class="bi bi-clipboard-check"></i> {{ completeness|floatformat:0 }}% Complete
-                </span>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="wrap">
+  <a href="{% url 'resume_list' %}" class="back"><i class="bi bi-arrow-left"></i> My Resumes</a>
 
-<!-- Action Buttons -->
-<div style="margin-bottom: var(--spacing-5, 2.5rem);">
-    <div style="display: flex; gap: var(--spacing-2, 1rem); flex-wrap: wrap;">
-        <a href="{% url 'resume_detail' resume.id %}?view=template" class="btn btn-primary" target="_blank">
-            <i class="bi bi-eye"></i>
-            <span>Preview Template</span>
-        </a>
-        <a href="{% url 'resume_update' resume.id %}" class="btn btn-outline">
-            <i class="bi bi-pencil"></i>
-            <span>Edit</span>
-        </a>
-        <a href="{% url 'version_list' resume.id %}" class="btn btn-outline">
-            <i class="bi bi-clock-history"></i>
-            <span>Versions</span>
-        </a>
-        <a href="{% url 'optimization_history_list' resume.id %}" class="btn btn-outline">
-            <i class="bi bi-magic"></i>
-            <span>Optimizations</span>
-        </a>
-        <a href="{% url 'analyze_resume' resume.id %}" class="btn btn-warning">
-            <i class="bi bi-graph-up"></i>
-            <span>Analyze</span>
-        </a>
-        <a href="{% url 'resume_export' resume.id %}" class="btn btn-success">
-            <i class="bi bi-download"></i>
-            <span>Export PDF</span>
-        </a>
-        <a href="{% url 'resume_duplicate' resume.id %}" class="btn btn-outline">
-            <i class="bi bi-files"></i>
-            <span>Duplicate</span>
-        </a>
-        <a href="{% url 'resume_delete' resume.id %}" class="btn btn-danger">
-            <i class="bi bi-trash"></i>
-            <span>Delete</span>
-        </a>
+  <!-- Header -->
+  <div class="page-hdr">
+    <div>
+      <div class="page-title">{{ resume.title }}</div>
+      <div class="meta-row">
+        <span class="meta-badge badge-template"><i class="bi bi-palette"></i> {{ resume.template|title }}</span>
+        <span class="meta-badge badge-version"><i class="bi bi-layers"></i> v{{ resume.current_version_number }}</span>
+        {% if resume.latest_ats_score %}
+          <span class="ats-pill {% if resume.latest_ats_score >= 75 %}ats-high{% elif resume.latest_ats_score >= 50 %}ats-mid{% else %}ats-low{% endif %}">
+            <i class="bi bi-graph-up"></i> {{ resume.latest_ats_score|floatformat:0 }} ATS
+          </span>
+        {% endif %}
+        {% if resume.last_analyzed_at %}<span class="meta-badge badge-analyzed"><i class="bi bi-check-circle"></i> Analyzed</span>{% endif %}
+        {% if resume.share_token %}<span class="meta-badge badge-shared"><i class="bi bi-share"></i> Shared</span>{% endif %}
+      </div>
     </div>
-</div>
+    <div class="actions">
+      <a href="{% url 'resume_update' resume.id %}" class="btn btn-primary"><i class="bi bi-pencil"></i> Edit</a>
+      <a href="{% url 'analyze_resume' resume.id %}" class="btn btn-ghost"><i class="bi bi-search"></i> Analyze</a>
+      <a href="{% url 'fix_resume' resume.id %}" class="btn btn-ghost"><i class="bi bi-magic"></i> Fix</a>
+      <a href="{% url 'resume_export' resume.id %}" class="btn btn-green"><i class="bi bi-download"></i> Export</a>
+      <button class="btn btn-cyan" onclick="document.getElementById('shareModal').style.display='flex'"><i class="bi bi-share"></i> Share</button>
+      <a href="{% url 'resume_duplicate' resume.id %}" class="btn btn-ghost" title="Duplicate"><i class="bi bi-files"></i></a>
+      <a href="{% url 'version_list' resume.id %}" class="btn btn-ghost" title="Version History"><i class="bi bi-clock-history"></i></a>
+      <a href="{% url 'resume_delete' resume.id %}" class="btn btn-danger" title="Delete"><i class="bi bi-trash"></i></a>
+    </div>
+  </div>
 
-<!-- Resume Content -->
-<div style="max-width: 1200px; margin: 0 auto;">
-    <!-- Personal Information -->
-    {% if personal_info %}
-    <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-        <div class="card-body" style="padding: var(--spacing-6, 3rem); text-align: center;">
-            <h2 style="font-size: var(--font-size-3xl, 1.875rem); font-weight: var(--font-weight-bold, 700); margin-bottom: var(--spacing-3, 1.5rem);">
-                {{ personal_info.full_name }}
-            </h2>
-            
-            <div style="display: flex; justify-content: center; align-items: center; gap: var(--spacing-4, 2rem); flex-wrap: wrap; margin-bottom: var(--spacing-3, 1.5rem); color: var(--color-text-secondary, #a0a0b8);">
-                {% if personal_info.email %}
-                <div style="display: flex; align-items: center; gap: var(--spacing-2, 1rem);">
-                    <i class="bi bi-envelope"></i>
-                    <span>{{ personal_info.email }}</span>
-                </div>
-                {% endif %}
-                
-                {% if personal_info.phone %}
-                <div style="display: flex; align-items: center; gap: var(--spacing-2, 1rem);">
-                    <i class="bi bi-telephone"></i>
-                    <span>{{ personal_info.phone }}</span>
-                </div>
-                {% endif %}
-                
-                {% if personal_info.location %}
-                <div style="display: flex; align-items: center; gap: var(--spacing-2, 1rem);">
-                    <i class="bi bi-geo-alt"></i>
-                    <span>{{ personal_info.location }}</span>
-                </div>
-                {% endif %}
-            </div>
-            
-            {% if personal_info.linkedin or personal_info.github %}
-            <div style="display: flex; justify-content: center; gap: var(--spacing-3, 1.5rem); flex-wrap: wrap;">
-                {% if personal_info.linkedin %}
-                <a href="{{ personal_info.linkedin }}" target="_blank" class="btn btn-outline btn-sm">
-                    <i class="bi bi-linkedin"></i>
-                    <span>LinkedIn</span>
-                </a>
-                {% endif %}
-                
-                {% if personal_info.github %}
-                <a href="{{ personal_info.github }}" target="_blank" class="btn btn-outline btn-sm">
-                    <i class="bi bi-github"></i>
-                    <span>GitHub</span>
-                </a>
-                {% endif %}
-            </div>
-            {% endif %}
-        </div>
+  <!-- Completeness bar -->
+  <div class="completeness-wrap">
+    <span class="completeness-label">Completeness</span>
+    <div class="completeness-bar">
+      <div class="completeness-fill {% if resume.completeness_score >= 80 %}fill-high{% elif resume.completeness_score >= 50 %}fill-mid{% else %}fill-low{% endif %}"
+           style="width:{{ resume.completeness_score }}%"></div>
+    </div>
+    <span class="completeness-label" style="font-weight:700;color:var(--text)">{{ resume.completeness_score }}%</span>
+  </div>
+
+  <!-- Personal Info -->
+  {% if personal_info %}
+  <div class="section">
+    <div class="pi-name">{{ personal_info.full_name }}</div>
+    <div class="pi-contacts">
+      {% if personal_info.email %}<span><i class="bi bi-envelope"></i> {{ personal_info.email }}</span>{% endif %}
+      {% if personal_info.phone %}<span><i class="bi bi-telephone"></i> {{ personal_info.phone }}</span>{% endif %}
+      {% if personal_info.location %}<span><i class="bi bi-geo-alt"></i> {{ personal_info.location }}</span>{% endif %}
+    </div>
+    {% if personal_info.linkedin or personal_info.github %}
+    <div class="pi-links">
+      {% if personal_info.linkedin %}<a href="{{ personal_info.linkedin }}" target="_blank" class="btn btn-ghost" style="font-size:.78rem;padding:5px 12px"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+      {% if personal_info.github %}<a href="{{ personal_info.github }}" target="_blank" class="btn btn-ghost" style="font-size:.78rem;padding:5px 12px"><i class="bi bi-github"></i> GitHub</a>{% endif %}
     </div>
     {% endif %}
-    
-    <!-- Work Experience -->
+  </div>
+  {% endif %}
+
+  {% if resume.summary %}
+  <div class="section">
+    <div class="section-title" style="margin-bottom:10px"><i class="bi bi-person-lines-fill"></i> Summary</div>
+    <div style="font-size:.88rem;color:var(--text2);line-height:1.7">{{ resume.summary }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Experience -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-title"><i class="bi bi-briefcase"></i> Experience</div>
+      <a href="{% url 'experience_add' resume.id %}" class="section-add"><i class="bi bi-plus-lg"></i> Add</a>
+    </div>
     {% if experiences %}
-    <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-        <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-            <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                <i class="bi bi-briefcase"></i> Work Experience
-            </h2>
-            
-            <div style="display: flex; flex-direction: column; gap: var(--spacing-5, 2.5rem);">
-                {% for exp in experiences %}
-                <div style="position: relative; padding-left: var(--spacing-4, 2rem); border-left: 2px solid var(--color-primary, #667eea);">
-                    <div style="position: absolute; left: -6px; top: 0; width: 10px; height: 10px; background: var(--color-primary, #667eea); border-radius: 50%;"></div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-2, 1rem); flex-wrap: wrap; gap: var(--spacing-2, 1rem);">
-                        <div>
-                            <h3 style="font-size: var(--font-size-xl, 1.25rem); font-weight: var(--font-weight-semibold, 600); margin-bottom: var(--spacing-1, 0.5rem);">
-                                {{ exp.role }}
-                            </h3>
-                            <p style="color: var(--color-text-secondary, #a0a0b8); font-size: var(--font-size-lg, 1.125rem); margin-bottom: 0;">
-                                {{ exp.company }}
-                            </p>
-                        </div>
-                        <span class="badge badge-lg" style="background: var(--color-bg-secondary, #1a1a2e); border: 1px solid var(--color-border, #2d2d44); white-space: nowrap;">
-                            <i class="bi bi-calendar"></i>
-                            {{ exp.start_date|date:"M Y" }} - {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}
-                        </span>
-                    </div>
-                    
-                    <div style="color: var(--color-text-secondary, #a0a0b8); line-height: 1.6; white-space: pre-wrap;">{{ exp.description }}</div>
-                </div>
-                {% endfor %}
-            </div>
+    <div class="timeline">
+      {% for exp in experiences %}
+      <div class="tl-item">
+        <div class="tl-dot"></div>
+        <div class="tl-role">
+          {{ exp.role }}
+          <a href="{% url 'experience_edit' resume.id exp.id %}" class="tl-edit"><i class="bi bi-pencil"></i></a>
         </div>
+        <div class="tl-company">{{ exp.company }}{% if exp.location %} · {{ exp.location }}{% endif %}</div>
+        <div class="tl-dates"><i class="bi bi-calendar3"></i> {{ exp.start_date|date:"M Y" }} — {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}</div>
+        {% if exp.description %}<div class="tl-desc">{{ exp.description }}</div>{% endif %}
+        {% if exp.achievements %}
+        <ul class="tl-achievements">
+          {% for line in exp.achievements.splitlines %}{% if line.strip %}
+          <li>{{ line|cut:"•"|cut:"-"|cut:"–"|strip }}</li>
+          {% endif %}{% endfor %}
+        </ul>
+        {% endif %}
+      </div>
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-section"><i class="bi bi-briefcase"></i> No experience added yet</div>
     {% endif %}
-    
-    <!-- Education -->
+  </div>
+
+  <!-- Education -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-title"><i class="bi bi-mortarboard"></i> Education</div>
+      <a href="{% url 'education_add' resume.id %}" class="section-add"><i class="bi bi-plus-lg"></i> Add</a>
+    </div>
     {% if education %}
-    <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-        <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-            <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                <i class="bi bi-mortarboard"></i> Education
-            </h2>
-            
-            <div style="display: flex; flex-direction: column; gap: var(--spacing-4, 2rem);">
-                {% for edu in education %}
-                <div style="padding: var(--spacing-4, 2rem); background: var(--color-bg-secondary, #1a1a2e); border-radius: var(--border-radius-lg, 12px); border: 1px solid var(--color-border, #2d2d44);">
-                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: var(--spacing-2, 1rem); flex-wrap: wrap; gap: var(--spacing-2, 1rem);">
-                        <div>
-                            <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); margin-bottom: var(--spacing-1, 0.5rem);">
-                                {{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}
-                            </h3>
-                            <p style="color: var(--color-text-secondary, #a0a0b8); margin-bottom: 0;">
-                                {{ edu.institution }}
-                            </p>
-                        </div>
-                        <span class="badge badge-lg" style="background: var(--color-bg-tertiary, #0f0f1e); border: 1px solid var(--color-border, #2d2d44); white-space: nowrap;">
-                            <i class="bi bi-calendar"></i>
-                            {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
-                        </span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+    {% for edu in education %}
+    <div class="edu-item">
+      <div class="edu-degree">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+      <div class="edu-inst">{{ edu.institution }}</div>
+      <div class="edu-meta">
+        <span><i class="bi bi-calendar3"></i> {{ edu.start_year }} — {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</span>
+        {% if edu.gpa %}<span><i class="bi bi-star"></i> GPA {{ edu.gpa }}</span>{% endif %}
+        {% if edu.honors %}<span>{{ edu.honors }}</span>{% endif %}
+      </div>
     </div>
+    {% endfor %}
+    {% else %}
+    <div class="empty-section"><i class="bi bi-mortarboard"></i> No education added yet</div>
     {% endif %}
-    
-    <!-- Skills -->
+  </div>
+
+  <!-- Skills -->
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-title"><i class="bi bi-lightning-charge"></i> Skills</div>
+      <a href="{% url 'skill_add' resume.id %}" class="section-add"><i class="bi bi-plus-lg"></i> Add</a>
+    </div>
     {% if skills %}
-    <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-        <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-            <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                <i class="bi bi-star"></i> Skills
-            </h2>
-            
-            {% regroup skills by category as skills_by_category %}
-            <div style="display: flex; flex-direction: column; gap: var(--spacing-4, 2rem);">
-                {% for category in skills_by_category %}
-                <div>
-                    <h3 style="font-size: var(--font-size-base, 1rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-secondary, #a0a0b8); margin-bottom: var(--spacing-2, 1rem);">
-                        {{ category.grouper }}
-                    </h3>
-                    <div style="display: flex; flex-wrap: wrap; gap: var(--spacing-2, 1rem);">
-                        {% for skill in category.list %}
-                        <span class="badge badge-lg" style="background: var(--color-bg-secondary, #1a1a2e); border: 1px solid var(--color-border, #2d2d44); padding: var(--spacing-2, 1rem) var(--spacing-3, 1.5rem);">
-                            {{ skill.name }}
-                        </span>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+    {% regroup skills by category as skills_by_cat %}
+    <div class="skills-cats">
+      {% for cat in skills_by_cat %}
+      <div>
+        <div class="skill-cat-name">{{ cat.grouper }}</div>
+        <div class="skill-tags">
+          {% for skill in cat.list %}
+          <span class="skill-tag {{ skill.proficiency_level }}" title="{{ skill.proficiency_level|title }}{% if skill.years_of_experience %} · {{ skill.years_of_experience }}yr{% endif %}">
+            {{ skill.name }}
+          </span>
+          {% endfor %}
         </div>
+      </div>
+      {% endfor %}
     </div>
+    {% else %}
+    <div class="empty-section"><i class="bi bi-lightning-charge"></i> No skills added yet</div>
     {% endif %}
-    
-    <!-- Projects -->
-    {% if projects %}
-    <div class="card-elevated" style="margin-bottom: var(--spacing-4, 2rem);">
-        <div class="card-body" style="padding: var(--spacing-5, 2.5rem);">
-            <h2 class="card-title" style="margin-bottom: var(--spacing-4, 2rem);">
-                <i class="bi bi-folder"></i> Projects
-            </h2>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--spacing-4, 2rem);">
-                {% for proj in projects %}
-                <div style="padding: var(--spacing-4, 2rem); background: var(--color-bg-secondary, #1a1a2e); border-radius: var(--border-radius-lg, 12px); border: 1px solid var(--color-border, #2d2d44); transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 8px 24px rgba(0,0,0,0.3)';" onmouseout="this.style.transform=''; this.style.boxShadow='';">
-                    <h3 style="font-size: var(--font-size-lg, 1.125rem); font-weight: var(--font-weight-semibold, 600); margin-bottom: var(--spacing-2, 1rem); display: flex; align-items: center; gap: var(--spacing-2, 1rem);">
-                        {{ proj.name }}
-                        {% if proj.url %}
-                        <a href="{{ proj.url }}" target="_blank" style="color: var(--color-primary, #667eea); font-size: var(--font-size-sm, 0.875rem);">
-                            <i class="bi bi-box-arrow-up-right"></i>
-                        </a>
-                        {% endif %}
-                    </h3>
-                    <p style="color: var(--color-text-secondary, #a0a0b8); line-height: 1.6; margin-bottom: var(--spacing-3, 1.5rem);">
-                        {{ proj.description }}
-                    </p>
-                    {% if proj.technologies %}
-                    <div style="padding-top: var(--spacing-2, 1rem); border-top: 1px solid var(--color-border, #2d2d44);">
-                        <p style="color: var(--color-text-tertiary, #6b6b80); font-size: var(--font-size-sm, 0.875rem); margin-bottom: 0;">
-                            <i class="bi bi-tools"></i> {{ proj.technologies }}
-                        </p>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endfor %}
-            </div>
+  </div>
+
+  <!-- Projects -->
+  {% if projects %}
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-title"><i class="bi bi-folder2-open"></i> Projects</div>
+      <a href="{% url 'project_add' resume.id %}" class="section-add"><i class="bi bi-plus-lg"></i> Add</a>
+    </div>
+    <div class="proj-grid">
+      {% for proj in projects %}
+      <div class="proj-card">
+        <div class="proj-name">
+          {{ proj.name }}
+          {% if proj.url %}<a href="{{ proj.url }}" target="_blank" style="color:var(--primary-light);font-size:.8rem"><i class="bi bi-box-arrow-up-right"></i></a>{% endif %}
         </div>
+        {% if proj.description %}<div class="proj-desc">{{ proj.description }}</div>{% endif %}
+        {% if proj.technologies %}<div class="proj-tech"><i class="bi bi-tools"></i> {{ proj.technologies }}</div>{% endif %}
+      </div>
+      {% endfor %}
     </div>
-    {% endif %}
-    
-    <!-- Empty State -->
-    {% if not personal_info and not experiences and not education and not skills and not projects %}
-    <div class="card-elevated">
-        <div class="card-body" style="padding: var(--spacing-8, 4rem);">
-            <div class="empty-state">
-                <div class="empty-state-icon">
-                    <i class="bi bi-file-earmark-text" style="font-size: 80px;"></i>
-                </div>
-                <h3 class="empty-state-title">Resume is Empty</h3>
-                <p class="empty-state-description">This resume doesn't have any content yet. Click "Edit" to start adding your information.</p>
-                <a href="{% url 'resume_update' resume.id %}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-pencil"></i>
-                    <span>Start Editing</span>
-                </a>
-            </div>
+  </div>
+  {% endif %}
+
+  <!-- Certifications -->
+  {% if certifications %}
+  <div class="section">
+    <div class="section-hdr">
+      <div class="section-title"><i class="bi bi-patch-check"></i> Certifications</div>
+    </div>
+    {% for cert in certifications %}
+    <div class="cert-item">
+      <div>
+        <div class="cert-name">
+          {{ cert.name }}
+          {% if cert.credential_url %}<a href="{{ cert.credential_url }}" target="_blank" style="color:var(--primary-light);font-size:.78rem;margin-left:6px"><i class="bi bi-box-arrow-up-right"></i></a>{% endif %}
         </div>
+        {% if cert.issuer %}<div class="cert-issuer">{{ cert.issuer }}</div>{% endif %}
+        {% if cert.credential_id %}<div style="font-size:.72rem;color:var(--text3);margin-top:2px">ID: {{ cert.credential_id }}</div>{% endif %}
+      </div>
+      {% if cert.issue_date %}<div class="cert-date">{{ cert.issue_date|date:"M Y" }}{% if cert.expiry_date %} — {{ cert.expiry_date|date:"M Y" }}{% endif %}</div>{% endif %}
     </div>
-    {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+
 </div>
+
+<!-- Share Modal -->
+<div id="shareModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)this.style.display='none'">
+  <div class="modal">
+    <button class="modal-close" onclick="document.getElementById('shareModal').style.display='none'"><i class="bi bi-x-lg"></i></button>
+    <div class="modal-title"><i class="bi bi-share" style="color:var(--cyan)"></i> Share Resume</div>
+    <div class="modal-sub">Generate a public link anyone can view — no login required.</div>
+
+    {% if resume.share_token %}
+    <div class="share-url-box">
+      <input type="text" id="shareUrlInput" value="{{ request.scheme }}://{{ request.get_host }}{% url 'resume_public' resume.share_token %}" readonly>
+      <button class="btn btn-cyan" id="copyShareBtn"><i class="bi bi-clipboard"></i> Copy</button>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <form method="post" action="{% url 'resume_share' resume.id %}">
+        {% csrf_token %}<input type="hidden" name="action" value="revoke">
+        <button type="submit" class="btn btn-danger" style="font-size:.78rem;padding:6px 12px"><i class="bi bi-x-circle"></i> Revoke Link</button>
+      </form>
+    </div>
+    {% else %}
+    <p style="font-size:.85rem;color:var(--text2);margin-bottom:16px">No share link yet. Generate one to share your resume publicly.</p>
+    <form method="post" action="{% url 'resume_share' resume.id %}">
+      {% csrf_token %}<input type="hidden" name="action" value="generate">
+      <button type="submit" class="btn btn-cyan"><i class="bi bi-link-45deg"></i> Generate Share Link</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('copyShareBtn')?.addEventListener('click', () => {
+  const inp = document.getElementById('shareUrlInput');
+  inp.select();
+  navigator.clipboard.writeText(inp.value).then(() => {
+    const btn = document.getElementById('copyShareBtn');
+    btn.innerHTML = '<i class="bi bi-check-lg"></i> Copied!';
+    setTimeout(() => { btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy'; }, 2000);
+  });
+});
+</script>
 {% endblock %}

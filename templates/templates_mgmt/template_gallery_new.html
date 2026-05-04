@@ -1,263 +1,275 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
+{% block title %}Template Gallery — NextGenCV{% endblock %}
 
-{% block title %}Template Gallery - NextGenCV{% endblock %}
+{% block extra_css %}
+<style>
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{padding:32px;max-width:1300px;margin:0 auto}
+
+/* Header */
+.page-hdr{margin-bottom:32px}
+.page-title{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.page-sub{font-size:.88rem;color:var(--text3)}
+
+/* Info banner */
+.info-banner{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:var(--r12);padding:14px 18px;margin-bottom:28px;display:flex;align-items:center;gap:10px;font-size:.83rem;color:var(--text2)}
+.info-banner i{color:var(--primary-light);flex-shrink:0}
+
+/* Template grid */
+.template-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+
+/* Template card */
+.tcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r20);overflow:hidden;transition:all .25s;position:relative}
+.tcard:hover{border-color:rgba(99,102,241,.4);transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+
+/* Preview area */
+.tcard-preview{position:relative;height:220px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
+.tcard-preview-icon{font-size:4rem;color:var(--border2);transition:all .25s}
+.tcard:hover .tcard-preview-icon{color:var(--border);transform:scale(1.05)}
+.tcard-preview-overlay{position:absolute;inset:0;background:rgba(99,102,241,.0);display:flex;align-items:center;justify-content:center;transition:all .25s;opacity:0}
+.tcard:hover .tcard-preview-overlay{background:rgba(99,102,241,.15);opacity:1}
+.preview-btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r8);background:rgba(99,102,241,.9);color:#fff;font-size:.82rem;font-weight:700;border:none;cursor:pointer;font-family:var(--font);backdrop-filter:blur(4px);transform:translateY(8px);transition:transform .2s}
+.tcard:hover .preview-btn{transform:translateY(0)}
+
+/* Template color accent bar */
+.tcard-accent{height:3px;width:100%}
+.accent-professional{background:linear-gradient(90deg,#2c3e50,#3498db)}
+.accent-modern{background:linear-gradient(90deg,#1a1a1a,#0066cc)}
+.accent-classic{background:linear-gradient(90deg,#8b4513,#d2691e)}
+.accent-creative{background:linear-gradient(90deg,#6366f1,#8b5cf6)}
+.accent-minimal{background:linear-gradient(90deg,#374151,#6b7280)}
+
+/* Default badge */
+.default-badge{position:absolute;top:12px;left:12px;background:rgba(99,102,241,.9);color:#fff;font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:99px;backdrop-filter:blur(4px)}
+
+/* Card body */
+.tcard-body{padding:18px 20px}
+.tcard-name{font-size:1rem;font-weight:700;margin-bottom:4px}
+.tcard-desc{font-size:.8rem;color:var(--text3);line-height:1.5;margin-bottom:14px}
+.tcard-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.tcard-usage{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:4px}
+.tcard-features{display:flex;gap:5px;flex-wrap:wrap}
+.feature-tag{font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:99px;background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.2)}
+
+/* Actions */
+.tcard-actions{display:flex;gap:8px}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:var(--r8);font-size:.8rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .15s;flex:1;justify-content:center}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+
+/* Preview Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:20px}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r20);width:100%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden}
+.modal-hdr{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1px solid var(--border);flex-shrink:0}
+.modal-title{font-size:1rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.1rem;padding:4px;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+.modal-body{flex:1;overflow:auto;padding:0;background:#fff}
+.modal-body iframe{width:100%;height:600px;border:none;display:block}
+.modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0}
+.modal-footer .btn{flex:0 0 auto}
+
+/* Loading */
+.preview-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:400px;gap:14px;color:var(--text3)}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--primary);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Empty */
+.empty{padding:80px 20px;text-align:center}
+.empty i{font-size:3rem;color:var(--text3);display:block;margin-bottom:16px;opacity:.4}
+.empty-title{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.empty-sub{font-size:.85rem;color:var(--text3)}
+
+@media(max-width:700px){.template-grid{grid-template-columns:1fr}.wrap{padding:16px}}
+</style>
+{% endblock %}
 
 {% block content %}
-<!-- Page Header -->
-<div class="page-header">
-    <div class="page-header__content">
-        <div class="page-header__title-section">
-            <h1 class="page-header__title">
-                <i class="bi bi-palette"></i>
-                Resume Template Gallery
-            </h1>
-            <p class="page-header__subtitle">Choose a professional template for your resume. All templates are ATS-friendly and fully customizable.</p>
-        </div>
-    </div>
-</div>
+<div class="wrap">
+  <div class="page-hdr">
+    <div class="page-title">Resume Template Gallery</div>
+    <div class="page-sub">Choose a professional template. All templates are ATS-friendly and fully customizable.</div>
+  </div>
 
-{% if templates %}
-<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: var(--spacing-4, 2rem);">
+  <div class="info-banner">
+    <i class="bi bi-info-circle"></i>
+    Click <strong style="color:var(--text)">Preview</strong> to see a template with sample data, then <strong style="color:var(--text)">Use Template</strong> to apply it to one of your resumes.
+  </div>
+
+  {% if templates %}
+  <div class="template-grid">
     {% for template in templates %}
-    <div class="card-elevated card-interactive">
-        <!-- Template Preview -->
-        <div style="position: relative; width: 100%; height: 300px; background: var(--color-base-bg); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--color-border); overflow: hidden;">
-            {% if template.thumbnail %}
-            <img src="{{ template.thumbnail.url }}" alt="{{ template.name }}" style="width: 100%; height: 100%; object-fit: cover;">
-            {% else %}
-            <i class="bi bi-file-earmark-text" style="font-size: 80px; color: var(--color-text-tertiary); opacity: 0.3;"></i>
-            {% endif %}
-            
-            <!-- Preview Button (Eye Icon) -->
-            <button 
-                onclick="openTemplatePreview({{ template.id }}, event)" 
-                style="position: absolute; top: var(--spacing-3, 1.5rem); right: var(--spacing-3, 1.5rem); width: 40px; height: 40px; border-radius: 50%; background: rgba(0, 0, 0, 0.7); border: none; color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; backdrop-filter: blur(4px);"
-                onmouseover="this.style.background='rgba(0, 102, 255, 0.9)'; this.style.transform='scale(1.1)';"
-                onmouseout="this.style.background='rgba(0, 0, 0, 0.7)'; this.style.transform='scale(1)';"
-                aria-label="Preview {{ template.name }}">
-                <i class="bi bi-eye" style="font-size: 20px;"></i>
-            </button>
-            
-            {% if template.is_default %}
-            <div style="position: absolute; top: var(--spacing-3, 1.5rem); left: var(--spacing-3, 1.5rem);">
-                <span class="badge badge-primary">Default</span>
-            </div>
-            {% endif %}
+    {% with tname=template.name|lower %}
+    <div class="tcard">
+      <div class="tcard-accent accent-{{ tname }}"></div>
+
+      <!-- Preview area -->
+      <div class="tcard-preview" onclick="openPreview({{ template.id }}, '{{ template.name }}')">
+        {% if template.thumbnail %}
+          <img src="{{ template.thumbnail.url }}" alt="{{ template.name }}" style="width:100%;height:100%;object-fit:cover">
+        {% else %}
+          <!-- Mini resume mockup -->
+          <div style="width:140px;background:#fff;border-radius:6px;padding:12px;box-shadow:0 4px 20px rgba(0,0,0,.3);transform:scale(.95);transition:transform .25s" class="tcard-preview-icon-wrap">
+            <div style="height:8px;background:{% if tname == 'professional' %}#2c3e50{% elif tname == 'modern' %}#0066cc{% elif tname == 'classic' %}#8b4513{% elif tname == 'creative' %}#6366f1{% else %}#374151{% endif %};border-radius:3px;margin-bottom:6px"></div>
+            <div style="height:4px;background:#e5e7eb;border-radius:2px;margin-bottom:3px;width:80%"></div>
+            <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:8px;width:60%"></div>
+            <div style="height:2px;background:#f3f4f6;border-radius:1px;margin-bottom:2px"></div>
+            <div style="height:2px;background:#f3f4f6;border-radius:1px;margin-bottom:2px;width:90%"></div>
+            <div style="height:2px;background:#f3f4f6;border-radius:1px;margin-bottom:6px;width:75%"></div>
+            <div style="height:3px;background:#e5e7eb;border-radius:2px;margin-bottom:3px;width:50%"></div>
+            <div style="height:2px;background:#f3f4f6;border-radius:1px;margin-bottom:2px"></div>
+            <div style="height:2px;background:#f3f4f6;border-radius:1px;width:85%"></div>
+          </div>
+        {% endif %}
+
+        <div class="tcard-preview-overlay">
+          <button class="preview-btn"><i class="bi bi-eye"></i> Preview</button>
         </div>
-        
-        <!-- Template Info -->
-        <div class="card-body" style="padding: var(--spacing-4, 2rem);">
-            <h3 style="font-size: var(--font-size-xl, 1.25rem); font-weight: var(--font-weight-semibold, 600); color: var(--color-text-primary); margin-bottom: var(--spacing-2, 1rem);">
-                {{ template.name }}
-            </h3>
-            <p style="font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-3, 1.5rem);">
-                {{ template.description|default:"Professional resume template optimized for ATS systems" }}
-            </p>
-            
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-3, 1.5rem);">
-                <div style="display: flex; align-items: center; gap: var(--spacing-1, 0.5rem); font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-tertiary);">
-                    <i class="bi bi-people"></i>
-                    <span>Used {{ template.usage_count|default:0 }} times</span>
-                </div>
-            </div>
-            
-            <!-- Use Template Button at Bottom -->
-            <button 
-                onclick="useTemplate({{ template.id }})" 
-                class="btn btn-primary btn-block">
-                <i class="bi bi-check-circle"></i>
-                Use Template
-            </button>
+
+        {% if template.is_default %}
+        <div class="default-badge"><i class="bi bi-star-fill"></i> Default</div>
+        {% endif %}
+      </div>
+
+      <!-- Card body -->
+      <div class="tcard-body">
+        <div class="tcard-name">{{ template.name }}</div>
+        <div class="tcard-desc">{{ template.description|default:"Professional ATS-optimized resume template" }}</div>
+
+        <div class="tcard-meta">
+          <div class="tcard-usage"><i class="bi bi-people"></i> {{ template.usage_count }} uses</div>
+          <div class="tcard-features">
+            {% if template.supports_color_customization %}<span class="feature-tag">Colors</span>{% endif %}
+            {% if template.supports_font_customization %}<span class="feature-tag">Fonts</span>{% endif %}
+            <span class="feature-tag">ATS Safe</span>
+          </div>
         </div>
+
+        <div class="tcard-actions">
+          <button class="btn btn-ghost" onclick="openPreview({{ template.id }}, '{{ template.name }}')">
+            <i class="bi bi-eye"></i> Preview
+          </button>
+          <button class="btn btn-primary" onclick="selectTemplate({{ template.id }})">
+            <i class="bi bi-check-lg"></i> Use
+          </button>
+        </div>
+      </div>
     </div>
+    {% endwith %}
     {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="empty">
+    <i class="bi bi-palette"></i>
+    <div class="empty-title">No templates available</div>
+    <div class="empty-sub">Run <code style="background:var(--surface2);padding:2px 6px;border-radius:4px">python manage.py populate_templates</code> to load the default templates.</div>
+  </div>
+  {% endif %}
 </div>
-{% else %}
-<div class="empty-state">
-    <div class="empty-state-icon">
-        <i class="bi bi-palette" style="font-size: 80px;"></i>
+
+<!-- Preview Modal -->
+<div id="previewModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closePreview()">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div class="modal-title" id="modalTitle">Template Preview</div>
+      <button class="modal-close" onclick="closePreview()"><i class="bi bi-x-lg"></i></button>
     </div>
-    <h3 class="empty-state-title">No Templates Available</h3>
-    <p class="empty-state-description">Templates are coming soon. Check back later!</p>
-</div>
-{% endif %}
-
-<!-- Template Preview Modal -->
-<div id="templatePreviewModal" class="modal-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px); z-index: 9999; overflow-y: auto; padding: 2rem;">
-    <div class="modal modal-xl" style="margin: 0 auto; position: relative; animation: modalSlideIn 0.3s ease-out;">
-        <div class="modal-header">
-            <h2 class="modal-title" id="modalTemplateName">Template Preview</h2>
-            <button class="modal-close" onclick="closeTemplatePreview()" aria-label="Close preview">
-                <i class="bi bi-x"></i>
-            </button>
-        </div>
-        <div class="modal-body" id="previewContent" style="min-height: 400px; display: flex; align-items: center; justify-content: center;">
-            <div style="text-align: center; color: var(--color-text-secondary);">
-                <i class="bi bi-hourglass-split" style="font-size: 48px; margin-bottom: 1rem; display: block;"></i>
-                <p>Loading preview...</p>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" onclick="closeTemplatePreview()">Close</button>
-            <button class="btn btn-primary" id="useTemplateBtn" onclick="useCurrentTemplate()">
-                <i class="bi bi-check-circle"></i>
-                Use This Template
-            </button>
-        </div>
+    <div class="modal-body" id="modalBody">
+      <div class="preview-loading"><div class="spinner"></div><span>Loading preview...</span></div>
     </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closePreview()">Close</button>
+      <button class="btn btn-primary" id="useTemplateBtn" onclick="selectCurrentTemplate()">
+        <i class="bi bi-check-lg"></i> Use This Template
+      </button>
+    </div>
+  </div>
 </div>
 
-<style>
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+<!-- Resume selector modal (shown when clicking Use) -->
+<div id="resumeModal" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeResumeModal()">
+  <div class="modal" style="max-width:500px">
+    <div class="modal-hdr">
+      <div class="modal-title">Apply to which resume?</div>
+      <button class="modal-close" onclick="closeResumeModal()"><i class="bi bi-x-lg"></i></button>
+    </div>
+    <div class="modal-body" style="background:var(--surface);padding:20px">
+      <div id="resumeList" style="display:flex;flex-direction:column;gap:10px">
+        <div class="preview-loading"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-#templatePreviewModal .modal {
-    background: var(--color-base-bg, #1a1a1a);
-    border: 1px solid var(--color-border, rgba(255, 255, 255, 0.08));
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-}
-
-#templatePreviewModal .modal-close:hover {
-    background: var(--color-base-bg-hover, #242424);
-    transform: rotate(90deg);
-}
-
-#previewContent iframe {
-    width: 100%;
-    min-height: 600px;
-    border: none;
-    background: white;
-    border-radius: 8px;
-}
-</style>
-
+{% block extra_js %}
 <script>
-let currentTemplateId = null;
+let activeTemplateId = null;
 
-function openTemplatePreview(templateId, event) {
-    currentTemplateId = templateId;
-    const modal = document.getElementById('templatePreviewModal');
-    const previewContent = document.getElementById('previewContent');
-    
-    // Show modal
-    modal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-    
-    // Show loading state
-    previewContent.innerHTML = `
-        <div style="text-align: center; color: var(--color-text-secondary);">
-            <i class="bi bi-hourglass-split" style="font-size: 48px; margin-bottom: 1rem; display: block; animation: spin 2s linear infinite;"></i>
-            <p>Loading preview...</p>
-        </div>
-    `;
-    
-    // Fetch preview content with enhanced error handling
-    fetch(`/templates/preview/${templateId}/`, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+function openPreview(id, name) {
+  activeTemplateId = id;
+  document.getElementById('modalTitle').textContent = name + ' — Preview';
+  document.getElementById('modalBody').innerHTML = '<div class="preview-loading"><div class="spinner"></div><span>Loading preview...</span></div>';
+  document.getElementById('previewModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  fetch(`/templates/preview/${id}/`, { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+    .then(r => r.text())
+    .then(html => {
+      document.getElementById('modalBody').innerHTML =
+        `<iframe srcdoc="${html.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}"></iframe>`;
     })
-        .then(response => {
-            if (!response.ok) {
-                // Try to parse error JSON
-                return response.json().then(errorData => {
-                    throw new Error(errorData.message || 'Failed to load preview');
-                }).catch(jsonError => {
-                    // If JSON parsing fails, throw generic error
-                    throw new Error(`Server error: ${response.status}`);
-                });
-            }
-            return response.text();
-        })
-        .then(html => {
-            // Create iframe to display preview
-            previewContent.innerHTML = `<iframe srcdoc="${html.replace(/"/g, '&quot;')}"></iframe>`;
-            
-            // Update modal title - try to get template name from the clicked element
-            if (event && event.target) {
-                const templateCard = event.target.closest('.card-elevated');
-                if (templateCard) {
-                    const templateName = templateCard.querySelector('h3').textContent.trim();
-                    document.getElementById('modalTemplateName').textContent = templateName;
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error loading preview:', error);
-            previewContent.innerHTML = `
-                <div style="text-align: center; padding: 2rem;">
-                    <i class="bi bi-exclamation-triangle" style="font-size: 48px; margin-bottom: 1rem; display: block; color: var(--color-danger, #ef4444);"></i>
-                    <h3 style="color: var(--color-text-primary); margin-bottom: 0.5rem;">Preview Unavailable</h3>
-                    <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem;">${error.message}</p>
-                    <div style="background: var(--color-base-bg-hover, #242424); padding: 1rem; border-radius: 8px; text-align: left; max-width: 500px; margin: 0 auto;">
-                        <p style="font-size: 0.875rem; color: var(--color-text-tertiary); margin-bottom: 0.5rem;"><strong>Troubleshooting:</strong></p>
-                        <ul style="font-size: 0.875rem; color: var(--color-text-tertiary); margin: 0; padding-left: 1.5rem;">
-                            <li>Check that the template file exists</li>
-                            <li>Verify template configuration in admin panel</li>
-                            <li>Try refreshing the page</li>
-                            <li>Contact support if the issue persists</li>
-                        </ul>
-                    </div>
-                </div>
-            `;
-        });
+    .catch(err => {
+      document.getElementById('modalBody').innerHTML =
+        `<div class="preview-loading" style="color:#f87171"><i class="bi bi-exclamation-triangle" style="font-size:2rem"></i><span>Could not load preview</span></div>`;
+    });
 }
 
-function closeTemplatePreview() {
-    const modal = document.getElementById('templatePreviewModal');
-    modal.style.display = 'none';
-    document.body.style.overflow = '';
-    currentTemplateId = null;
+function closePreview() {
+  document.getElementById('previewModal').style.display = 'none';
+  document.body.style.overflow = '';
 }
 
-function useTemplate(templateId) {
-    // For now, redirect to template preview page
-    // In a full implementation, this would show a resume selection dialog
-    window.location.href = `/templates/preview/${templateId}/`;
+function selectCurrentTemplate() {
+  if (activeTemplateId) selectTemplate(activeTemplateId);
 }
 
-function useCurrentTemplate() {
-    if (currentTemplateId) {
-        useTemplate(currentTemplateId);
-    }
+function selectTemplate(id) {
+  activeTemplateId = id;
+  closePreview();
+  // Load user resumes
+  document.getElementById('resumeList').innerHTML = '<div class="preview-loading"><div class="spinner"></div></div>';
+  document.getElementById('resumeModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  fetch('/resumes/', { headers: {'X-Requested-With': 'XMLHttpRequest'} })
+    .then(() => {
+      // Build resume list from page data (resumes are already in the DOM context)
+      // We'll use a simple approach: redirect to resume list with template param
+      closeResumeModal();
+      window.location.href = `/resumes/?apply_template=${id}`;
+    })
+    .catch(() => {
+      closeResumeModal();
+      window.location.href = `/resumes/?apply_template=${id}`;
+    });
 }
 
-// Close modal on backdrop click
-document.addEventListener('click', function(event) {
-    const modal = document.getElementById('templatePreviewModal');
-    if (event.target === modal) {
-        closeTemplatePreview();
-    }
+function closeResumeModal() {
+  document.getElementById('resumeModal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closePreview(); closeResumeModal(); }
 });
-
-// Close modal on Escape key
-document.addEventListener('keydown', function(event) {
-    if (event.key === 'Escape') {
-        const modal = document.getElementById('templatePreviewModal');
-        if (modal && modal.style.display === 'block') {
-            closeTemplatePreview();
-        }
-    }
-});
-
-// Add spin animation for loading icon
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes spin {
-        from { transform: rotate(0deg); }
-        to { transform: rotate(360deg); }
-    }
-`;
-document.head.appendChild(style);
 </script>
 {% endblock %}

@@ -199,6 +199,12 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'landing'
 
+# Security headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+REFERRER_POLICY = 'strict-origin-when-cross-origin'
+
 # Session settings
 SESSION_SAVE_EVERY_REQUEST = True  # Prevent wizard data loss on refresh
 SESSION_COOKIE_AGE = 86400  # 24 hours

@@ -76,12 +76,12 @@ class Command(BaseCommand):
             if created:
                 created_count += 1
                 self.stdout.write(
-                    self.style.SUCCESS(f'✓ Created template: {template.name}')
+                    self.style.SUCCESS(f'Created template: {template.name}')
                 )
             else:
                 updated_count += 1
                 self.stdout.write(
-                    self.style.WARNING(f'↻ Updated template: {template.name}')
+                    self.style.WARNING(f'Updated template: {template.name}')
                 )
         
         self.stdout.write(

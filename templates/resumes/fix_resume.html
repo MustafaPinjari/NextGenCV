@@ -132,6 +132,35 @@ body{font-family:var(--font)!important;background:var(--bg)!important;color:var(
         <label class="jd-label" for="job_description">
           Paste the complete job description below <span style="color:var(--red)">*</span>
         </label>
+
+        <!-- Saved JDs -->
+        {% if saved_jds %}
+        <div style="margin-bottom:12px">
+          <div style="font-size:.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Recent Job Descriptions</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            {% for jd in saved_jds %}
+            <button type="button" class="saved-jd-pill" data-content="{{ jd.content|escapejs }}"
+              style="padding:4px 10px;border-radius:99px;font-size:.75rem;font-weight:600;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--primary-light);cursor:pointer;font-family:var(--font);transition:all .15s">
+              {{ jd.title|truncatechars:28 }}
+            </button>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- URL Scraper -->
+        <div style="margin-bottom:12px">
+          <div style="font-size:.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Or fetch from URL</div>
+          <div style="display:flex;gap:8px">
+            <input type="url" id="fixScrapeUrl" placeholder="https://linkedin.com/jobs/view/..."
+              style="flex:1;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:9px 13px;color:var(--text);font-family:var(--font);font-size:.85rem">
+            <button type="button" id="fixScrapeBtn"
+              style="padding:9px 14px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);color:#06b6d4;border-radius:var(--r8);font-size:.8rem;font-weight:600;cursor:pointer;font-family:var(--font);white-space:nowrap">
+              <i class="bi bi-cloud-download"></i> Fetch JD
+            </button>
+          </div>
+          <div id="fixScrapeStatus" style="font-size:.75rem;color:var(--text3);margin-top:4px;min-height:16px"></div>
+        </div>
         <textarea
           id="job_description"
           name="job_description"
@@ -205,5 +234,43 @@ document.getElementById('fixForm').addEventListener('submit', () => {
 const s = document.createElement('style');
 s.textContent = '@keyframes spin{to{transform:rotate(360deg)}}';
 document.head.appendChild(s);
+
+// Saved JD pills
+document.querySelectorAll('.saved-jd-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    ta.value = btn.dataset.content;
+    update();
+  });
+});
+
+// URL scraper
+document.getElementById('fixScrapeBtn')?.addEventListener('click', async () => {
+  const url = document.getElementById('fixScrapeUrl').value.trim();
+  const status = document.getElementById('fixScrapeStatus');
+  if (!url) { status.textContent = 'Enter a URL first.'; return; }
+  status.textContent = 'Fetching job description...';
+  document.getElementById('fixScrapeBtn').disabled = true;
+  try {
+    const resp = await fetch('{% url "scrape_job" %}', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': '{{ csrf_token }}'},
+      body: 'job_url=' + encodeURIComponent(url)
+    });
+    const data = await resp.json();
+    if (data.success) {
+      ta.value = data.text;
+      update();
+      status.textContent = '✓ Job description extracted.';
+      status.style.color = '#10b981';
+    } else {
+      status.textContent = 'Could not extract: ' + data.error;
+      status.style.color = '#f87171';
+    }
+  } catch(e) {
+    status.textContent = 'Network error. Paste manually.';
+    status.style.color = '#f87171';
+  }
+  document.getElementById('fixScrapeBtn').disabled = false;
+});
 </script>
 {% endblock %}

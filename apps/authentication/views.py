@@ -79,19 +79,24 @@ def dashboard(request):
             avg_score = analyses.aggregate(Avg('final_score'))['final_score__avg']
             average_score = round(avg_score, 1) if avg_score else None
     
-    # Get recent activities
+    # Get real activity log
+    from apps.authentication.models import ActivityLog
+    recent_activities_qs = ActivityLog.objects.filter(user=request.user)[:10]
     recent_activities = []
-    
-    # Add resume creation activities
-    for resume in resumes[:5]:
+    icon_map = {
+        'resume_created': 'created', 'resume_updated': 'updated',
+        'resume_analyzed': 'analyzed', 'resume_deleted': 'delete',
+        'resume_exported': 'updated', 'resume_optimized': 'updated',
+        'pdf_imported': 'created', 'pdf_uploaded': 'updated',
+        'version_restored': 'updated', 'cover_letter_generated': 'updated',
+        'application_created': 'created', 'application_updated': 'updated',
+    }
+    for act in recent_activities_qs:
         recent_activities.append({
-            'type': 'created' if resume.created_at == resume.updated_at else 'updated',
-            'description': f"{'Created' if resume.created_at == resume.updated_at else 'Updated'} resume: {resume.title}",
-            'timestamp': resume.updated_at
+            'type': icon_map.get(act.action, 'updated'),
+            'description': act.description,
+            'timestamp': act.created_at,
         })
-    
-    # Sort by timestamp
-    recent_activities.sort(key=lambda x: x['timestamp'], reverse=True)
     
     # Prepare chart data if user has analyses
     show_charts = False

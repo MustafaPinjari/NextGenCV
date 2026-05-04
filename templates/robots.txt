@@ -1,0 +1,10 @@
+User-agent: *
+Disallow: /auth/
+Disallow: /resumes/
+Disallow: /analyzer/
+Disallow: /analytics/
+Disallow: /tracker/
+Disallow: /admin/
+Allow: /
+Allow: /auth/login/
+Allow: /auth/register/

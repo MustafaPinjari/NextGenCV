@@ -25,6 +25,7 @@ from config.performance_views import collect_metrics, performance_dashboard, per
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', TemplateView.as_view(template_name='landing_new.html'), name='landing'),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('help/', documentation, name='help_documentation'),
     path('auth/', include('apps.authentication.urls')),
     path('resumes/', include('apps.resumes.urls')),

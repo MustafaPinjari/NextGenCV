@@ -187,7 +187,11 @@ def resume_create(request):
                 
                 # Create the resume
                 resume = ResumeService.create_resume(request.user, wizard_data['data'])
-                
+
+                # Log activity
+                from apps.authentication.models import ActivityLog
+                ActivityLog.log(request.user, 'resume_created', f'Created resume "{resume.title}"', resume=resume)
+
                 # Log what was created
                 logger.info(f'Resume created: ID={resume.id}, Experiences={resume.experiences.count()}, Education={resume.education.count()}, Skills={resume.skills.count()}')
                 
@@ -441,7 +445,8 @@ def resume_detail(request, pk):
             'experiences',
             'education',
             'skills',
-            'projects'
+            'projects',
+            'certifications',
         ),
         id=pk
     )
@@ -458,7 +463,8 @@ def resume_detail(request, pk):
         'experiences': resume.experiences.all(),
         'education': resume.education.all(),
         'skills': resume.skills.all(),
-        'projects': resume.projects.all()
+        'projects': resume.projects.all(),
+        'certifications': resume.certifications.all(),
     }
     
     # Check if user wants to view the formatted template preview
@@ -518,6 +524,9 @@ def resume_update(request, pk):
         
         # Update the resume
         ResumeService.update_resume(pk, data)
+        # Log activity
+        from apps.authentication.models import ActivityLog
+        ActivityLog.log(request.user, 'resume_updated', f'Updated resume "{resume.title}"', resume=resume)
         messages.success(request, 'Resume updated successfully!')
         return redirect('resume_detail', pk=pk)
     
@@ -550,6 +559,8 @@ def resume_delete(request, pk):
         # User confirmed deletion
         resume_title = resume.title
         ResumeService.delete_resume(pk)
+        from apps.authentication.models import ActivityLog
+        ActivityLog.log(request.user, 'resume_deleted', f'Deleted resume "{resume_title}"')
         messages.success(request, f'Resume "{resume_title}" has been deleted successfully.')
         return redirect('resume_list')
     
@@ -1752,6 +1763,9 @@ def pdf_import_confirm(request, upload_id):
         # Mark upload as imported
         uploaded_resume.status = 'imported'
         uploaded_resume.save()
+
+        from apps.authentication.models import ActivityLog
+        ActivityLog.log(request.user, 'pdf_imported', f'Imported PDF as "{resume.title}"', resume=resume)
         
         logger.info(
             f'Resume created from upload ID {upload_id}: '
@@ -1828,8 +1842,11 @@ def fix_resume(request, pk):
         return redirect('fix_preview', pk=pk)
     
     # GET request - display form
+    from apps.authentication.models import SavedJobDescription
+    saved_jds = SavedJobDescription.objects.filter(user=request.user)[:8]
     context = {
         'resume': resume,
+        'saved_jds': saved_jds,
     }
     return render(request, 'resumes/fix_resume.html', context)
 

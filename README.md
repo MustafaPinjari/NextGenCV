@@ -2,6 +2,13 @@
 
 A comprehensive Django-based web application for creating, managing, and optimizing resumes for Applicant Tracking Systems (ATS). Version 2.0 introduces advanced features including PDF upload/parsing, AI-powered optimization, version control, and comprehensive analytics.
 
+
+```
+alex_johnson / mockpass123
+sarah_chen / mockpass123
+marcus_lee / mockpass123
+```
+
 ## Features
 
 ### Core Features (v1.0)

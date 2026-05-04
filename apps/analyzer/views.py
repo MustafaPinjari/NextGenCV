@@ -15,18 +15,22 @@ def _compute_completeness(resume):
     score = 0
     try:
         pi = resume.personal_info
-        if pi.full_name: score += 15
-        if pi.email: score += 10
-        if pi.phone: score += 5
-        if pi.location: score += 5
-        if pi.linkedin: score += 5
+        if pi.full_name: score += 10
+        if pi.email: score += 8
+        if pi.phone: score += 4
+        if pi.location: score += 4
+        if pi.linkedin: score += 4
     except Exception:
         pass
     if resume.summary: score += 10
     if resume.experiences.exists(): score += 20
     if resume.education.exists(): score += 15
     if resume.skills.exists(): score += 10
-    if resume.projects.exists(): score += 5
+    if resume.projects.exists(): score += 8
+    try:
+        if resume.certifications.exists(): score += 7
+    except Exception:
+        pass
     return min(score, 100)
 
 
@@ -40,10 +44,29 @@ def analyze_resume(request, resume_id):
 
     analysis_result = None
 
+    # Load saved job descriptions for this user
+    from apps.authentication.models import SavedJobDescription
+    saved_jds = SavedJobDescription.objects.filter(user=request.user)[:8]
+
     if request.method == 'POST':
         form = JobDescriptionForm(request.POST)
         if form.is_valid():
             job_description = form.cleaned_data['job_description']
+
+            # Auto-save JD if user checked the box
+            if request.POST.get('save_jd'):
+                jd_title = request.POST.get('jd_title', '').strip() or job_description[:60] + '...'
+                SavedJobDescription.objects.update_or_create(
+                    user=request.user,
+                    content=job_description,
+                    defaults={'title': jd_title, 'last_used_at': __import__('django.utils.timezone', fromlist=['timezone']).timezone.now()}
+                )
+
+            # Update last_used_at if loading a saved JD
+            saved_id = request.POST.get('load_saved_jd')
+            if saved_id:
+                from django.utils import timezone
+                SavedJobDescription.objects.filter(id=saved_id, user=request.user).update(last_used_at=timezone.now())
             try:
                 analysis_result = ATSAnalyzerService.analyze_resume(resume_id, job_description)
 
@@ -76,6 +99,13 @@ def analyze_resume(request, resume_id):
                     resume.completeness_score = _compute_completeness(resume)
                     resume.save(update_fields=['latest_ats_score', 'last_analyzed_at', 'completeness_score'])
 
+                from apps.authentication.models import ActivityLog
+                ActivityLog.log(
+                    request.user, 'resume_analyzed',
+                    f'Analyzed "{resume.title}" — score {round(analysis_result["score"], 1)}',
+                    resume=resume,
+                    metadata={'score': analysis_result['score']}
+                )
                 logger.info(f'ATS analysis completed for resume {resume_id} by {request.user.username}')
                 messages.success(request, 'Resume analysis completed successfully!')
             except Exception as e:
@@ -90,5 +120,6 @@ def analyze_resume(request, resume_id):
         'form': form,
         'resume': resume,
         'analysis_result': analysis_result,
+        'saved_jds': saved_jds,
     }
     return render(request, 'analyzer/analyze_new.html', context)

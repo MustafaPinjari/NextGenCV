@@ -293,11 +293,24 @@ class ResumeAnalysis(models.Model):
         return f"Analysis for {self.resume.title} - Score: {self.final_score}"
 
 
+class Certification(models.Model):
+    resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='certifications')
+    name = models.CharField(max_length=200)
+    issuer = models.CharField(max_length=200, blank=True, default='')
+    issue_date = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
+    credential_id = models.CharField(max_length=200, blank=True, default='')
+    credential_url = models.URLField(blank=True, default='')
+    order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', '-issue_date']
+
+    def __str__(self):
+        return f"{self.name} — {self.issuer}"
+
+
 class OptimizationHistory(models.Model):
-    """
-    Tracks resume optimization sessions and their results.
-    Links original and optimized versions with detailed change tracking.
-    """
     resume = models.ForeignKey(Resume, on_delete=models.CASCADE, related_name='optimizations')
     original_version = models.ForeignKey(
         ResumeVersion, 
