@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}New A/B Test — NextGenCV{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 700px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'ab_test_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="h3 fw-bold mb-0">New Resume A/B Test</h1>
+      <p class="text-muted mb-0">Compare two resume versions for the same role</p>
+    </div>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="card bg-dark border-secondary">
+    <div class="card-body p-4">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Test Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="name" required
+                 placeholder='e.g. "Software Engineer @ Google — Q1 2025"'>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Target Role <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="target_role" required
+                   placeholder="e.g. Senior Software Engineer">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Target Company</label>
+            <input type="text" class="form-control" name="target_company"
+                   placeholder="e.g. Google (optional)">
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Job Description</label>
+          <textarea class="form-control" name="job_description" rows="4"
+                    placeholder="Paste the job description to track ATS scores alongside outcomes..."></textarea>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Version A (Control) <span class="text-danger">*</span></label>
+            <select class="form-select" name="resume_a" required>
+              <option value="">Select resume...</option>
+              {% for resume in resumes %}
+                <option value="{{ resume.pk }}">{{ resume.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-semibold">Version B (Variant) <span class="text-danger">*</span></label>
+            <select class="form-select" name="resume_b" required>
+              <option value="">Select resume...</option>
+              {% for resume in resumes %}
+                <option value="{{ resume.pk }}">{{ resume.title }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Hypothesis</label>
+          <textarea class="form-control" name="hypothesis" rows="2"
+                    placeholder="What did you change in Version B and why do you think it will perform better?"></textarea>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-play-circle me-2"></i>Start A/B Test
+          </button>
+          <a href="{% url 'ab_test_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

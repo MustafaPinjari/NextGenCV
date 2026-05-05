@@ -34,6 +34,9 @@ urlpatterns = [
     path('templates/', include('apps.templates_mgmt.urls')),
     path('tracker/', include('apps.tracker.urls')),
     
+    # REST API v1
+    path('api/v1/', include('apps.api.urls')),
+    
     # Design system test page (development only)
     path('design-system-test/', TemplateView.as_view(template_name='design-system-test.html'), name='design_system_test'),
     

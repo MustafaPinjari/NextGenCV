@@ -125,6 +125,7 @@ python manage.py createsuperuser
 
 8. **Run the development server**:
 ```bash
+celery -A config worker --pool=solo --loglevel=info
 python manage.py runserver
 ```
 

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}ATS System Simulation — {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'resume_detail' resume.pk %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+    <div>
+      <h1 class="h3 mb-0 fw-bold">ATS System Simulation</h1>
+      <p class="text-muted mb-0">{{ resume.title }}</p>
+    </div>
+  </div>
+
+  <!-- Job Description Input -->
+  <div class="card bg-dark border-secondary mb-4">
+    <div class="card-body">
+      <h5 class="fw-semibold mb-3">
+        <i class="bi bi-file-text me-2 text-primary"></i>Job Description
+      </h5>
+      <form method="post" id="simulate-form">
+        {% csrf_token %}
+        <div class="mb-3">
+          <textarea class="form-control" name="job_description" rows="6"
+                    placeholder="Paste the job description here to get accurate ATS simulation results..."
+                    id="jd-input">{{ job_description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" id="simulate-btn">
+          <i class="bi bi-cpu me-2"></i>Simulate All ATS Systems
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if simulation %}
+  <!-- Overall Readiness -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3">
+        <div class="display-4 fw-bold {% if simulation.overall_ats_readiness >= 70 %}text-success{% elif simulation.overall_ats_readiness >= 50 %}text-warning{% else %}text-danger{% endif %}">
+          {{ simulation.overall_ats_readiness|floatformat:0 }}
+        </div>
+        <div class="text-muted small">Overall ATS Readiness</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3">
+        <div class="h4 fw-bold text-success mb-1">
+          {{ simulation.systems|dictsort:"score"|last|first|upper }}
+        </div>
+        <div class="text-muted small">Best System</div>
+        <div class="small text-success">
+          {% for sid, data in simulation.systems.items %}
+            {% if sid == simulation.best_system %}{{ data.system_name }}{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card bg-dark border-secondary text-center p-3">
+        <div class="h4 fw-bold text-danger mb-1">
+          {% for sid, data in simulation.systems.items %}
+            {% if sid == simulation.worst_system %}{{ data.score|floatformat:0 }}{% endif %}
+          {% endfor %}
+        </div>
+        <div class="text-muted small">Lowest Score</div>
+        <div class="small text-danger">
+          {% for sid, data in simulation.systems.items %}
+            {% if sid == simulation.worst_system %}{{ data.system_name }}{% endif %}
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if simulation.critical_issues %}
+  <!-- Critical Issues -->
+  <div class="alert alert-danger mb-4">
+    <h6 class="fw-bold mb-2"><i class="bi bi-exclamation-triangle-fill me-2"></i>Critical Issues (affect 3+ ATS systems)</h6>
+    <ul class="mb-0 ps-3">
+      {% for issue in simulation.critical_issues %}
+        <li>{{ issue }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <!-- Per-System Results -->
+  <div class="row g-3">
+    {% for system_id, data in simulation.systems.items %}
+    <div class="col-md-6">
+      <div class="card bg-dark border-secondary h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="mb-0 fw-bold">{{ data.system_name }}</h6>
+            <small class="text-muted">{{ data.market_share }} market share · {{ data.used_by }}</small>
+          </div>
+          <div class="text-end">
+            <span class="display-6 fw-bold {% if data.score >= 70 %}text-success{% elif data.score >= 50 %}text-warning{% else %}text-danger{% endif %}">
+              {{ data.score|floatformat:0 }}
+            </span>
+            <div class="text-muted" style="font-size:0.7rem;">/ 100</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Score breakdown -->
+          <div class="mb-3">
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Keywords</span><span>{{ data.keyword_score|floatformat:0 }}</span>
+            </div>
+            <div class="progress mb-2" style="height:4px;">
+              <div class="progress-bar bg-primary" style="width:{{ data.keyword_score }}%"></div>
+            </div>
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Format</span><span>{{ data.format_score|floatformat:0 }}</span>
+            </div>
+            <div class="progress mb-2" style="height:4px;">
+              <div class="progress-bar bg-info" style="width:{{ data.format_score }}%"></div>
+            </div>
+            <div class="d-flex justify-content-between small text-muted mb-1">
+              <span>Completeness</span><span>{{ data.completeness_score|floatformat:0 }}</span>
+            </div>
+            <div class="progress" style="height:4px;">
+              <div class="progress-bar bg-success" style="width:{{ data.completeness_score }}%"></div>
+            </div>
+          </div>
+
+          {% if data.issues %}
+          <div class="mb-2">
+            <div class="small fw-semibold text-danger mb-1"><i class="bi bi-x-circle me-1"></i>Issues</div>
+            {% for issue in data.issues %}
+              <div class="small text-danger mb-1">• {{ issue }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if data.warnings %}
+          <div class="mb-2">
+            <div class="small fw-semibold text-warning mb-1"><i class="bi bi-exclamation-triangle me-1"></i>Warnings</div>
+            {% for warning in data.warnings %}
+              <div class="small text-warning mb-1">• {{ warning }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          {% if data.passed_checks %}
+          <div>
+            <div class="small fw-semibold text-success mb-1"><i class="bi bi-check-circle me-1"></i>Passing</div>
+            {% for check in data.passed_checks|slice:":3" %}
+              <div class="small text-success mb-1">• {{ check }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.getElementById('simulate-form').addEventListener('submit', function() {
+  const btn = document.getElementById('simulate-btn');
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Simulating...';
+  btn.disabled = true;
+});
+</script>
+{% endblock %}

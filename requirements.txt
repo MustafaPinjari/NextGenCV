@@ -9,3 +9,19 @@ spacy==3.8.14
 python-docx==1.1.0
 libsass==0.22.0
 django-extensions==4.1
+
+# Async task processing
+celery==5.3.6
+redis==5.0.1
+django-celery-results==2.5.1
+
+# AI / LLM
+openai==1.35.0
+
+# REST API
+djangorestframework==3.15.2
+djangorestframework-simplejwt==5.3.1
+django-cors-headers==4.3.1
+
+# HTTP requests (LinkedIn import, job scraping)
+requests==2.31.0

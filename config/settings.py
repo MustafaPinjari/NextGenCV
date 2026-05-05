@@ -16,17 +16,30 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# ── Load .env file ────────────────────────────────────────────────────────────
+# Reads key=value pairs from .env into os.environ.
+# Does NOT override variables already set in the shell environment,
+# so production env vars always take precedence over the .env file.
+_env_file = BASE_DIR / '.env'
+if _env_file.exists():
+    with open(_env_file) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith('#') and '=' in _line:
+                _key, _, _val = _line.partition('=')
+                os.environ.setdefault(_key.strip(), _val.strip())
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5nqy!h1omb5t3fd8s97^rae0-is87tx2jtm6_xn*29i#4rhvs0'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-dev-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', 'True').lower() not in ('false', '0', 'no')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h.strip()]
 
 
 # Application definition
@@ -40,6 +53,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third-party apps
     'django_extensions',
+    'django_celery_results',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'corsheaders',
     # Custom apps
     'apps.authentication',
     'apps.resumes',
@@ -47,10 +64,12 @@ INSTALLED_APPS = [
     'apps.analytics',
     'apps.templates_mgmt',
     'apps.tracker',
+    'apps.api',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -212,6 +231,71 @@ SESSION_COOKIE_AGE = 86400  # 24 hours
 # Email backend (console for dev — swap to SMTP in production)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_FROM_EMAIL = 'NextGenCV <noreply@nextgencv.com>'
+
+# ─── Celery Configuration ────────────────────────────────────────────────────
+# Broker options (pick one):
+#   Redis (production):  redis://localhost:6379/0
+#   No external service: memory://   (dev only — tasks run in-process, no worker needed)
+#   SQLite-backed:       sqla+sqlite:///celery.sqlite  (dev — needs: pip install celery[sqlalchemy])
+_celery_broker = os.environ.get('REDIS_URL', 'memory://')
+CELERY_BROKER_URL = _celery_broker
+# Use Django DB for results when not using Redis
+if _celery_broker.startswith('memory') or _celery_broker.startswith('sqla'):
+    CELERY_RESULT_BACKEND = 'django-db'
+    CELERY_TASK_ALWAYS_EAGER = True   # Run tasks synchronously inline (no worker process needed)
+    CELERY_TASK_EAGER_PROPAGATES = True
+else:
+    CELERY_RESULT_BACKEND = 'django-db'
+    CELERY_TASK_ALWAYS_EAGER = False
+CELERY_CACHE_BACKEND = 'default'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 300  # 5 minutes max per task
+CELERY_TASK_SOFT_TIME_LIMIT = 240  # Soft limit: 4 minutes (not supported on Windows, ignored)
+
+# ─── OpenAI / LLM Configuration ─────────────────────────────────────────────
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY', '')
+OPENAI_MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')  # Cost-effective default
+OPENAI_MAX_TOKENS = int(os.environ.get('OPENAI_MAX_TOKENS', '1500'))
+OPENAI_TEMPERATURE = float(os.environ.get('OPENAI_TEMPERATURE', '0.7'))
+# Set to True to use real LLM; False falls back to rule-based heuristics
+AI_ENABLED = bool(OPENAI_API_KEY)
+
+# ─── Django REST Framework ───────────────────────────────────────────────────
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'user': '100/hour',
+    },
+}
+
+from datetime import timedelta
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+}
+
+# ─── CORS ────────────────────────────────────────────────────────────────────
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
+CORS_ALLOW_CREDENTIALS = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

@@ -1,7 +1,8 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm
+from .models import EmailVerificationToken
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,15 +10,28 @@ logger = logging.getLogger(__name__)
 # Create your views here.
 
 def register(request):
-    """User registration view"""
+    """User registration view — creates account and sends verification email."""
     if request.method == 'POST':
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
-            # Create user with hashed password (handled by UserCreationForm)
             user = form.save()
             username = form.cleaned_data.get('username')
             logger.info(f'New user registered: {username}')
-            messages.success(request, f'Account created successfully for {username}! You can now log in.')
+
+            # Create verification token and send email asynchronously
+            token_obj = EmailVerificationToken.create_for_user(user)
+            try:
+                from apps.resumes.tasks import send_verification_email_task
+                base_url = request.build_absolute_uri('/').rstrip('/')
+                send_verification_email_task.delay(user.id, token_obj.token, base_url)
+            except Exception as e:
+                # Celery may not be running in dev — log but don't block registration
+                logger.warning(f'Could not queue verification email: {e}')
+
+            messages.success(
+                request,
+                f'Account created for {username}! Check your email to verify your address, then log in.'
+            )
             return redirect('login')
         else:
             logger.warning(f'Failed registration attempt with errors: {form.errors}')
@@ -25,8 +39,56 @@ def register(request):
     else:
         form = UserRegistrationForm()
         messages.info(request, 'Create an account to start building your ATS-optimized resumes.')
-    
+
     return render(request, 'authentication/register.html', {'form': form})
+
+
+def verify_email(request, token: str):
+    """Verify a user's email address via the token link."""
+    token_obj = get_object_or_404(EmailVerificationToken, token=token)
+
+    if token_obj.is_verified:
+        messages.info(request, 'Your email is already verified. You can log in.')
+        return redirect('login')
+
+    if token_obj.is_expired:
+        messages.error(request, 'This verification link has expired. Request a new one below.')
+        return redirect('resend_verification')
+
+    from django.utils import timezone
+    token_obj.verified_at = timezone.now()
+    token_obj.save(update_fields=['verified_at'])
+
+    # Mark user as active (they were already active, but flag the profile)
+    user = token_obj.user
+    user.is_active = True
+    user.save(update_fields=['is_active'])
+
+    messages.success(request, 'Email verified! You can now log in.')
+    return redirect('login')
+
+
+def resend_verification(request):
+    """Allow users to request a new verification email."""
+    if request.method == 'POST':
+        email = request.POST.get('email', '').strip().lower()
+        from django.contrib.auth.models import User
+        try:
+            user = User.objects.get(email=email)
+            token_obj = EmailVerificationToken.create_for_user(user)
+            try:
+                from apps.resumes.tasks import send_verification_email_task
+                base_url = request.build_absolute_uri('/').rstrip('/')
+                send_verification_email_task.delay(user.id, token_obj.token, base_url)
+            except Exception as e:
+                logger.warning(f'Could not queue verification email: {e}')
+        except User.DoesNotExist:
+            pass  # Don't reveal whether email exists
+
+        messages.success(request, 'If that email is registered, a new verification link has been sent.')
+        return redirect('login')
+
+    return render(request, 'authentication/resend_verification.html')
 
 @login_required
 def profile(request):

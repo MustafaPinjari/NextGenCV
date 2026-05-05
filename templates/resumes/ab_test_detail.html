@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}{{ test.name }} — A/B Test{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'ab_test_list' %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div class="flex-grow-1">
+      <h1 class="h3 fw-bold mb-0">{{ test.name }}</h1>
+      <p class="text-muted mb-0">{{ test.target_role }}{% if test.target_company %} @ {{ test.target_company }}{% endif %}</p>
+    </div>
+    <span class="badge {% if test.status == 'active' %}bg-success{% elif test.status == 'concluded' %}bg-secondary{% else %}bg-warning text-dark{% endif %} fs-6">
+      {{ test.get_status_display }}
+    </span>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card bg-dark border-{% if stats.leading == 'A' %}success{% else %}secondary{% endif %} h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold">Version A — Control</span>
+          {% if stats.leading == 'A' %}<span class="badge bg-success">Leading</span>{% endif %}
+          {% if test.winner == 'A' %}<span class="badge bg-warning text-dark"><i class="bi bi-trophy me-1"></i>Winner</span>{% endif %}
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">{{ test.resume_a.title }}</p>
+          <div class="row g-2 text-center">
+            <div class="col-3">
+              <div class="fw-bold fs-4">{{ stats.a.applied }}</div>
+              <div class="text-muted" style="font-size:0.7rem;">Applied</div>
+            </div>
+            <div class="col-3">
+              <div class="fw-bold fs-4">{{ stats.a.interviews }}</div>
+              <div class="text-muted" style="font-size:0.7rem;">Interviews</div>
+            </div>
+            <div class="col-3">
+              <div class="fw-bold fs-4">{{ stats.a.offers }}</div>
+              <div class="text-muted" style="font-size:0.7rem;">Offers</div>
+            </div>
+            <div class="col-3">
+              <div class="fw-bold fs-4 {% if stats.leading == 'A' %}text-success{% endif %}">{{ stats.a.callback_rate }}%</div>
+              <div class="text-muted" style="font-size:0.7rem;">Callback</div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <a href="{% url 'resume_detail' test.resume_a.pk %}" class="btn btn-outline-secondary btn-sm">View Resume A</a>
+            <a href="{% url 'application_create' %}?resume_id={{ test.resume_a.pk }}" class="btn btn-outline-primary btn-sm ms-2">Apply with A</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card bg-dark border-{% if stats.leading == 'B' %}success{% else %}secondary{% endif %} h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span class="fw-bold">Version B — Variant</span>
+          {% if stats.leading == 'B' %}<span class="badge bg-success">Leading</span>{% endif %}
+          {% if test.winner == 'B' %}<span class="badge bg-warning text-dark"><i class="bi bi-trophy me-1"></i>Winner</span>{% endif %}
+        </div>
+        <div class="card-body">
+          <p class="text-muted small mb-3">{{ test.resume_b.title }}</p>
+          <div class="row g-2 text-center">
+            <div class="col-3">
+              <div class="fw-bold fs-4">{{ stats.b.applied }}</div>
+              <div class="text-muted" style="font-size:0.7rem;">Applied</div>
+            </div>
+            <div class="col-3">
+              <div class="fw-bold fs-4">{{ stats.b.interviews }}</div>
+              <div class="text-muted" style="font-size:0.7rem;">Interviews</div>
+            </div>
+            <div class="col-3">
+              <div class="fw-bold fs-4">{{ stats.b.offers }}</div>
+              <div class="text-muted" style="font-size:0.7rem;">Offers</div>
+            </div>
+            <div class="col-3">
+              <div class="fw-bold fs-4 {% if stats.leading == 'B' %}text-success{% endif %}">{{ stats.b.callback_rate }}%</div>
+              <div class="text-muted" style="font-size:0.7rem;">Callback</div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <a href="{% url 'resume_detail' test.resume_b.pk %}" class="btn btn-outline-secondary btn-sm">View Resume B</a>
+            <a href="{% url 'application_create' %}?resume_id={{ test.resume_b.pk }}" class="btn btn-outline-primary btn-sm ms-2">Apply with B</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if not stats.sufficient_data %}
+  <div class="alert alert-info mb-4">
+    <i class="bi bi-info-circle me-2"></i>
+    Apply with both resume versions to at least 5 jobs each to get statistically meaningful results.
+    Currently: {{ stats.a.applied|add:stats.b.applied }} total applications (need 10+).
+  </div>
+  {% endif %}
+
+  {% if test.hypothesis %}
+  <div class="card bg-dark border-secondary mb-4">
+    <div class="card-body">
+      <h6 class="fw-semibold mb-2"><i class="bi bi-lightbulb me-2 text-warning"></i>Hypothesis</h6>
+      <p class="mb-0 text-muted">{{ test.hypothesis }}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  {% if test.status == 'active' %}
+  <div class="card bg-dark border-secondary">
+    <div class="card-body">
+      <h6 class="fw-semibold mb-3">Conclude Test</h6>
+      <form method="post" action="{% url 'ab_test_conclude' test.pk %}">
+        {% csrf_token %}
+        <div class="row g-3 align-items-end">
+          <div class="col-md-3">
+            <label class="form-label small">Declare Winner</label>
+            <select class="form-select" name="winner" required>
+              <option value="">Select...</option>
+              <option value="A">Version A</option>
+              <option value="B">Version B</option>
+            </select>
+          </div>
+          <div class="col-md-7">
+            <label class="form-label small">Conclusion Notes</label>
+            <input type="text" class="form-control" name="conclusion_notes"
+                   placeholder="What did you learn from this test?">
+          </div>
+          <div class="col-md-2">
+            <button type="submit" class="btn btn-success w-100">Conclude</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  {% elif test.winner %}
+  <div class="card bg-dark border-success">
+    <div class="card-body">
+      <h6 class="fw-semibold mb-1"><i class="bi bi-trophy text-warning me-2"></i>Test Concluded</h6>
+      <p class="mb-1">Winner: <strong>Version {{ test.winner }}</strong></p>
+      {% if test.conclusion_notes %}<p class="text-muted mb-0 small">{{ test.conclusion_notes }}</p>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

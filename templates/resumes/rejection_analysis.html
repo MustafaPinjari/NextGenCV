@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Why Was I Rejected? — {{ resume.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4" style="max-width: 800px;">
+  <div class="d-flex align-items-center gap-3 mb-4">
+    <a href="{% url 'resume_detail' resume.pk %}" class="btn btn-outline-secondary btn-sm">
+      <i class="bi bi-arrow-left"></i>
+    </a>
+    <div>
+      <h1 class="h3 fw-bold mb-0">Why Was I Rejected?</h1>
+      <p class="text-muted mb-0">AI-powered analysis for {{ resume.title }}</p>
+    </div>
+  </div>
+
+  <div class="card bg-dark border-secondary mb-4">
+    <div class="card-body">
+      <h5 class="fw-semibold mb-3"><i class="bi bi-search me-2 text-primary"></i>Analyse a Rejection</h5>
+      <form method="post" id="analysis-form">
+        {% csrf_token %}
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label class="form-label">Company</label>
+            <input type="text" class="form-control" name="company" value="{{ company }}"
+                   placeholder="e.g. Google">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Role</label>
+            <input type="text" class="form-control" name="role" value="{{ role }}"
+                   placeholder="e.g. Senior Software Engineer">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Job Description</label>
+          <textarea class="form-control" name="job_description" rows="5"
+                    placeholder="Paste the job description here for the most accurate analysis...">{{ job_description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" id="analyse-btn">
+          <i class="bi bi-robot me-2"></i>Analyse Rejection
+        </button>
+      </form>
+    </div>
+  </div>
+
+  {% if result %}
+  <div class="card bg-dark border-secondary mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="rounded-circle d-flex align-items-center justify-content-center"
+             style="width:56px;height:56px;background:rgba(var(--bs-danger-rgb),0.15);border:2px solid var(--bs-danger);">
+          <span class="fw-bold text-danger">{{ result.score_data.final_score|floatformat:0 }}</span>
+        </div>
+        <div>
+          <div class="fw-semibold">ATS Score for this role</div>
+          <div class="text-muted small">
+            {% if result.ai_powered %}<span class="badge bg-primary me-1">AI Analysis</span>{% endif %}
+            Keyword match: {{ result.score_data.keyword_match_score|floatformat:0 }}/100
+          </div>
+        </div>
+      </div>
+
+      {% if result.analysis %}
+      <p class="mb-3">{{ result.analysis }}</p>
+      {% endif %}
+
+      {% if result.top_issues %}
+      <div class="mb-3">
+        <h6 class="fw-semibold text-danger mb-2"><i class="bi bi-x-circle me-2"></i>Top Issues</h6>
+        <ul class="list-unstyled mb-0">
+          {% for issue in result.top_issues %}
+          <li class="d-flex gap-2 mb-2">
+            <i class="bi bi-dot text-danger mt-1 flex-shrink-0"></i>
+            <span>{{ issue }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {% if result.quick_fixes %}
+      <div>
+        <h6 class="fw-semibold text-success mb-2"><i class="bi bi-lightning me-2"></i>Quick Fixes</h6>
+        <ul class="list-unstyled mb-0">
+          {% for fix in result.quick_fixes %}
+          <li class="d-flex gap-2 mb-2">
+            <i class="bi bi-check2 text-success mt-1 flex-shrink-0"></i>
+            <span>{{ fix }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{% url 'fix_resume' resume.pk %}" class="btn btn-primary">
+      <i class="bi bi-magic me-2"></i>Fix My Resume
+    </a>
+    <a href="{% url 'ats_simulate' resume.pk %}" class="btn btn-outline-secondary">
+      <i class="bi bi-cpu me-2"></i>ATS Simulation
+    </a>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+document.getElementById('analysis-form').addEventListener('submit', function() {
+  const btn = document.getElementById('analyse-btn');
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Analysing...';
+  btn.disabled = true;
+});
+</script>
+{% endblock %}

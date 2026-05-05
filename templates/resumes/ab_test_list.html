@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Resume A/B Tests — NextGenCV{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h1 class="h3 fw-bold mb-0">Resume A/B Tests</h1>
+      <p class="text-muted mb-0">Compare two resume versions and track which gets more responses</p>
+    </div>
+    <a href="{% url 'ab_test_create' %}" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-2"></i>New A/B Test
+    </a>
+  </div>
+
+  {% if not tests_with_stats %}
+  <div class="card bg-dark border-secondary text-center py-5">
+    <div class="card-body">
+      <i class="bi bi-bar-chart-line display-4 text-muted mb-3 d-block"></i>
+      <h5 class="fw-semibold">No A/B tests yet</h5>
+      <p class="text-muted">Create two resume versions for the same role and track which performs better.</p>
+      <a href="{% url 'ab_test_create' %}" class="btn btn-primary">Create Your First A/B Test</a>
+    </div>
+  </div>
+  {% else %}
+  <div class="row g-3">
+    {% for test, stats in tests_with_stats %}
+    <div class="col-md-6">
+      <div class="card bg-dark border-secondary h-100">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h6 class="fw-bold mb-0">{{ test.name }}</h6>
+            <span class="badge {% if test.status == 'active' %}bg-success{% elif test.status == 'concluded' %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+              {{ test.get_status_display }}
+            </span>
+          </div>
+          <p class="text-muted small mb-3">{{ test.target_role }}{% if test.target_company %} @ {{ test.target_company }}{% endif %}</p>
+
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <div class="bg-secondary bg-opacity-25 rounded p-2 text-center">
+                <div class="small text-muted mb-1">Version A · {{ test.resume_a.title|truncatechars:20 }}</div>
+                <div class="fw-bold {% if stats.leading == 'A' %}text-success{% endif %}">
+                  {{ stats.a.callback_rate }}% callback
+                </div>
+                <div class="text-muted" style="font-size:0.75rem;">{{ stats.a.applied }} applied</div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="bg-secondary bg-opacity-25 rounded p-2 text-center">
+                <div class="small text-muted mb-1">Version B · {{ test.resume_b.title|truncatechars:20 }}</div>
+                <div class="fw-bold {% if stats.leading == 'B' %}text-success{% endif %}">
+                  {{ stats.b.callback_rate }}% callback
+                </div>
+                <div class="text-muted" style="font-size:0.75rem;">{{ stats.b.applied }} applied</div>
+              </div>
+            </div>
+          </div>
+
+          {% if test.winner %}
+          <div class="alert alert-success py-1 px-2 small mb-2">
+            <i class="bi bi-trophy me-1"></i>Winner: Version {{ test.winner }}
+          </div>
+          {% elif stats.leading %}
+          <div class="alert alert-info py-1 px-2 small mb-2">
+            <i class="bi bi-graph-up me-1"></i>Version {{ stats.leading }} currently leading
+            {% if not stats.sufficient_data %}(need more data){% endif %}
+          </div>
+          {% endif %}
+
+          <a href="{% url 'ab_test_detail' test.pk %}" class="btn btn-outline-primary btn-sm w-100">
+            View Details
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

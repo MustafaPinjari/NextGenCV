@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+import secrets
+from django.utils import timezone
+from datetime import timedelta
 
 
 class ActivityLog(models.Model):
@@ -67,3 +70,38 @@ class SavedJobDescription(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.user.username})"
+
+
+class EmailVerificationToken(models.Model):
+    """
+    One-time token for email address verification.
+    Created on registration; expires after 48 hours.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification')
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = 'Email Verification Token'
+
+    def __str__(self):
+        return f"Verification for {self.user.username} — {'verified' if self.verified_at else 'pending'}"
+
+    @classmethod
+    def create_for_user(cls, user) -> 'EmailVerificationToken':
+        """Generate a fresh token for a user, replacing any existing one."""
+        token = secrets.token_urlsafe(48)
+        obj, _ = cls.objects.update_or_create(
+            user=user,
+            defaults={'token': token, 'verified_at': None},
+        )
+        return obj
+
+    @property
+    def is_expired(self) -> bool:
+        return timezone.now() > self.created_at + timedelta(hours=48)
+
+    @property
+    def is_verified(self) -> bool:
+        return self.verified_at is not None

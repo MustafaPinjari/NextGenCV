@@ -1,12 +1,30 @@
 from django.urls import path
 from . import views
 from .views_file_access import serve_uploaded_resume, download_uploaded_resume
+from . import ab_testing_views
 
 urlpatterns = [
     path('', views.resume_list, name='resume_list'),
     path('create/', views.resume_create, name='resume_create'),
     path('batch-export/', views.batch_export, name='batch_export'),
     path('batch-analysis/', views.batch_analysis, name='batch_analysis'),
+    
+    # LinkedIn Import
+    path('linkedin-import/', views.linkedin_import, name='linkedin_import'),
+    
+    # AI Summary Generation
+    path('generate-summary/', views.generate_summary_ai, name='generate_summary_ai'),
+    
+    # Task progress (SSE)
+    path('task/<str:task_id>/progress/', views.task_progress_sse, name='task_progress_sse'),
+    
+    # A/B Testing
+    path('ab-tests/', ab_testing_views.ab_test_list, name='ab_test_list'),
+    path('ab-tests/create/', ab_testing_views.ab_test_create, name='ab_test_create'),
+    path('ab-tests/<int:pk>/', ab_testing_views.ab_test_detail, name='ab_test_detail'),
+    path('ab-tests/<int:pk>/conclude/', ab_testing_views.ab_test_conclude, name='ab_test_conclude'),
+    path('ab-tests/<int:pk>/delete/', ab_testing_views.ab_test_delete, name='ab_test_delete'),
+    
     path('<int:pk>/', views.resume_detail, name='resume_detail'),
     path('<int:pk>/edit/', views.resume_update, name='resume_update'),
     path('<int:pk>/delete/', views.resume_delete, name='resume_delete'),
@@ -16,6 +34,16 @@ urlpatterns = [
     path('public/<str:token>/', views.resume_public_view, name='resume_public'),
     path('<int:pk>/export/docx/', views.resume_export_docx, name='resume_export_docx'),
     path('<int:pk>/export/text/', views.resume_export_text, name='resume_export_text'),
+    
+    # ATS System Simulation
+    path('<int:pk>/ats-simulate/', views.ats_simulate, name='ats_simulate'),
+    
+    # Rejection Analysis
+    path('<int:pk>/rejection-analysis/', views.rejection_analysis_resume, name='rejection_analysis_resume'),
+    
+    # Async operations
+    path('<int:pk>/fix-async/', views.fix_resume_async, name='fix_resume_async'),
+    path('upload-async/', views.pdf_upload_async, name='pdf_upload_async'),
     
     # PDF Upload Module
     path('upload/', views.pdf_upload, name='pdf_upload'),

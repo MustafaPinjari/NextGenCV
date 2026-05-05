@@ -2811,3 +2811,280 @@ def customize_template(request, pk):
     }
     
     return render(request, 'resumes/customize_template.html', context)
+
+
+# ── Server-Sent Events (SSE) Progress ─────────────────────────────────────────
+
+@login_required
+def task_progress_sse(request, task_id: str):
+    """
+    Server-Sent Events endpoint for real-time task progress.
+    Streams task status updates to the browser without polling.
+
+    Usage in JS:
+        const es = new EventSource(`/resumes/task/${taskId}/progress/`);
+        es.onmessage = (e) => { const data = JSON.parse(e.data); ... };
+    """
+    import json
+    import time
+    from django.http import StreamingHttpResponse
+
+    def event_stream():
+        max_polls = 60  # 60 seconds max
+        for _ in range(max_polls):
+            try:
+                from celery.result import AsyncResult
+                result = AsyncResult(task_id)
+                data = {
+                    'task_id': task_id,
+                    'status': result.status,
+                    'ready': result.ready(),
+                }
+                if result.ready():
+                    if result.successful():
+                        data['result'] = result.result
+                    else:
+                        data['error'] = str(result.result)
+                    yield f"data: {json.dumps(data)}\n\n"
+                    break
+                else:
+                    yield f"data: {json.dumps(data)}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'status': 'ERROR', 'error': str(e)})}\n\n"
+                break
+            time.sleep(1)
+
+    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
+    response['Cache-Control'] = 'no-cache'
+    response['X-Accel-Buffering'] = 'no'
+    return response
+
+
+@login_required
+def fix_resume_async(request, pk):
+    """
+    Async version of fix_resume — queues optimization as a Celery task
+    and returns a task_id for SSE progress tracking.
+    """
+    from django.http import JsonResponse
+    resume = get_object_or_404(Resume, id=pk)
+
+    if resume.user != request.user:
+        return JsonResponse({'error': 'Forbidden'}, status=403)
+
+    job_description = request.POST.get('job_description', '').strip()
+    if not job_description:
+        return JsonResponse({'error': 'Job description is required'}, status=400)
+
+    try:
+        from apps.resumes.tasks import optimize_resume_task
+        task = optimize_resume_task.delay(resume.id, job_description, request.user.id)
+        return JsonResponse({
+            'task_id': task.id,
+            'status': 'queued',
+            'progress_url': f'/resumes/task/{task.id}/progress/',
+        })
+    except Exception as e:
+        logger.warning(f"Celery unavailable, falling back to sync optimization: {e}")
+        # Fall back to synchronous optimization
+        return fix_resume(request, pk)
+
+
+@login_required
+def pdf_upload_async(request):
+    """
+    Async PDF upload — saves file and queues parsing as a Celery task.
+    Returns task_id for SSE progress tracking.
+    """
+    from django.http import JsonResponse
+    from .utils.file_validators import validate_pdf_file, has_embedded_scripts
+    from .models import UploadedResume
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    pdf_file = request.FILES.get('pdf_file')
+    if not pdf_file:
+        return JsonResponse({'error': 'No file provided'}, status=400)
+
+    # Validate
+    is_valid, error_msg = validate_pdf_file(pdf_file)
+    if not is_valid:
+        return JsonResponse({'error': error_msg}, status=400)
+
+    if has_embedded_scripts(pdf_file):
+        return JsonResponse({'error': 'PDF contains embedded scripts and cannot be processed'}, status=400)
+
+    # Save upload record
+    upload = UploadedResume.objects.create(
+        user=request.user,
+        original_filename=pdf_file.name,
+        file_path=pdf_file,
+        file_size=pdf_file.size,
+        status='uploaded',
+    )
+
+    # Queue async parsing
+    try:
+        from apps.resumes.tasks import parse_pdf_task
+        task = parse_pdf_task.delay(upload.id)
+        return JsonResponse({
+            'upload_id': upload.id,
+            'task_id': task.id,
+            'status': 'queued',
+            'progress_url': f'/resumes/task/{task.id}/progress/',
+            'review_url': f'/resumes/upload/{upload.id}/review/',
+        })
+    except Exception as e:
+        logger.warning(f"Celery unavailable for PDF parsing: {e}")
+        # Fall back to sync — redirect to existing upload view
+        return JsonResponse({
+            'upload_id': upload.id,
+            'status': 'sync_fallback',
+            'review_url': f'/resumes/upload/{upload.id}/review/',
+        })
+
+
+# ── ATS System Simulation View ────────────────────────────────────────────────
+
+@login_required
+def ats_simulate(request, pk):
+    """
+    Show ATS system simulation results for a resume.
+    Simulates Taleo, Workday, Greenhouse, Lever, and iCIMS.
+    """
+    from django.http import JsonResponse
+    resume = get_object_or_404(Resume, id=pk)
+
+    if resume.user != request.user:
+        return HttpResponseForbidden("You do not have permission to view this resume.")
+
+    job_description = request.GET.get('job_description', '') or request.POST.get('job_description', '')
+
+    if request.method == 'POST' or request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from apps.analyzer.services.ats_simulator import ATSSystemSimulator
+        results = ATSSystemSimulator.simulate_all(resume, job_description)
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse(results)
+        context = {
+            'resume': resume,
+            'simulation': results,
+            'job_description': job_description,
+        }
+        return render(request, 'resumes/ats_simulate.html', context)
+
+    return render(request, 'resumes/ats_simulate.html', {
+        'resume': resume,
+        'job_description': job_description,
+    })
+
+
+# ── LinkedIn Import View ──────────────────────────────────────────────────────
+
+@login_required
+def linkedin_import(request):
+    """
+    Import a LinkedIn profile and pre-fill the resume creation wizard.
+    """
+    from django.http import JsonResponse
+
+    if request.method == 'POST':
+        url = request.POST.get('linkedin_url', '').strip()
+        if not url:
+            return JsonResponse({'success': False, 'error': 'LinkedIn URL is required'})
+
+        from apps.resumes.services.linkedin_importer import LinkedInImporter
+        result = LinkedInImporter().import_profile(url)
+
+        if result['success']:
+            # Pre-populate wizard session with imported data
+            data = result['data']
+            request.session['resume_wizard'] = {
+                'step': 1,
+                'data': {
+                    'personal_info': {
+                        'full_name': data.get('name', ''),
+                        'email': '',
+                        'phone': '',
+                        'location': data.get('location', ''),
+                        'linkedin': url,
+                        'github': '',
+                    },
+                    'experiences': [
+                        {
+                            'company': exp.get('company', ''),
+                            'role': exp.get('role', ''),
+                            'description': exp.get('description', ''),
+                            'start_date': None,
+                            'end_date': None,
+                        }
+                        for exp in data.get('experiences', [])
+                    ],
+                    'skills': data.get('skills', []),
+                    'summary': data.get('summary', ''),
+                }
+            }
+            request.session.modified = True
+
+        return JsonResponse(result)
+
+    return render(request, 'resumes/linkedin_import.html')
+
+
+# ── AI Summary Generation (updated to use LLM) ───────────────────────────────
+
+@login_required
+def generate_summary_ai(request):
+    """
+    AJAX endpoint: generate a professional summary using LLM.
+    Falls back to rule-based if AI is unavailable.
+    """
+    from django.http import JsonResponse
+    import json
+
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        wizard_data = json.loads(request.body)
+    except (json.JSONDecodeError, ValueError):
+        wizard_data = request.session.get('resume_wizard', {}).get('data', {})
+
+    from apps.resumes.services.llm_service import LLMService
+    result = LLMService.generate_summary(wizard_data)
+    return JsonResponse({'summary': result['summary'], 'ai_powered': result['ai_powered']})
+
+
+# ── Rejection Analysis View ───────────────────────────────────────────────────
+
+@login_required
+def rejection_analysis_resume(request, pk):
+    """
+    AI-powered analysis of why a resume may have been rejected for a specific role.
+    """
+    from django.http import JsonResponse
+    resume = get_object_or_404(Resume, id=pk)
+
+    if resume.user != request.user:
+        return HttpResponseForbidden("You do not have permission to view this resume.")
+
+    if request.method == 'POST':
+        job_description = request.POST.get('job_description', '')
+        company = request.POST.get('company', '')
+        role = request.POST.get('role', '')
+
+        from apps.resumes.services.llm_service import LLMService
+        result = LLMService.analyse_rejection(resume, job_description, company, role)
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse(result)
+
+        return render(request, 'resumes/rejection_analysis.html', {
+            'resume': resume,
+            'result': result,
+            'job_description': job_description,
+            'company': company,
+            'role': role,
+        })
+
+    return render(request, 'resumes/rejection_analysis.html', {'resume': resume})

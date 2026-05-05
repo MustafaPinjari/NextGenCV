@@ -116,18 +116,22 @@ def generate_cover_letter(request, pk):
             messages.success(request, 'Cover letter saved.')
             return redirect('application_detail', pk=pk)
     else:
-        if existing:
+        if existing and not request.GET.get('regenerate'):
             form = CoverLetterForm(instance=existing)
         else:
-            # Auto-generate on first visit
-            service = CoverLetterService()
-            generated = service.generate(
+            # Auto-generate using LLM (falls back to template if AI unavailable)
+            from apps.resumes.services.llm_service import LLMService
+            result = LLMService.generate_cover_letter(
                 resume=app.resume,
                 company=app.company,
                 role=app.role,
                 job_description=app.job_description,
             )
-            form = CoverLetterForm(initial={'content': generated})
+            form = CoverLetterForm(initial={'content': result['content']})
+            if result['ai_powered']:
+                messages.success(request, 'Cover letter generated with AI — review and personalise before sending.')
+            else:
+                messages.info(request, 'Cover letter generated from template. Add your OpenAI API key for AI-powered generation.')
 
     return render(request, 'tracker/cover_letter_form.html', {
         'form': form,
@@ -160,13 +164,15 @@ def interview_prep(request, pk):
             messages.error(request, 'Link a resume to this application first.')
             return redirect('application_update', pk=pk)
 
-        service = InterviewPrepService()
-        questions = service.generate(
+        # Use LLM for interview questions (falls back to rule-based)
+        from apps.resumes.services.llm_service import LLMService
+        result = LLMService.generate_interview_questions(
             resume=app.resume,
             role=app.role,
             job_description=app.job_description,
             company=app.company,
         )
+        questions = result['questions']
         session = InterviewPrepSession.objects.update_or_create(
             application=app,
             defaults={
