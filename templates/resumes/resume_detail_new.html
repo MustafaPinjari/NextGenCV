@@ -218,7 +218,7 @@ body{font-family:var(--font)!important;background:var(--bg)!important;color:var(
         {% if exp.achievements %}
         <ul class="tl-achievements">
           {% for line in exp.achievements.splitlines %}{% if line.strip %}
-          <li>{{ line|cut:"•"|cut:"-"|cut:"–"|strip }}</li>
+          <li>{{ line|cut:"•"|cut:"–" }}</li>
           {% endif %}{% endfor %}
         </ul>
         {% endif %}

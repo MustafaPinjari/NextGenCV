@@ -142,7 +142,74 @@ def profile(request):
 
 @login_required
 def settings(request):
-    """User settings view."""
+    """User settings view with POST handlers for danger-zone actions."""
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'delete_all_resumes':
+            from apps.resumes.models import Resume
+            count, _ = Resume.objects.filter(user=request.user).delete()
+            logger.info(f'User {request.user.username} deleted all {count} resumes.')
+            messages.success(request, f'Deleted {count} resume(s) successfully.')
+
+        elif action == 'delete_account':
+            from django.contrib.auth import logout
+            user = request.user
+            logout(request)
+            user.delete()
+            logger.info(f'Account deleted for user {user.username}.')
+            messages.success(request, 'Your account has been permanently deleted.')
+            return redirect('login')
+
+        elif action == 'export_data':
+            import json, io, zipfile
+            from apps.resumes.models import Resume
+            resumes = Resume.objects.filter(user=request.user).prefetch_related(
+                'personal_info', 'experiences', 'education', 'skills', 'projects', 'certifications'
+            )
+            export = {
+                'user': {
+                    'username': request.user.username,
+                    'email': request.user.email,
+                    'date_joined': request.user.date_joined.isoformat(),
+                },
+                'resumes': []
+            }
+            for r in resumes:
+                pi = getattr(r, 'personal_info', None)
+                export['resumes'].append({
+                    'title': r.title,
+                    'template': r.template,
+                    'created_at': r.created_at.isoformat(),
+                    'personal_info': {
+                        'full_name': pi.full_name if pi else '',
+                        'email': pi.email if pi else '',
+                        'phone': pi.phone if pi else '',
+                        'location': pi.location if pi else '',
+                    } if pi else {},
+                    'experiences': [{
+                        'company': e.company, 'role': e.role,
+                        'start_date': e.start_date.isoformat(),
+                        'end_date': e.end_date.isoformat() if e.end_date else None,
+                        'description': e.description,
+                    } for e in r.experiences.all()],
+                    'education': [{
+                        'institution': ed.institution, 'degree': ed.degree,
+                        'field': ed.field, 'start_year': ed.start_year, 'end_year': ed.end_year,
+                    } for ed in r.education.all()],
+                    'skills': [{'name': s.name, 'category': s.category} for s in r.skills.all()],
+                })
+            buf = io.BytesIO()
+            with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+                zf.writestr('nextgencv_export.json', json.dumps(export, indent=2))
+            buf.seek(0)
+            from django.http import HttpResponse
+            response = HttpResponse(buf.getvalue(), content_type='application/zip')
+            response['Content-Disposition'] = 'attachment; filename="nextgencv_data_export.zip"'
+            return response
+
+        return redirect('settings')
+
     context = {'user': request.user}
     return render(request, 'authentication/settings.html', context)
 

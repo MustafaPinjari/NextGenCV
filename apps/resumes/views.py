@@ -1680,38 +1680,35 @@ def pdf_import_confirm(request, upload_id):
         }
         
         # Add experiences if available
+        from datetime import datetime as _dt
+
+        def _parse_date(s):
+            if not s:
+                return None
+            s = str(s).strip()
+            if s.lower() in ('present', 'current', 'now'):
+                return None
+            for fmt in ('%B %Y', '%b %Y', '%b. %Y', '%m/%Y', '%Y'):
+                try:
+                    return _dt.strptime(s, fmt).date()
+                except ValueError:
+                    continue
+            ym = re.search(r'(\d{4})', s)
+            if ym:
+                try:
+                    return _dt(int(ym.group(1)), 1, 1).date()
+                except Exception:
+                    pass
+            return None
+
         experiences = parsed_data.get('experiences', [])
         if experiences:
             resume_data['experiences'] = []
             for exp in experiences:
-                from datetime import datetime
-                start_date = None
-                end_date = None
-
-                def _parse_date(s):
-                    if not s:
-                        return None
-                    s = str(s).strip()
-                    if s.lower() in ('present', 'current', 'now'):
-                        return None
-                    for fmt in ('%B %Y', '%b %Y', '%b. %Y', '%m/%Y', '%Y'):
-                        try:
-                            return datetime.strptime(s, fmt).date()
-                        except ValueError:
-                            continue
-                    # Try extracting just the year
-                    ym = re.search(r'(\d{4})', s)
-                    if ym:
-                        try:
-                            return datetime(int(ym.group(1)), 1, 1).date()
-                        except Exception:
-                            pass
-                    return None
-
                 start_date = _parse_date(exp.get('start_date'))
                 end_date = _parse_date(exp.get('end_date'))
                 if not start_date:
-                    start_date = datetime.today().date()
+                    start_date = _dt.today().date()
 
                 resume_data['experiences'].append({
                     'company': exp.get('company') or 'Unknown Company',
@@ -1728,16 +1725,15 @@ def pdf_import_confirm(request, upload_id):
         if education:
             resume_data['education'] = []
             for edu in education:
-                # Extract year from graduation_date
                 year = None
                 if edu.get('graduation_date'):
                     try:
                         year = int(re.search(r'\d{4}', edu['graduation_date']).group(0))
                     except Exception:
-                        year = datetime.today().year
-                
+                        year = _dt.today().year
+
                 if not year:
-                    year = datetime.today().year
+                    year = _dt.today().year
                 
                 resume_data['education'].append({
                     'institution': edu.get('institution', 'Unknown Institution'),

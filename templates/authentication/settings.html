@@ -1,364 +1,309 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
-
 {% block title %}Settings — NextGenCV{% endblock %}
 
 {% block extra_css %}
 <style>
-  .settings-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.5rem; max-width: 900px; margin: 0 auto; }
-  @media (max-width: 680px) { .settings-layout { grid-template-columns: 1fr; } .settings-sidebar { display: flex; flex-wrap: wrap; gap: .5rem; } .settings-nav-item { flex: 1; text-align: center; } }
+.s-wrap { max-width: 720px; margin: 0 auto; }
+.s-page-title { font-size: 1.4rem; font-weight: 700; margin: 0 0 .25rem; display: flex; align-items: center; gap: .5rem; }
+.s-page-sub { color: var(--color-text-secondary, #6b7280); font-size: .875rem; margin: 0 0 1.75rem; }
 
-  .settings-sidebar { background: var(--color-surface, #fff); border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; padding: 1rem; height: fit-content; }
-  .settings-nav-item {
-    display: flex; align-items: center; gap: .75rem;
-    padding: .65rem .9rem; border-radius: 8px; cursor: pointer;
-    font-size: .9rem; font-weight: 500; color: var(--color-text-secondary, #6b7280);
-    transition: all .15s; border: none; background: none; width: 100%; text-align: left;
-  }
-  .settings-nav-item:hover { background: var(--color-surface-hover, #f3f4f6); color: var(--color-text-primary, #111); }
-  .settings-nav-item.active { background: rgba(99,102,241,.1); color: var(--color-primary, #6366f1); font-weight: 600; }
-  .settings-nav-item i { font-size: 1rem; width: 18px; }
+.s-card { background: var(--color-surface,#fff); border: 1px solid var(--color-border,#e5e7eb); border-radius: 14px; margin-bottom: 1.25rem; overflow: hidden; }
+.s-card-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--color-border,#e5e7eb); display: flex; align-items: center; gap: .6rem; font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--color-text-secondary,#6b7280); }
+.s-card-header i { color: #6366f1; font-size: .95rem; }
 
-  .settings-panel { display: none; }
-  .settings-panel.active { display: block; }
+.s-row { display: flex; align-items: center; justify-content: space-between; padding: .9rem 1.5rem; border-bottom: 1px solid var(--color-border,#e5e7eb); gap: 1rem; }
+.s-row:last-child { border-bottom: none; }
+.s-row-info { flex: 1; min-width: 0; }
+.s-row-label { font-size: .88rem; font-weight: 500; color: var(--color-text-primary,#111); }
+.s-row-desc  { font-size: .78rem; color: var(--color-text-secondary,#6b7280); margin-top: .15rem; }
 
-  .settings-card { background: var(--color-surface, #fff); border: 1px solid var(--color-border, #e5e7eb); border-radius: 12px; padding: 1.75rem; margin-bottom: 1.25rem; }
-  .settings-card-title { font-size: 1rem; font-weight: 700; color: var(--color-text-primary, #111); margin: 0 0 1.25rem; display: flex; align-items: center; gap: .5rem; }
-  .settings-card-title i { color: var(--color-primary, #6366f1); }
+/* Toggle */
+.s-toggle { position: relative; width: 42px; height: 23px; flex-shrink: 0; }
+.s-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.s-slider { position: absolute; inset: 0; background: #d1d5db; border-radius: 999px; cursor: pointer; transition: background .2s; }
+.s-slider::before { content: ''; position: absolute; width: 17px; height: 17px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform .2s; }
+.s-toggle input:checked + .s-slider { background: #6366f1; }
+.s-toggle input:checked + .s-slider::before { transform: translateX(19px); }
+.s-toggle input:disabled + .s-slider { opacity: .45; cursor: not-allowed; }
 
-  .toggle-row { display: flex; justify-content: space-between; align-items: center; padding: .75rem 0; border-bottom: 1px solid var(--color-border, #e5e7eb); }
-  .toggle-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .toggle-info { flex: 1; }
-  .toggle-label { font-size: .9rem; font-weight: 500; color: var(--color-text-primary, #111); }
-  .toggle-desc  { font-size: .8rem; color: var(--color-text-secondary, #6b7280); margin-top: .15rem; }
+.s-link { font-size: .82rem; font-weight: 600; color: #6366f1; text-decoration: none; flex-shrink: 0; }
+.s-link:hover { text-decoration: underline; }
 
-  .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0; background: #d1d5db; border-radius: 999px; cursor: pointer; transition: background .2s;
-  }
-  .toggle-slider::before {
-    content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px;
-    background: #fff; border-radius: 50%; transition: transform .2s;
-  }
-  .toggle-switch input:checked + .toggle-slider { background: var(--color-primary, #6366f1); }
-  .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+.s-badge { font-size: .7rem; font-weight: 700; padding: .18rem .55rem; border-radius: 999px; flex-shrink: 0; }
+.s-badge-green { background: #d1fae5; color: #065f46; }
+.s-badge-amber { background: #fef3c7; color: #92400e; }
 
-  .select-field {
-    padding: .5rem .75rem; border: 1.5px solid var(--color-border, #e5e7eb); border-radius: 8px;
-    font-size: .875rem; background: var(--color-surface, #fff); color: var(--color-text-primary, #111);
-    cursor: pointer;
-  }
-  .select-field:focus { outline: none; border-color: var(--color-primary, #6366f1); }
+.s-select { padding: .4rem .7rem; border: 1.5px solid var(--color-border,#e5e7eb); border-radius: 7px; font-size: .82rem; background: var(--color-surface,#fff); color: var(--color-text-primary,#111); cursor: pointer; flex-shrink: 0; }
+.s-select:focus { outline: none; border-color: #6366f1; }
 
-  .danger-btn {
-    background: #fee2e2; color: #b91c1c; border: 1.5px solid #fca5a5;
-    padding: .6rem 1.25rem; border-radius: 8px; font-size: .875rem; font-weight: 600;
-    cursor: pointer; transition: background .2s;
-  }
-  .danger-btn:hover { background: #fecaca; }
+/* Danger */
+.s-card-danger { border-color: #fca5a5; }
+.s-card-danger .s-card-header { color: #b91c1c; border-bottom-color: #fca5a5; }
+.s-card-danger .s-card-header i { color: #ef4444; }
+.s-btn-export { background: #eff6ff; color: #1d4ed8; border: 1.5px solid #93c5fd; padding: .4rem 1rem; border-radius: 7px; font-size: .8rem; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: background .18s; }
+.s-btn-export:hover { background: #dbeafe; }
+.s-btn-del-resumes { background: #fef2f2; color: #b91c1c; border: 1.5px solid #fca5a5; padding: .4rem 1rem; border-radius: 7px; font-size: .8rem; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: background .18s; }
+.s-btn-del-resumes:hover { background: #fee2e2; }
+.s-btn-del-account { background: #b91c1c; color: #fff; border: none; padding: .4rem 1rem; border-radius: 7px; font-size: .8rem; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+.s-btn-del-account:hover { background: #991b1b; }
 
-  .section-divider { height: 1px; background: var(--color-border, #e5e7eb); margin: 1rem 0; }
-
-  .page-header { margin-bottom: 1.5rem; }
-  .page-header h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .25rem; display: flex; align-items: center; gap: .5rem; }
-  .page-header p { color: var(--color-text-secondary, #6b7280); margin: 0; font-size: .9rem; }
+/* Confirm modal */
+.modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
+.modal-backdrop.open { display: flex; }
+.modal-box { background: var(--color-surface,#fff); border-radius: 14px; padding: 2rem; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+.modal-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 .5rem; }
+.modal-desc { font-size: .875rem; color: var(--color-text-secondary,#6b7280); margin: 0 0 1.5rem; line-height: 1.6; }
+.modal-actions { display: flex; gap: .75rem; justify-content: flex-end; }
+.modal-cancel { background: var(--color-surface-hover,#f3f4f6); color: var(--color-text-primary,#111); border: 1px solid var(--color-border,#e5e7eb); padding: .5rem 1.1rem; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; }
+.modal-confirm-danger { background: #b91c1c; color: #fff; border: none; padding: .5rem 1.1rem; border-radius: 8px; font-size: .875rem; font-weight: 600; cursor: pointer; }
+.modal-confirm-danger:hover { background: #991b1b; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="page-header">
-  <h1><i class="bi bi-gear-fill" style="color:var(--color-primary,#6366f1)"></i> Settings</h1>
-  <p>Manage your preferences, privacy, and account</p>
-</div>
+<div class="s-wrap">
+  <div class="s-page-title"><i class="bi bi-gear-fill" style="color:#6366f1"></i> Settings</div>
+  <div class="s-page-sub">Manage your account, preferences, and privacy</div>
 
-<div class="settings-layout">
-  <!-- Sidebar Nav -->
-  <div class="settings-sidebar">
-    <button class="settings-nav-item active" data-panel="account">
-      <i class="bi bi-person-circle"></i> Account
-    </button>
-    <button class="settings-nav-item" data-panel="appearance">
-      <i class="bi bi-palette"></i> Appearance
-    </button>
-    <button class="settings-nav-item" data-panel="notifications">
-      <i class="bi bi-bell"></i> Notifications
-    </button>
-    <button class="settings-nav-item" data-panel="privacy">
-      <i class="bi bi-shield-check"></i> Privacy
-    </button>
-    <button class="settings-nav-item" data-panel="danger">
-      <i class="bi bi-exclamation-triangle"></i> Danger Zone
-    </button>
+  <!-- Account -->
+  <div class="s-card">
+    <div class="s-card-header"><i class="bi bi-person-circle"></i> Account</div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Profile</div>
+        <div class="s-row-desc">@{{ user.username }} · {{ user.get_full_name|default:"Name not set" }}</div>
+      </div>
+      <a href="{% url 'profile' %}" class="s-link">Edit →</a>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Email</div>
+        <div class="s-row-desc">{{ user.email|default:"Not set" }}</div>
+      </div>
+      {% if user.is_active %}<span class="s-badge s-badge-green">Verified</span>{% else %}<span class="s-badge s-badge-amber">Unverified</span>{% endif %}
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Password</div>
+        <div class="s-row-desc">Change your login password</div>
+      </div>
+      <a href="{% url 'profile' %}" class="s-link">Change →</a>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Two-Factor Authentication</div>
+        <div class="s-row-desc">Extra security layer (coming soon)</div>
+      </div>
+      <label class="s-toggle"><input type="checkbox" disabled><span class="s-slider"></span></label>
+    </div>
   </div>
 
-  <!-- Panels -->
-  <div>
-
-    <!-- Account -->
-    <div class="settings-panel active" id="panel-account">
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-person-circle"></i> Account Details</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Username</div>
-            <div class="toggle-desc">@{{ user.username }}</div>
-          </div>
-          <a href="{% url 'profile' %}" style="font-size:.85rem; color:var(--color-primary,#6366f1); text-decoration:none; font-weight:600;">Edit Profile →</a>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Email</div>
-            <div class="toggle-desc">{{ user.email|default:"Not set" }}</div>
-          </div>
-          {% if user.is_active %}
-            <span style="background:#d1fae5;color:#065f46;font-size:.75rem;padding:.2rem .6rem;border-radius:999px;font-weight:600;">Verified</span>
-          {% else %}
-            <span style="background:#fef3c7;color:#92400e;font-size:.75rem;padding:.2rem .6rem;border-radius:999px;font-weight:600;">Unverified</span>
-          {% endif %}
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Member Since</div>
-            <div class="toggle-desc">{{ user.date_joined|date:"F j, Y" }}</div>
-          </div>
-        </div>
+  <!-- Appearance -->
+  <div class="s-card">
+    <div class="s-card-header"><i class="bi bi-palette"></i> Appearance</div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Dark Mode</div>
+        <div class="s-row-desc">Switch to a darker interface</div>
       </div>
-
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-key"></i> Security</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Password</div>
-            <div class="toggle-desc">Last changed: unknown</div>
-          </div>
-          <a href="{% url 'profile' %}" style="font-size:.85rem; color:var(--color-primary,#6366f1); text-decoration:none; font-weight:600;">Change →</a>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Two-Factor Authentication</div>
-            <div class="toggle-desc">Add an extra layer of security (coming soon)</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" disabled>
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
+      <label class="s-toggle"><input type="checkbox" id="darkToggle" data-pref="darkMode"><span class="s-slider"></span></label>
     </div>
-
-    <!-- Appearance -->
-    <div class="settings-panel" id="panel-appearance">
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-moon-stars"></i> Theme</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Dark Mode</div>
-            <div class="toggle-desc">Switch between light and dark interface</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="darkModeToggle">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Compact Sidebar</div>
-            <div class="toggle-desc">Show icons only in the sidebar</div>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="compactSidebarToggle">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Collapse Sidebar</div>
+        <div class="s-row-desc">Show icons only in the navigation sidebar</div>
       </div>
-
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-type"></i> Display</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Default Resume View</div>
-            <div class="toggle-desc">How resumes are displayed in the list</div>
-          </div>
-          <select class="select-field" id="resumeViewPref">
-            <option value="grid">Grid</option>
-            <option value="list">List</option>
-          </select>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Date Format</div>
-            <div class="toggle-desc">How dates are shown across the app</div>
-          </div>
-          <select class="select-field">
-            <option>MM/DD/YYYY</option>
-            <option>DD/MM/YYYY</option>
-            <option>YYYY-MM-DD</option>
-          </select>
-        </div>
-      </div>
+      <label class="s-toggle"><input type="checkbox" id="sidebarToggle" data-pref="sidebarCollapsed"><span class="s-slider"></span></label>
     </div>
-
-    <!-- Notifications -->
-    <div class="settings-panel" id="panel-notifications">
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-bell"></i> Email Notifications</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Resume Analysis Complete</div>
-            <div class="toggle-desc">Get notified when ATS analysis finishes</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Optimization Suggestions</div>
-            <div class="toggle-desc">Weekly tips to improve your resume score</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Job Application Reminders</div>
-            <div class="toggle-desc">Follow-up reminders for tracked applications</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Default Resume View</div>
+        <div class="s-row-desc">How resumes appear in the list</div>
       </div>
-
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-app-indicator"></i> In-App Notifications</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Score Changes</div>
-            <div class="toggle-desc">Alert when your ATS score changes significantly</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">New Feature Announcements</div>
-            <div class="toggle-desc">Be the first to know about new features</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-      </div>
+      <select class="s-select" id="viewPref">
+        <option value="grid">Grid</option>
+        <option value="list">List</option>
+      </select>
     </div>
+  </div>
 
-    <!-- Privacy -->
-    <div class="settings-panel" id="panel-privacy">
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-eye"></i> Resume Visibility</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Public Resume Sharing</div>
-            <div class="toggle-desc">Allow resumes to be shared via public link</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Show ATS Score on Public View</div>
-            <div class="toggle-desc">Display your ATS score when sharing publicly</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox"><span class="toggle-slider"></span></label>
-        </div>
+  <!-- Notifications -->
+  <div class="s-card">
+    <div class="s-card-header"><i class="bi bi-bell"></i> Notifications</div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Analysis Complete</div>
+        <div class="s-row-desc">Notify when ATS analysis finishes</div>
       </div>
-
-      <div class="settings-card">
-        <div class="settings-card-title"><i class="bi bi-database"></i> Data & Analytics</div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Usage Analytics</div>
-            <div class="toggle-desc">Help improve NextGenCV by sharing anonymous usage data</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Activity Log</div>
-            <div class="toggle-desc">Keep a history of your actions in the dashboard</div>
-          </div>
-          <label class="toggle-switch"><input type="checkbox" checked><span class="toggle-slider"></span></label>
-        </div>
-      </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="notif_analysis" checked><span class="s-slider"></span></label>
     </div>
-
-    <!-- Danger Zone -->
-    <div class="settings-panel" id="panel-danger">
-      <div class="settings-card" style="border-color:#fca5a5;">
-        <div class="settings-card-title" style="color:#b91c1c;"><i class="bi bi-exclamation-triangle" style="color:#ef4444;"></i> Danger Zone</div>
-
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Export All Data</div>
-            <div class="toggle-desc">Download a copy of all your resumes and data</div>
-          </div>
-          <button class="danger-btn" style="background:#eff6ff;color:#1d4ed8;border-color:#93c5fd;">
-            <i class="bi bi-download"></i> Export
-          </button>
-        </div>
-
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label">Delete All Resumes</div>
-            <div class="toggle-desc">Permanently remove all your resumes. This cannot be undone.</div>
-          </div>
-          <button class="danger-btn" onclick="return confirm('Delete ALL resumes? This cannot be undone.')">
-            <i class="bi bi-trash"></i> Delete All
-          </button>
-        </div>
-
-        <div class="section-divider"></div>
-
-        <div class="toggle-row">
-          <div class="toggle-info">
-            <div class="toggle-label" style="color:#b91c1c;">Delete Account</div>
-            <div class="toggle-desc">Permanently delete your account and all associated data. Irreversible.</div>
-          </div>
-          <button class="danger-btn" style="background:#b91c1c;color:#fff;border-color:#b91c1c;" onclick="return confirm('Are you sure? This will permanently delete your account.')">
-            <i class="bi bi-person-x"></i> Delete Account
-          </button>
-        </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Application Reminders</div>
+        <div class="s-row-desc">Follow-up reminders for tracked applications</div>
       </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="notif_reminders" checked><span class="s-slider"></span></label>
     </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Weekly Tips</div>
+        <div class="s-row-desc">Resume improvement suggestions every week</div>
+      </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="notif_tips"><span class="s-slider"></span></label>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Feature Announcements</div>
+        <div class="s-row-desc">Be first to know about new features</div>
+      </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="notif_features" checked><span class="s-slider"></span></label>
+    </div>
+  </div>
 
+  <!-- Privacy -->
+  <div class="s-card">
+    <div class="s-card-header"><i class="bi bi-shield-check"></i> Privacy</div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Public Resume Sharing</div>
+        <div class="s-row-desc">Allow resumes to be shared via public link</div>
+      </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="priv_sharing" checked><span class="s-slider"></span></label>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Show ATS Score Publicly</div>
+        <div class="s-row-desc">Display score on shared resume links</div>
+      </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="priv_score"><span class="s-slider"></span></label>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Activity Log</div>
+        <div class="s-row-desc">Keep a history of your actions</div>
+      </div>
+      <label class="s-toggle"><input type="checkbox" data-pref="priv_actlog" checked><span class="s-slider"></span></label>
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="s-card s-card-danger">
+    <div class="s-card-header"><i class="bi bi-exclamation-triangle"></i> Danger Zone</div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Export All Data</div>
+        <div class="s-row-desc">Download a ZIP with all your resumes as JSON</div>
+      </div>
+      <form method="post" style="margin:0">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="export_data">
+        <button type="submit" class="s-btn-export"><i class="bi bi-download"></i> Export</button>
+      </form>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label">Delete All Resumes</div>
+        <div class="s-row-desc">Permanently remove all resumes. Cannot be undone.</div>
+      </div>
+      <button type="button" class="s-btn-del-resumes" onclick="openModal('modalDelResumes')">
+        <i class="bi bi-trash"></i> Delete All
+      </button>
+    </div>
+    <div class="s-row">
+      <div class="s-row-info">
+        <div class="s-row-label" style="color:#b91c1c">Delete Account</div>
+        <div class="s-row-desc">Permanently delete your account and all data. Irreversible.</div>
+      </div>
+      <button type="button" class="s-btn-del-account" onclick="openModal('modalDelAccount')">
+        <i class="bi bi-person-x"></i> Delete
+      </button>
+    </div>
   </div>
 </div>
+
+<!-- Modal: Delete All Resumes -->
+<div class="modal-backdrop" id="modalDelResumes">
+  <div class="modal-box">
+    <div class="modal-title">Delete All Resumes?</div>
+    <div class="modal-desc">This will permanently delete all your resumes, versions, and analysis history. This action <strong>cannot be undone</strong>.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('modalDelResumes')">Cancel</button>
+      <form method="post" style="margin:0">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_all_resumes">
+        <button type="submit" class="modal-confirm-danger"><i class="bi bi-trash"></i> Yes, Delete All</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Delete Account -->
+<div class="modal-backdrop" id="modalDelAccount">
+  <div class="modal-box">
+    <div class="modal-title">Delete Your Account?</div>
+    <div class="modal-desc">This will permanently delete your account, all resumes, applications, and data associated with <strong>@{{ user.username }}</strong>. You will be logged out immediately. This action <strong>cannot be undone</strong>.</div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeModal('modalDelAccount')">Cancel</button>
+      <form method="post" style="margin:0">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete_account">
+        <button type="submit" class="modal-confirm-danger"><i class="bi bi-person-x"></i> Yes, Delete Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // Panel switching
-  document.querySelectorAll('.settings-nav-item').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.settings-nav-item').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+  // ── Generic localStorage toggle persistence ──────────────────────────────
+  document.querySelectorAll('[data-pref]').forEach(input => {
+    const key = input.dataset.pref;
+    const stored = localStorage.getItem(key);
+    // Only override the HTML default if a stored value exists
+    if (stored !== null) input.checked = stored === 'true';
+
+    input.addEventListener('change', () => {
+      localStorage.setItem(key, input.checked);
+
+      // Side-effects for appearance toggles
+      if (key === 'darkMode') {
+        document.body.classList.toggle('dark-mode', input.checked);
+      }
+      if (key === 'sidebarCollapsed') {
+        const sb = document.getElementById('sidebar');
+        const btn = document.getElementById('sidebarToggle');
+        if (sb) sb.classList.toggle('sidebar--collapsed', input.checked);
+        if (btn) {
+          btn.setAttribute('aria-expanded', String(!input.checked));
+          const icon = btn.querySelector('i');
+          if (icon) icon.className = input.checked ? 'bi bi-chevron-right' : 'bi bi-chevron-left';
+        }
+      }
     });
   });
 
-  // Dark mode toggle (persisted via localStorage)
-  const darkToggle = document.getElementById('darkModeToggle');
-  darkToggle.checked = localStorage.getItem('darkMode') === 'true';
-  darkToggle.addEventListener('change', () => {
-    localStorage.setItem('darkMode', darkToggle.checked);
-    document.body.classList.toggle('dark-mode', darkToggle.checked);
-  });
-
-  // Compact sidebar toggle
-  const compactToggle = document.getElementById('compactSidebarToggle');
-  compactToggle.checked = localStorage.getItem('sidebarCollapsed') === 'true';
-  compactToggle.addEventListener('change', () => {
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.toggle('sidebar--collapsed', compactToggle.checked);
-    localStorage.setItem('sidebarCollapsed', compactToggle.checked);
-  });
-
-  // Resume view preference
-  const viewPref = document.getElementById('resumeViewPref');
+  // Resume view preference (select, not toggle)
+  const viewPref = document.getElementById('viewPref');
   viewPref.value = localStorage.getItem('resumeView') || 'grid';
   viewPref.addEventListener('change', () => localStorage.setItem('resumeView', viewPref.value));
+
+  // ── Confirmation modals ──────────────────────────────────────────────────
+  function openModal(id) {
+    document.getElementById(id).classList.add('open');
+  }
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+  // Close on backdrop click
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
+  });
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop.open').forEach(m => m.classList.remove('open'));
+  });
 </script>
 {% endblock %}

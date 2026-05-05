@@ -1,233 +1,223 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
-
 {% block title %}Profile — NextGenCV{% endblock %}
 
 {% block extra_css %}
 <style>
-  .profile-hero {
-    background: linear-gradient(135deg, var(--color-primary, #6366f1) 0%, #8b5cf6 100%);
-    border-radius: 16px;
-    padding: 2.5rem;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    margin-bottom: 2rem;
-  }
-  .profile-avatar {
-    width: 88px; height: 88px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.2);
-    border: 3px solid rgba(255,255,255,0.5);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.25rem; font-weight: 700; color: #fff;
-    flex-shrink: 0;
-  }
-  .profile-hero-info h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .25rem; }
-  .profile-hero-info p  { margin: 0; opacity: .8; font-size: .9rem; }
-  .profile-stats { display: flex; gap: 1.5rem; margin-top: 1rem; }
-  .profile-stat { text-align: center; }
-  .profile-stat-value { font-size: 1.5rem; font-weight: 700; }
-  .profile-stat-label { font-size: .75rem; opacity: .75; }
+.p-wrap { max-width: 900px; margin: 0 auto; }
 
-  .tab-nav { display: flex; gap: .5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--color-border, #e5e7eb); }
-  .tab-btn {
-    padding: .6rem 1.25rem; border: none; background: none; cursor: pointer;
-    font-size: .9rem; font-weight: 500; color: var(--color-text-secondary, #6b7280);
-    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s;
-  }
-  .tab-btn.active { color: var(--color-primary, #6366f1); border-bottom-color: var(--color-primary, #6366f1); }
-  .tab-btn:hover:not(.active) { color: var(--color-text-primary, #111); }
+/* Hero */
+.p-hero {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 16px; padding: 2rem 2.5rem;
+  display: flex; align-items: center; gap: 1.75rem;
+  margin-bottom: 1.75rem; color: #fff;
+}
+.p-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: rgba(255,255,255,.2); border: 2.5px solid rgba(255,255,255,.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem; font-weight: 800; flex-shrink: 0;
+}
+.p-hero-name { font-size: 1.4rem; font-weight: 700; margin: 0 0 .2rem; }
+.p-hero-sub  { font-size: .85rem; opacity: .8; margin: 0; }
+.p-hero-stats { display: flex; gap: 1.5rem; margin-top: .9rem; }
+.p-stat-val  { font-size: 1.4rem; font-weight: 800; line-height: 1; }
+.p-stat-lbl  { font-size: .72rem; opacity: .75; margin-top: .1rem; }
 
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+/* Grid */
+.p-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+@media(max-width:680px){ .p-grid{grid-template-columns:1fr} .p-hero{flex-direction:column;text-align:center} .p-hero-stats{justify-content:center} }
 
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .profile-hero { flex-direction: column; text-align: center; } .profile-stats { justify-content: center; } }
+/* Card */
+.p-card {
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 14px; padding: 1.5rem;
+}
+.p-card-title {
+  font-size: .8rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: var(--color-text-secondary, #6b7280);
+  margin: 0 0 1.1rem; display: flex; align-items: center; gap: .45rem;
+}
+.p-card-title i { color: #6366f1; font-size: .9rem; }
 
-  .field-group { margin-bottom: 1.25rem; }
-  .field-group label { display: block; font-size: .8rem; font-weight: 600; color: var(--color-text-secondary, #6b7280); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .04em; }
-  .field-group input {
-    width: 100%; padding: .65rem .9rem;
-    border: 1.5px solid var(--color-border, #e5e7eb);
-    border-radius: 8px; font-size: .95rem;
-    background: var(--color-surface, #fff);
-    color: var(--color-text-primary, #111);
-    transition: border-color .2s;
-    box-sizing: border-box;
-  }
-  .field-group input:focus { outline: none; border-color: var(--color-primary, #6366f1); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+/* Info rows */
+.p-row { display: flex; justify-content: space-between; align-items: center; padding: .6rem 0; border-bottom: 1px solid var(--color-border, #e5e7eb); }
+.p-row:last-child { border-bottom: none; padding-bottom: 0; }
+.p-row-label { font-size: .78rem; color: var(--color-text-secondary, #6b7280); }
+.p-row-value { font-size: .88rem; font-weight: 500; color: var(--color-text-primary, #111); }
 
-  .info-row { display: flex; justify-content: space-between; align-items: center; padding: .85rem 0; border-bottom: 1px solid var(--color-border, #e5e7eb); }
-  .info-row:last-child { border-bottom: none; }
-  .info-label { font-size: .8rem; font-weight: 600; color: var(--color-text-secondary, #6b7280); text-transform: uppercase; letter-spacing: .04em; }
-  .info-value { font-size: .95rem; color: var(--color-text-primary, #111); }
+/* Badge */
+.badge { font-size: .7rem; font-weight: 700; padding: .18rem .55rem; border-radius: 999px; }
+.badge-green { background: #d1fae5; color: #065f46; }
+.badge-amber { background: #fef3c7; color: #92400e; }
 
-  .badge-verified { background: #d1fae5; color: #065f46; font-size: .75rem; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; }
-  .badge-pending  { background: #fef3c7; color: #92400e; font-size: .75rem; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; }
+/* Form fields */
+.f-group { margin-bottom: 1rem; }
+.f-group:last-of-type { margin-bottom: 0; }
+.f-label { display: block; font-size: .75rem; font-weight: 600; color: var(--color-text-secondary, #6b7280); margin-bottom: .35rem; }
+.f-input {
+  width: 100%; padding: .55rem .8rem; box-sizing: border-box;
+  border: 1.5px solid var(--color-border, #e5e7eb); border-radius: 8px;
+  font-size: .88rem; background: var(--color-surface, #fff);
+  color: var(--color-text-primary, #111); transition: border-color .18s;
+}
+.f-input:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
+.f-input:disabled { opacity: .5; cursor: not-allowed; background: var(--color-surface-hover, #f9fafb); }
 
-  .btn-save {
-    background: var(--color-primary, #6366f1); color: #fff;
-    border: none; padding: .65rem 1.75rem; border-radius: 8px;
-    font-size: .95rem; font-weight: 600; cursor: pointer; transition: opacity .2s;
-  }
-  .btn-save:hover { opacity: .88; }
-  .btn-danger {
-    background: #fee2e2; color: #b91c1c;
-    border: none; padding: .65rem 1.75rem; border-radius: 8px;
-    font-size: .95rem; font-weight: 600; cursor: pointer; transition: background .2s;
-  }
-  .btn-danger:hover { background: #fecaca; }
+/* Buttons */
+.btn-primary {
+  background: #6366f1; color: #fff; border: none;
+  padding: .55rem 1.4rem; border-radius: 8px; font-size: .85rem;
+  font-weight: 600; cursor: pointer; transition: opacity .18s; margin-top: 1rem;
+}
+.btn-primary:hover { opacity: .88; }
+.btn-danger {
+  background: #fef2f2; color: #b91c1c; border: 1.5px solid #fca5a5;
+  padding: .55rem 1.4rem; border-radius: 8px; font-size: .85rem;
+  font-weight: 600; cursor: pointer; transition: background .18s; margin-top: 1rem;
+}
+.btn-danger:hover { background: #fee2e2; }
 
-  .password-strength { height: 4px; border-radius: 2px; margin-top: .4rem; background: #e5e7eb; overflow: hidden; }
-  .password-strength-bar { height: 100%; width: 0; transition: width .3s, background .3s; border-radius: 2px; }
+/* Password strength */
+.pw-bar { height: 3px; background: #e5e7eb; border-radius: 2px; margin-top: .35rem; overflow: hidden; }
+.pw-fill { height: 100%; width: 0; border-radius: 2px; transition: width .25s, background .25s; }
+
+/* Tabs */
+.p-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--color-border, #e5e7eb); margin-bottom: 1.25rem; }
+.p-tab {
+  padding: .55rem 1.1rem; border: none; background: none; cursor: pointer;
+  font-size: .85rem; font-weight: 500; color: var(--color-text-secondary, #6b7280);
+  border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .15s;
+}
+.p-tab.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 600; }
+.p-tab:hover:not(.active) { color: var(--color-text-primary, #111); }
+.p-panel { display: none; }
+.p-panel.active { display: block; }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- Hero Banner -->
-<div class="profile-hero">
-  <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
-  <div class="profile-hero-info">
-    <h1>{{ user.get_full_name|default:user.username }}</h1>
-    <p>@{{ user.username }} &nbsp;·&nbsp; {{ user.email|default:"No email set" }}</p>
-    <div class="profile-stats">
-      <div class="profile-stat">
-        <div class="profile-stat-value">{{ resume_count }}</div>
-        <div class="profile-stat-label">Resumes</div>
-      </div>
-      <div class="profile-stat">
-        <div class="profile-stat-value">{{ user.date_joined|date:"M Y" }}</div>
-        <div class="profile-stat-label">Joined</div>
+<div class="p-wrap">
+
+  <!-- Hero -->
+  <div class="p-hero">
+    <div class="p-avatar">{{ user.username|slice:":1"|upper }}</div>
+    <div>
+      <div class="p-hero-name">{{ user.get_full_name|default:user.username }}</div>
+      <div class="p-hero-sub">@{{ user.username }} · {{ user.email|default:"No email" }}</div>
+      <div class="p-hero-stats">
+        <div><div class="p-stat-val">{{ resume_count }}</div><div class="p-stat-lbl">Resumes</div></div>
+        <div><div class="p-stat-val">{{ user.date_joined|date:"M Y" }}</div><div class="p-stat-lbl">Joined</div></div>
+        <div><div class="p-stat-val">{{ user.last_login|date:"d M"|default:"—" }}</div><div class="p-stat-lbl">Last Login</div></div>
       </div>
     </div>
+  </div>
+
+  <div class="p-grid">
+
+    <!-- Left: Account Info -->
+    <div class="p-card">
+      <div class="p-card-title"><i class="bi bi-person-circle"></i> Account Info</div>
+      <div class="p-row"><span class="p-row-label">Username</span><span class="p-row-value">{{ user.username }}</span></div>
+      <div class="p-row"><span class="p-row-label">Full Name</span><span class="p-row-value">{{ user.get_full_name|default:"—" }}</span></div>
+      <div class="p-row">
+        <span class="p-row-label">Email</span>
+        <span class="p-row-value" style="display:flex;align-items:center;gap:.4rem;">
+          {{ user.email|default:"Not set" }}
+          {% if user.email %}{% if user.is_active %}<span class="badge badge-green">Verified</span>{% else %}<span class="badge badge-amber">Pending</span>{% endif %}{% endif %}
+        </span>
+      </div>
+      <div class="p-row"><span class="p-row-label">Member Since</span><span class="p-row-value">{{ user.date_joined|date:"F j, Y" }}</span></div>
+      <div class="p-row"><span class="p-row-label">Last Login</span><span class="p-row-value">{{ user.last_login|date:"F j, Y g:i A"|default:"Never" }}</span></div>
+      <div class="p-row"><span class="p-row-label">Resumes</span><span class="p-row-value">{{ resume_count }}</span></div>
+    </div>
+
+    <!-- Right: Edit forms -->
+    <div class="p-card">
+      <div class="p-tabs">
+        <button class="p-tab active" data-tab="edit">Edit Profile</button>
+        <button class="p-tab" data-tab="pw">Password</button>
+      </div>
+
+      <!-- Edit Profile -->
+      <div class="p-panel active" id="tab-edit">
+        <form method="post">
+          {% csrf_token %}<input type="hidden" name="action" value="update_profile">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+            <div class="f-group">
+              <label class="f-label">First Name</label>
+              <input class="f-input" type="text" name="first_name" value="{{ user.first_name }}" placeholder="First">
+            </div>
+            <div class="f-group">
+              <label class="f-label">Last Name</label>
+              <input class="f-input" type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last">
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Email</label>
+            <input class="f-input" type="email" name="email" value="{{ user.email }}" placeholder="you@email.com">
+          </div>
+          <div class="f-group">
+            <label class="f-label">Username (read-only)</label>
+            <input class="f-input" type="text" value="{{ user.username }}" disabled>
+          </div>
+          <button type="submit" class="btn-primary">Save Changes</button>
+        </form>
+      </div>
+
+      <!-- Change Password -->
+      <div class="p-panel" id="tab-pw">
+        <form method="post">
+          {% csrf_token %}<input type="hidden" name="action" value="change_password">
+          <div class="f-group">
+            <label class="f-label">Current Password</label>
+            <input class="f-input" type="password" name="current_password" placeholder="Current password" required>
+          </div>
+          <div class="f-group">
+            <label class="f-label">New Password</label>
+            <input class="f-input" type="password" name="new_password" id="newPw" placeholder="Min. 8 characters" required>
+            <div class="pw-bar"><div class="pw-fill" id="pwFill"></div></div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">Confirm New Password</label>
+            <input class="f-input" type="password" name="confirm_password" placeholder="Repeat new password" required>
+          </div>
+          <button type="submit" class="btn-danger">Update Password</button>
+        </form>
+      </div>
+    </div>
+
   </div>
 </div>
-
-<!-- Tabs -->
-<div class="card-elevated" style="max-width:760px; margin:0 auto; padding:2rem;">
-  <div class="tab-nav">
-    <button class="tab-btn active" data-tab="info">Account Info</button>
-    <button class="tab-btn" data-tab="edit">Edit Profile</button>
-    <button class="tab-btn" data-tab="password">Change Password</button>
-  </div>
-
-  <!-- Account Info -->
-  <div class="tab-panel active" id="tab-info">
-    <div class="info-row">
-      <span class="info-label">Username</span>
-      <span class="info-value">{{ user.username }}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Full Name</span>
-      <span class="info-value">{{ user.get_full_name|default:"—" }}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Email</span>
-      <span class="info-value">
-        {{ user.email|default:"Not set" }}
-        {% if user.email %}
-          {% if user.is_active %}<span class="badge-verified">Verified</span>{% else %}<span class="badge-pending">Pending</span>{% endif %}
-        {% endif %}
-      </span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Member Since</span>
-      <span class="info-value">{{ user.date_joined|date:"F j, Y" }}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Last Login</span>
-      <span class="info-value">{{ user.last_login|date:"F j, Y g:i A"|default:"Never" }}</span>
-    </div>
-    <div class="info-row">
-      <span class="info-label">Resumes Created</span>
-      <span class="info-value">{{ resume_count }}</span>
-    </div>
-  </div>
-
-  <!-- Edit Profile -->
-  <div class="tab-panel" id="tab-edit">
-    <form method="post">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="update_profile">
-      <div class="form-row">
-        <div class="field-group">
-          <label>First Name</label>
-          <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First name">
-        </div>
-        <div class="field-group">
-          <label>Last Name</label>
-          <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last name">
-        </div>
-      </div>
-      <div class="field-group">
-        <label>Email Address</label>
-        <input type="email" name="email" value="{{ user.email }}" placeholder="your@email.com">
-      </div>
-      <div class="field-group">
-        <label>Username</label>
-        <input type="text" value="{{ user.username }}" disabled style="opacity:.6; cursor:not-allowed;">
-      </div>
-      <button type="submit" class="btn-save">Save Changes</button>
-    </form>
-  </div>
-
-  <!-- Change Password -->
-  <div class="tab-panel" id="tab-password">
-    <form method="post">
-      {% csrf_token %}
-      <input type="hidden" name="action" value="change_password">
-      <div class="field-group">
-        <label>Current Password</label>
-        <input type="password" name="current_password" placeholder="Enter current password" required>
-      </div>
-      <div class="field-group">
-        <label>New Password</label>
-        <input type="password" name="new_password" id="newPw" placeholder="Min. 8 characters" required>
-        <div class="password-strength"><div class="password-strength-bar" id="pwBar"></div></div>
-      </div>
-      <div class="field-group">
-        <label>Confirm New Password</label>
-        <input type="password" name="confirm_password" placeholder="Repeat new password" required>
-      </div>
-      <button type="submit" class="btn-danger">Update Password</button>
-    </form>
-  </div>
-</div>
-
 {% endblock %}
 
 {% block extra_js %}
 <script>
-  // Tab switching
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  document.querySelectorAll('.p-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.p-tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.p-panel').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('tab-' + t.dataset.tab).classList.add('active');
     });
   });
 
-  // Password strength meter
-  document.getElementById('newPw').addEventListener('input', function () {
-    const v = this.value, bar = document.getElementById('pwBar');
-    let score = 0;
-    if (v.length >= 8) score++;
-    if (/[A-Z]/.test(v)) score++;
-    if (/[0-9]/.test(v)) score++;
-    if (/[^A-Za-z0-9]/.test(v)) score++;
-    const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
-    bar.style.width = (score * 25) + '%';
-    bar.style.background = colors[score - 1] || '#e5e7eb';
+  document.getElementById('newPw').addEventListener('input', function() {
+    const v = this.value, fill = document.getElementById('pwFill');
+    let s = 0;
+    if (v.length >= 8) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    fill.style.width = (s * 25) + '%';
+    fill.style.background = ['#ef4444','#f97316','#eab308','#22c55e'][s-1] || '#e5e7eb';
   });
 
-  // Auto-open password tab if password error message present
-  {% for message in messages %}
-    {% if 'password' in message.message|lower %}
-      document.querySelector('[data-tab="password"]').click();
-    {% endif %}
-  {% endfor %}
+  // Auto-open password tab on password-related error
+  {% for message in messages %}{% if 'password' in message.message|lower %}
+    document.querySelector('[data-tab="pw"]').click();
+  {% endif %}{% endfor %}
 </script>
 {% endblock %}

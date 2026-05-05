@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ resume.title }}</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: {{ font_info.family }}; font-size: 11pt; color: {{ color_scheme.text }}; background: #fff; }
+.page { width: 8.5in; margin: 0 auto; padding: .55in .6in; }
+
+.header { text-align: center; margin-bottom: 16pt; padding-bottom: 12pt; border-bottom: 2pt solid {{ color_scheme.primary }}; }
+.name { font-size: 22pt; font-weight: 700; color: {{ color_scheme.primary }}; letter-spacing: .02em; }
+.contacts { font-size: 9.5pt; color: #555; margin-top: 6pt; }
+.contacts span + span::before { content: ' | '; }
+
+.section { margin-bottom: 15pt; }
+.section-title {
+  font-size: 11pt; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .07em; color: {{ color_scheme.primary }};
+  border-bottom: 1pt solid {{ color_scheme.primary }};
+  padding-bottom: 3pt; margin-bottom: 10pt;
+}
+
+.entry { margin-bottom: 11pt; page-break-inside: avoid; }
+.entry-row { display: flex; justify-content: space-between; align-items: baseline; }
+.entry-title { font-size: 10.5pt; font-weight: 700; }
+.entry-date { font-size: 9.5pt; color: #666; font-style: italic; }
+.entry-sub { font-size: 9.5pt; color: {{ color_scheme.secondary }}; margin: 2pt 0 5pt; }
+.entry-desc { font-size: 9.5pt; line-height: 1.6; white-space: pre-wrap; }
+
+.skills-block { margin-bottom: 6pt; font-size: 10pt; }
+.skills-block strong { color: {{ color_scheme.primary }}; }
+</style>
+</head>
+<body>
+<div class="page">
+  {% if personal_info %}
+  <div class="header">
+    <div class="name">{{ personal_info.full_name }}</div>
+    <div class="contacts">
+      {% if personal_info.email %}<span>{{ personal_info.email }}</span>{% endif %}
+      {% if personal_info.phone %}<span>{{ personal_info.phone }}</span>{% endif %}
+      {% if personal_info.location %}<span>{{ personal_info.location }}</span>{% endif %}
+      {% if personal_info.linkedin %}<span>{{ personal_info.linkedin }}</span>{% endif %}
+      {% if personal_info.github %}<span>{{ personal_info.github }}</span>{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if resume.summary %}
+  <div class="section">
+    <div class="section-title">Professional Summary</div>
+    <div style="font-size:10pt;line-height:1.65">{{ resume.summary }}</div>
+  </div>
+  {% endif %}
+
+  {% if experiences %}
+  <div class="section">
+    <div class="section-title">Professional Experience</div>
+    {% for exp in experiences %}
+    <div class="entry">
+      <div class="entry-row">
+        <div class="entry-title">{{ exp.role }}</div>
+        <div class="entry-date">{{ exp.start_date|date:"M Y" }} – {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}</div>
+      </div>
+      <div class="entry-sub">{{ exp.company }}{% if exp.location %} · {{ exp.location }}{% endif %}</div>
+      {% if exp.description %}<div class="entry-desc">{{ exp.description }}</div>{% endif %}
+      {% if exp.achievements %}<div class="entry-desc" style="margin-top:4pt">{{ exp.achievements }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if education %}
+  <div class="section">
+    <div class="section-title">Education</div>
+    {% for edu in education %}
+    <div class="entry">
+      <div class="entry-row">
+        <div class="entry-title">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+        <div class="entry-date">{{ edu.start_year }} – {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</div>
+      </div>
+      <div class="entry-sub">{{ edu.institution }}</div>
+      {% if edu.honors %}<div style="font-size:9pt;color:#666;margin-top:2pt">{{ edu.honors }}</div>{% endif %}
+      {% if edu.gpa %}<div style="font-size:9pt;color:#666;margin-top:1pt">GPA: {{ edu.gpa }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if skills %}
+  <div class="section">
+    <div class="section-title">Skills</div>
+    {% regroup skills by category as skills_by_cat %}
+    {% for cat in skills_by_cat %}
+    <div class="skills-block"><strong>{{ cat.grouper }}:</strong> {% for s in cat.list %}{{ s.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if projects %}
+  <div class="section">
+    <div class="section-title">Projects</div>
+    {% for proj in projects %}
+    <div class="entry">
+      <div class="entry-title">{{ proj.name }}{% if proj.url %} — {{ proj.url }}{% endif %}</div>
+      {% if proj.description %}<div class="entry-desc" style="margin-top:3pt">{{ proj.description }}</div>{% endif %}
+      {% if proj.technologies %}<div style="font-size:9pt;color:#666;margin-top:2pt">Technologies: {{ proj.technologies }}</div>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+</body>
+</html>

@@ -1,1098 +1,433 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
-
-{% block title %}Resume Optimization Preview - {{ resume.title }} - NextGenCV{% endblock %}
+{% block title %}Optimization Preview — {{ resume.title }}{% endblock %}
 
 {% block extra_css %}
 <style>
-/* Fix Comparison Page Styles */
-.fix-comparison {
-    padding: 0;
+:root {
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--pl:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
 }
+body { font-family:'Inter',-apple-system,sans-serif!important; background:var(--bg)!important; color:var(--text)!important; }
 
-.fix-comparison__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-6);
+.fc-wrap { max-width:1100px; margin:0 auto; padding:28px 24px 120px; }
+
+/* Back + title */
+.fc-back { display:inline-flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:.82rem;margin-bottom:16px;transition:color .15s; }
+.fc-back:hover { color:var(--pl); }
+.fc-title { font-size:1.5rem;font-weight:800;letter-spacing:-.03em;margin-bottom:4px; }
+.fc-sub { font-size:.82rem;color:var(--text3);margin-bottom:24px; }
+
+/* Score banner */
+.score-banner {
+  background:linear-gradient(135deg,rgba(99,102,241,.18) 0%,rgba(139,92,246,.12) 100%);
+  border:1px solid rgba(99,102,241,.25);
+  border-radius:16px; padding:24px 28px; margin-bottom:20px;
+  display:flex; align-items:center; gap:0; flex-wrap:wrap;
 }
+.score-col { flex:1; min-width:120px; text-align:center; padding:0 16px; }
+.score-col + .score-col { border-left:1px solid var(--border2); }
+.score-lbl { font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:6px; }
+.score-val { font-size:2.8rem;font-weight:900;letter-spacing:-.04em;line-height:1; }
+.score-val.orig { color:var(--text2); }
+.score-val.delta { color:var(--green); }
+.score-val.delta.neg { color:var(--amber); }
+.score-val.opt  { color:var(--pl); }
+.score-msg { margin-top:16px;width:100%;text-align:center;font-size:.85rem;color:var(--text2);padding-top:16px;border-top:1px solid var(--border2); }
 
-.fix-comparison__title {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
+/* Stat pills */
+.stat-row { display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px; }
+.stat-pill {
+  display:flex;align-items:center;gap:8px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:10px;padding:10px 16px;flex:1;min-width:140px;
 }
+.stat-pill-icon { width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0; }
+.sp-blue  { background:rgba(99,102,241,.12);color:var(--pl); }
+.sp-green { background:rgba(16,185,129,.12);color:var(--green); }
+.sp-amber { background:rgba(245,158,11,.12);color:var(--amber); }
+.sp-cyan  { background:rgba(6,182,212,.12);color:var(--cyan); }
+.stat-pill-val { font-size:1.3rem;font-weight:800;line-height:1; }
+.stat-pill-lbl { font-size:.7rem;color:var(--text3);margin-top:1px; }
 
-.fix-comparison__title i {
-    color: var(--color-primary-solid);
-}
+/* Tabs */
+.tab-bar { display:flex;gap:4px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:4px;margin-bottom:16px;width:fit-content; }
+.tab-btn { padding:6px 16px;border:none;background:none;border-radius:7px;font-size:.82rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all .15s; }
+.tab-btn.active { background:var(--surface2);color:var(--text);border:1px solid var(--border2); }
+.tab-btn:hover:not(.active) { color:var(--text2); }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
 
-/* Score Comparison Section */
-.score-comparison {
-    background: linear-gradient(135deg, var(--color-primary-solid) 0%, var(--color-secondary) 100%);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-6);
-    margin-bottom: var(--spacing-6);
-    box-shadow: var(--glow-primary);
-}
-
-.score-comparison__title {
-    text-align: center;
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-semibold);
-    color: white;
-    margin-bottom: var(--spacing-5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-2);
-}
-
-.score-comparison__meters {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--spacing-4);
-    margin-bottom: var(--spacing-4);
-}
-
-@media (max-width: 768px) {
-    .score-comparison__meters {
-        grid-template-columns: 1fr;
-    }
-}
-
-.score-meter {
-    text-align: center;
-    padding: var(--spacing-4);
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-lg);
-    backdrop-filter: blur(10px);
-}
-
-.score-meter__label {
-    font-size: var(--font-size-sm);
-    color: rgba(255, 255, 255, 0.9);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    margin-bottom: var(--spacing-2);
-}
-
-.score-meter__value {
-    font-size: var(--font-size-5xl);
-    font-weight: var(--font-weight-bold);
-    color: white;
-    line-height: 1;
-}
-
-.score-meter__delta {
-    font-size: var(--font-size-3xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-success);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-1);
-}
-
-.score-meter__delta.negative {
-    color: var(--color-warning);
-}
-
-.score-comparison__message {
-    text-align: center;
-    color: white;
-    font-size: var(--font-size-lg);
-    margin-top: var(--spacing-4);
-}
-
-/* Changes Summary */
-.changes-summary {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-5);
-    margin-bottom: var(--spacing-6);
-    box-shadow: var(--shadow-md);
-}
-
-.changes-summary__title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-4);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-}
-
-.changes-summary__grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-3);
-}
-
-@media (max-width: 768px) {
-    .changes-summary__grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-.summary-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-3);
-    padding: var(--spacing-3);
-    background: var(--color-surface-elevated);
-    border-radius: var(--radius-md);
-    transition: all var(--duration-normal) var(--easing-default);
-}
-
-.summary-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-sm);
-}
-
-.summary-item__icon {
-    font-size: var(--font-size-2xl);
-    width: 48px;
-    height: 48px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-md);
-}
-
-.summary-item__icon--primary {
-    background: rgba(0, 102, 255, 0.1);
-    color: var(--color-primary-solid);
-}
-
-.summary-item__icon--success {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--color-success);
-}
-
-.summary-item__icon--warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--color-warning);
-}
-
-.summary-item__icon--secondary {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--color-secondary);
-}
-
-.summary-item__content {
-    flex: 1;
-}
-
-.summary-item__label {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-1);
-}
-
-.summary-item__value {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-text-primary);
-}
-
-/* Split View Layout */
-.split-view {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-4);
-    margin-bottom: var(--spacing-6);
-    position: relative;
-}
-
-@media (max-width: 1024px) {
-    .split-view {
-        grid-template-columns: 1fr;
-    }
-}
-
-.split-view__column {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-xl);
-    overflow: hidden;
-    box-shadow: var(--shadow-md);
-}
-
-.split-view__column--original {
-    border-color: var(--color-border);
-}
-
-.split-view__column--optimized {
-    border-color: var(--color-success);
-    box-shadow: var(--glow-success);
-}
-
-.split-view__header {
-    position: sticky;
-    top: 0;
-    background: var(--color-surface-elevated);
-    padding: var(--spacing-4);
-    border-bottom: 2px solid var(--color-border);
-    z-index: 10;
-}
-
-.split-view__header-title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-}
-
-.split-view__content {
-    padding: var(--spacing-5);
-    max-height: 600px;
-    overflow-y: auto;
-}
-
-/* Synchronized scrolling */
-.split-view__content::-webkit-scrollbar {
-    width: 8px;
-}
-
-.split-view__content::-webkit-scrollbar-track {
-    background: var(--color-surface);
-}
-
-.split-view__content::-webkit-scrollbar-thumb {
-    background: var(--color-border);
-    border-radius: var(--radius-full);
-}
-
-.split-view__content::-webkit-scrollbar-thumb:hover {
-    background: var(--color-border-hover);
-}
-
-/* Resume Content Sections */
-.resume-section {
-    margin-bottom: var(--spacing-5);
-}
-
-.resume-section__title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-3);
-    padding-bottom: var(--spacing-2);
-    border-bottom: 2px solid var(--color-border);
-}
-
-.resume-section__item {
-    margin-bottom: var(--spacing-4);
-    padding-bottom: var(--spacing-4);
-    border-bottom: 1px solid var(--color-border);
-}
-
-.resume-section__item:last-child {
-    border-bottom: none;
-}
-
-.resume-section__item-title {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-1);
-}
-
-.resume-section__item-subtitle {
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-    margin-bottom: var(--spacing-2);
-}
-
-.resume-section__bullet {
-    padding-left: var(--spacing-4);
-    margin-bottom: var(--spacing-2);
-    position: relative;
-    color: var(--color-text-primary);
-    line-height: 1.6;
-}
-
-.resume-section__bullet:before {
-    content: "•";
-    position: absolute;
-    left: var(--spacing-2);
-    color: var(--color-primary-solid);
-}
-
-.skill-tag {
-    display: inline-block;
-    background: var(--color-surface-elevated);
-    color: var(--color-text-primary);
-    padding: var(--spacing-1) var(--spacing-3);
-    border-radius: var(--radius-full);
-    font-size: var(--font-size-sm);
-    margin: var(--spacing-1);
-    border: 1px solid var(--color-border);
-}
-
-/* Change Cards */
-.change-cards {
-    margin-bottom: var(--spacing-6);
-}
-
-.change-cards__title {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--spacing-4);
-}
-
+/* Change cards */
+.change-list { display:flex;flex-direction:column;gap:10px; }
 .change-card {
-    background: var(--color-surface);
-    border-left: 4px solid var(--color-primary-solid);
-    border-radius: var(--radius-lg);
-    padding: var(--spacing-4);
-    margin-bottom: var(--spacing-3);
-    box-shadow: var(--shadow-sm);
-    transition: all var(--duration-normal) var(--easing-default);
+  background:var(--surface);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;transition:border-color .15s;
 }
+.change-card:hover { border-color:var(--border2); }
+.cc-head {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border);
+  gap:8px;
+}
+.cc-badge { font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:99px; }
+.badge-bullet  { background:rgba(99,102,241,.15);color:var(--pl); }
+.badge-keyword { background:rgba(16,185,129,.15);color:var(--green); }
+.badge-quant   { background:rgba(245,158,11,.15);color:var(--amber); }
+.badge-format  { background:rgba(6,182,212,.15);color:var(--cyan); }
+.cc-section { font-size:.75rem;color:var(--text3); }
+.cc-body { padding:12px 14px; }
+.cc-reason { font-size:.78rem;color:var(--text3);font-style:italic;margin-bottom:10px; }
+.cc-diff { display:grid;grid-template-columns:1fr 1fr;gap:10px; }
+@media(max-width:600px){ .cc-diff{grid-template-columns:1fr;} }
+.cc-box { border-radius:8px;padding:10px 12px;font-size:.8rem;line-height:1.6; }
+.cc-box-lbl { font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;opacity:.7; }
+.cc-old { background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);color:var(--text2); }
+.cc-new { background:rgba(16,185,129,.07);border:1px solid rgba(16,185,129,.2);color:var(--text); }
+.kw-highlight { background:rgba(245,158,11,.2);color:var(--amber);padding:1px 5px;border-radius:4px;font-weight:600; }
+.empty-tab { padding:32px;text-align:center;color:var(--text3);font-size:.85rem; }
+.empty-tab i { display:block;font-size:1.8rem;margin-bottom:8px;opacity:.35; }
 
-.change-card:hover {
-    transform: translateX(4px);
-    box-shadow: var(--glow-primary);
-}
+/* Split view */
+.split-wrap { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px; }
+@media(max-width:900px){ .split-wrap{grid-template-columns:1fr;} }
+.split-col { background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden; }
+.split-col.optimized { border-color:rgba(16,185,129,.3); }
+.split-head { padding:12px 16px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:.85rem;font-weight:700; }
+.split-head i { color:var(--pl); }
+.split-col.optimized .split-head i { color:var(--green); }
+.split-body { padding:16px;max-height:520px;overflow-y:auto;font-size:.82rem;line-height:1.65; }
+.split-body::-webkit-scrollbar { width:5px; }
+.split-body::-webkit-scrollbar-thumb { background:var(--border2);border-radius:99px; }
+.rs-section-title { font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border); }
+.rs-item { margin-bottom:12px; }
+.rs-role { font-weight:700;color:var(--text); }
+.rs-company { color:var(--pl);font-size:.8rem;margin-top:1px; }
+.rs-desc { color:var(--text2);margin-top:4px; }
+.rs-skill { display:inline-block;background:var(--surface2);border:1px solid var(--border2);color:var(--text2);padding:2px 9px;border-radius:99px;font-size:.75rem;margin:2px; }
 
-.change-card--bullet {
-    border-left-color: var(--color-primary-solid);
+/* Sticky toolbar */
+.fc-toolbar {
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(13,17,23,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--border2);padding:14px 24px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  z-index:200;
 }
+.fc-toolbar-inner { display:flex;align-items:center;gap:12px;max-width:600px;width:100%; }
+.btn-reject {
+  flex:1;padding:12px;border-radius:10px;font-size:.9rem;font-weight:700;
+  background:transparent;color:var(--red);border:1.5px solid rgba(248,113,113,.4);
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-reject:hover { background:rgba(248,113,113,.08);border-color:var(--red); }
+.btn-accept {
+  flex:2;padding:12px;border-radius:10px;font-size:.9rem;font-weight:700;
+  background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff;border:none;
+  cursor:pointer;transition:all .18s;display:flex;align-items:center;justify-content:center;gap:6px;
+  box-shadow:0 0 20px rgba(99,102,241,.3);
+}
+.btn-accept:hover { opacity:.9;transform:translateY(-1px); }
+.btn-accept:disabled { opacity:.5;cursor:not-allowed;transform:none; }
+.toolbar-note { font-size:.72rem;color:var(--text3);text-align:center;margin-top:6px; }
 
-.change-card--keyword {
-    border-left-color: var(--color-success);
-}
-
-.change-card--keyword:hover {
-    box-shadow: var(--glow-success);
-}
-
-.change-card--quantification {
-    border-left-color: var(--color-warning);
-}
-
-.change-card--quantification:hover {
-    box-shadow: var(--glow-warning);
-}
-
-.change-card--formatting {
-    border-left-color: var(--color-secondary);
-}
-
-.change-card--formatting:hover {
-    box-shadow: var(--glow-secondary);
-}
-
-.change-card__header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--spacing-3);
-}
-
-.change-card__badge {
-    display: inline-block;
-    padding: var(--spacing-1) var(--spacing-2);
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-}
-
-.change-card__badge--primary {
-    background: rgba(0, 102, 255, 0.1);
-    color: var(--color-primary-solid);
-}
-
-.change-card__badge--success {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--color-success);
-}
-
-.change-card__badge--warning {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--color-warning);
-}
-
-.change-card__badge--secondary {
-    background: rgba(99, 102, 241, 0.1);
-    color: var(--color-secondary);
-}
-
-.change-card__section {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-}
-
-.change-card__reason {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin-bottom: var(--spacing-3);
-    font-style: italic;
-}
-
-.change-card__comparison {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-3);
-    margin-bottom: var(--spacing-3);
-}
-
-@media (max-width: 768px) {
-    .change-card__comparison {
-        grid-template-columns: 1fr;
-    }
-}
-
-.change-card__text-box {
-    padding: var(--spacing-3);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    line-height: 1.6;
-}
-
-.change-card__text-box--old {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.change-card__text-box--new {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.change-card__text-label {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    text-transform: uppercase;
-    letter-spacing: var(--letter-spacing-wide);
-    margin-bottom: var(--spacing-2);
-    color: var(--color-text-secondary);
-}
-
-.change-card__actions {
-    display: flex;
-    gap: var(--spacing-2);
-}
-
-.change-card__btn {
-    flex: 1;
-    padding: var(--spacing-2) var(--spacing-3);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    border: none;
-    cursor: pointer;
-    transition: all var(--duration-normal) var(--easing-default);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-1);
-}
-
-.change-card__btn--accept {
-    background: var(--color-success);
-    color: white;
-}
-
-.change-card__btn--accept:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--glow-success);
-}
-
-.change-card__btn--reject {
-    background: transparent;
-    color: var(--color-error);
-    border: 1px solid var(--color-error);
-}
-
-.change-card__btn--reject:hover {
-    background: var(--color-error);
-    color: white;
-    box-shadow: var(--glow-error);
-}
-
-.highlight-keyword {
-    background: rgba(245, 158, 11, 0.2);
-    padding: 2px 4px;
-    border-radius: var(--radius-sm);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-warning);
-}
-
-/* Action Toolbar */
-.action-toolbar {
-    position: sticky;
-    bottom: 0;
-    background: var(--color-surface);
-    border-top: 2px solid var(--color-border);
-    padding: var(--spacing-5);
-    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.4);
-    z-index: 100;
-    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-}
-
-.action-toolbar__buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--spacing-3);
-    margin-bottom: var(--spacing-3);
-}
-
-@media (max-width: 768px) {
-    .action-toolbar__buttons {
-        grid-template-columns: 1fr;
-    }
-}
-
-.action-toolbar__btn {
-    padding: var(--spacing-4);
-    border-radius: var(--radius-lg);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    border: none;
-    cursor: pointer;
-    transition: all var(--duration-normal) var(--easing-default);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-2);
-}
-
-.action-toolbar__btn--reject {
-    background: transparent;
-    color: var(--color-error);
-    border: 2px solid var(--color-error);
-}
-
-.action-toolbar__btn--reject:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--glow-error);
-}
-
-.action-toolbar__btn--accept {
-    background: linear-gradient(135deg, var(--color-primary-solid) 0%, var(--color-secondary) 100%);
-    color: white;
-    box-shadow: var(--glow-primary);
-}
-
-.action-toolbar__btn--accept:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(0, 102, 255, 0.5);
-}
-
-.action-toolbar__btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none !important;
-}
-
-.action-toolbar__note {
-    text-align: center;
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-1);
-}
-
-/* Accordion for detailed changes */
-.accordion {
-    margin-bottom: var(--spacing-6);
-}
-
-.accordion__item {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-lg);
-    margin-bottom: var(--spacing-2);
-    overflow: hidden;
-}
-
-.accordion__header {
-    width: 100%;
-    padding: var(--spacing-4);
-    background: var(--color-surface-elevated);
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-2);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    transition: all var(--duration-normal) var(--easing-default);
-}
-
-.accordion__header:hover {
-    background: var(--color-surface);
-}
-
-.accordion__header i {
-    font-size: var(--font-size-xl);
-}
-
-.accordion__content {
-    padding: var(--spacing-4);
-    display: none;
-}
-
-.accordion__content.active {
-    display: block;
-}
-
-/* Loading spinner */
-.spinner {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+.spinner { display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg);} }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="fix-comparison">
-    <!-- Page Header -->
-    <div class="fix-comparison__header">
-        <h1 class="fix-comparison__title">
-            <i class="bi bi-magic"></i>
-            Resume Optimization Preview
-        </h1>
-        <a href="{% url 'resume_detail' resume.id %}" class="btn btn--ghost">
-            <i class="bi bi-x-circle"></i>
-            Cancel
-        </a>
-    </div>
+<div class="fc-wrap">
+  <a href="{% url 'resume_detail' resume.id %}" class="fc-back"><i class="bi bi-arrow-left"></i> Back to Resume</a>
+  <div class="fc-title"><i class="bi bi-magic" style="color:var(--pl)"></i> Optimization Preview</div>
+  <div class="fc-sub">{{ resume.title }} — review changes before applying</div>
 
-    <!-- Score Comparison -->
-    <div class="score-comparison">
-        <h2 class="score-comparison__title">
-            <i class="bi bi-graph-up-arrow"></i>
-            ATS Score Improvement
-        </h2>
-        <div class="score-comparison__meters">
-            <div class="score-meter">
-                <div class="score-meter__label">Original Score</div>
-                <div class="score-meter__value">{{ original_score|floatformat:1 }}</div>
-            </div>
-            <div class="score-meter">
-                <div class="score-meter__label">Improvement</div>
-                <div class="score-meter__delta {% if improvement_delta < 0 %}negative{% endif %}">
-                    {% if improvement_delta > 0 %}+{% endif %}{{ improvement_delta|floatformat:1 }}
-                    <i class="bi bi-arrow-{% if improvement_delta >= 0 %}up{% else %}down{% endif %}"></i>
-                </div>
-            </div>
-            <div class="score-meter">
-                <div class="score-meter__label">Optimized Score</div>
-                <div class="score-meter__value">{{ optimized_score|floatformat:1 }}</div>
-            </div>
-        </div>
-        <div class="score-comparison__message">
-            {% if improvement_delta >= 10 %}
-                <i class="bi bi-emoji-smile"></i> Excellent improvement! Your resume is significantly more ATS-friendly.
-            {% elif improvement_delta >= 5 %}
-                <i class="bi bi-emoji-smile"></i> Great improvement! Your resume will perform better in ATS systems.
-            {% elif improvement_delta > 0 %}
-                <i class="bi bi-emoji-neutral"></i> Good improvement! Your resume is more optimized for ATS.
-            {% else %}
-                <i class="bi bi-info-circle"></i> Your resume is already well-optimized!
-            {% endif %}
-        </div>
+  <!-- Score Banner -->
+  <div class="score-banner">
+    <div class="score-col">
+      <div class="score-lbl">Original Score</div>
+      <div class="score-val orig">{{ original_score|floatformat:1 }}</div>
     </div>
-
-    <!-- Changes Summary -->
-    <div class="changes-summary">
-        <h3 class="changes-summary__title">
-            <i class="bi bi-list-check"></i>
-            Changes Summary
-        </h3>
-        <div class="changes-summary__grid">
-            <div class="summary-item">
-                <div class="summary-item__icon summary-item__icon--primary">
-                    <i class="bi bi-pencil-square"></i>
-                </div>
-                <div class="summary-item__content">
-                    <div class="summary-item__label">Bullet Points Rewritten</div>
-                    <div class="summary-item__value">{{ changes_summary.bullet_rewrite|default:0 }}</div>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-item__icon summary-item__icon--success">
-                    <i class="bi bi-key"></i>
-                </div>
-                <div class="summary-item__content">
-                    <div class="summary-item__label">Keywords Injected</div>
-                    <div class="summary-item__value">{{ changes_summary.keyword_injection|default:0 }}</div>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-item__icon summary-item__icon--warning">
-                    <i class="bi bi-123"></i>
-                </div>
-                <div class="summary-item__content">
-                    <div class="summary-item__label">Quantifications Added</div>
-                    <div class="summary-item__value">{{ changes_summary.quantification_suggestion|default:0 }}</div>
-                </div>
-            </div>
-            <div class="summary-item">
-                <div class="summary-item__icon summary-item__icon--secondary">
-                    <i class="bi bi-layout-text-window"></i>
-                </div>
-                <div class="summary-item__content">
-                    <div class="summary-item__label">Formatting Fixes</div>
-                    <div class="summary-item__value">{{ changes_summary.formatting_standardization|default:0 }}</div>
-                </div>
-            </div>
-        </div>
+    <div class="score-col">
+      <div class="score-lbl">Improvement</div>
+      <div class="score-val delta {% if improvement_delta < 0 %}neg{% endif %}">
+        {% if improvement_delta > 0 %}+{% endif %}{{ improvement_delta|floatformat:1 }}
+      </div>
     </div>
+    <div class="score-col">
+      <div class="score-lbl">Optimized Score</div>
+      <div class="score-val opt">{{ optimized_score|floatformat:1 }}</div>
+    </div>
+    <div class="score-msg">
+      {% if improvement_delta >= 10 %}<i class="bi bi-emoji-laughing"></i> Excellent — your resume is significantly more ATS-friendly
+      {% elif improvement_delta >= 5 %}<i class="bi bi-emoji-smile"></i> Great improvement — will perform better in ATS systems
+      {% elif improvement_delta > 0 %}<i class="bi bi-emoji-neutral"></i> Good — your resume is more optimized
+      {% else %}<i class="bi bi-info-circle"></i> Your resume is already well-optimized{% endif %}
+    </div>
+  </div>
 
-    <!-- Detailed Changes Accordion -->
-    {% if detailed_changes %}
-    <div class="accordion">
-        {% if bullet_changes %}
-        <div class="accordion__item">
-            <button class="accordion__header" onclick="toggleAccordion(this)">
-                <i class="bi bi-pencil-square" style="color: var(--color-primary-solid);"></i>
-                <strong>Bullet Points Rewritten ({{ bullet_changes|length }})</strong>
-            </button>
-            <div class="accordion__content active">
-                {% for change in bullet_changes %}
-                <div class="change-card change-card--bullet">
-                    <div class="change-card__header">
-                        <span class="change-card__badge change-card__badge--primary">BULLET REWRITE</span>
-                        <span class="change-card__section">{{ change.section }}</span>
-                    </div>
-                    {% if change.reason %}
-                    <div class="change-card__reason">{{ change.reason }}</div>
-                    {% endif %}
-                    <div class="change-card__comparison">
-                        <div>
-                            <div class="change-card__text-label">Original</div>
-                            <div class="change-card__text-box change-card__text-box--old">{{ change.old_text }}</div>
-                        </div>
-                        <div>
-                            <div class="change-card__text-label">Optimized</div>
-                            <div class="change-card__text-box change-card__text-box--new">{{ change.new_text }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+  <!-- Stat Pills -->
+  <div class="stat-row">
+    <div class="stat-pill">
+      <div class="stat-pill-icon sp-blue"><i class="bi bi-pencil-square"></i></div>
+      <div><div class="stat-pill-val">{{ changes_summary.bullet_rewrite|default:0 }}</div><div class="stat-pill-lbl">Bullets Rewritten</div></div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-icon sp-green"><i class="bi bi-key"></i></div>
+      <div><div class="stat-pill-val">{{ changes_summary.keyword_injection|default:0 }}</div><div class="stat-pill-lbl">Keywords Added</div></div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-icon sp-amber"><i class="bi bi-123"></i></div>
+      <div><div class="stat-pill-val">{{ changes_summary.quantification_suggestion|default:0 }}</div><div class="stat-pill-lbl">Quantifications</div></div>
+    </div>
+    <div class="stat-pill">
+      <div class="stat-pill-icon sp-cyan"><i class="bi bi-layout-text-window"></i></div>
+      <div><div class="stat-pill-val">{{ changes_summary.formatting_standardization|default:0 }}</div><div class="stat-pill-lbl">Formatting Fixes</div></div>
+    </div>
+  </div>
+
+  <!-- Detailed Changes Tabs -->
+  {% if detailed_changes %}
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="bullets">
+      <i class="bi bi-pencil-square"></i> Bullets
+      {% if bullet_changes %}<span style="background:rgba(99,102,241,.2);color:var(--pl);border-radius:99px;padding:0 6px;font-size:.7rem;margin-left:4px">{{ bullet_changes|length }}</span>{% endif %}
+    </button>
+    <button class="tab-btn" data-tab="keywords">
+      <i class="bi bi-key"></i> Keywords
+      {% if keyword_changes %}<span style="background:rgba(16,185,129,.2);color:var(--green);border-radius:99px;padding:0 6px;font-size:.7rem;margin-left:4px">{{ keyword_changes|length }}</span>{% endif %}
+    </button>
+    <button class="tab-btn" data-tab="quant">
+      <i class="bi bi-123"></i> Quantification
+      {% if quantification_changes %}<span style="background:rgba(245,158,11,.2);color:var(--amber);border-radius:99px;padding:0 6px;font-size:.7rem;margin-left:4px">{{ quantification_changes|length }}</span>{% endif %}
+    </button>
+    <button class="tab-btn" data-tab="format">
+      <i class="bi bi-layout-text-window"></i> Formatting
+      {% if formatting_changes %}<span style="background:rgba(6,182,212,.2);color:var(--cyan);border-radius:99px;padding:0 6px;font-size:.7rem;margin-left:4px">{{ formatting_changes|length }}</span>{% endif %}
+    </button>
+  </div>
+
+  <div class="tab-panel active" id="tab-bullets">
+    {% if bullet_changes %}
+    <div class="change-list">
+      {% for c in bullet_changes %}
+      <div class="change-card">
+        <div class="cc-head">
+          <span class="cc-badge badge-bullet">Bullet Rewrite</span>
+          <span class="cc-section">{{ c.section }}</span>
+        </div>
+        <div class="cc-body">
+          {% if c.reason %}<div class="cc-reason">{{ c.reason }}</div>{% endif %}
+          <div class="cc-diff">
+            <div class="cc-box cc-old"><div class="cc-box-lbl">Before</div>{{ c.old_text }}</div>
+            <div class="cc-box cc-new"><div class="cc-box-lbl">After</div>{{ c.new_text }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-tab"><i class="bi bi-pencil-square"></i> No bullet rewrites</div>{% endif %}
+  </div>
+
+  <div class="tab-panel" id="tab-keywords">
+    {% if keyword_changes %}
+    <div class="change-list">
+      {% for c in keyword_changes %}
+      <div class="change-card">
+        <div class="cc-head">
+          <span class="cc-badge badge-keyword">Keyword Added</span>
+          <span class="cc-section">{{ c.section }}</span>
+        </div>
+        <div class="cc-body">
+          {% if c.keyword %}<div style="margin-bottom:8px;font-size:.82rem;">Keyword: <span class="kw-highlight">{{ c.keyword }}</span></div>{% endif %}
+          {% if c.reason %}<div class="cc-reason">{{ c.reason }}</div>{% endif %}
+          <div class="cc-diff">
+            <div class="cc-box cc-old"><div class="cc-box-lbl">Before</div>{{ c.old_text }}</div>
+            <div class="cc-box cc-new"><div class="cc-box-lbl">After</div>{{ c.new_text }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-tab"><i class="bi bi-key"></i> No keyword injections</div>{% endif %}
+  </div>
+
+  <div class="tab-panel" id="tab-quant">
+    {% if quantification_changes %}
+    <div class="change-list">
+      {% for c in quantification_changes %}
+      <div class="change-card">
+        <div class="cc-head">
+          <span class="cc-badge badge-quant">Quantification</span>
+          <span class="cc-section">{{ c.section }}</span>
+        </div>
+        <div class="cc-body">
+          {% if c.reason %}<div class="cc-reason">{{ c.reason }}</div>{% endif %}
+          <div class="cc-diff">
+            <div class="cc-box cc-old"><div class="cc-box-lbl">Before</div>{{ c.old_text }}</div>
+            <div class="cc-box cc-new"><div class="cc-box-lbl">After</div>{{ c.new_text }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-tab"><i class="bi bi-123"></i> No quantification suggestions</div>{% endif %}
+  </div>
+
+  <div class="tab-panel" id="tab-format">
+    {% if formatting_changes %}
+    <div class="change-list">
+      {% for c in formatting_changes %}
+      <div class="change-card">
+        <div class="cc-head">
+          <span class="cc-badge badge-format">Formatting</span>
+          <span class="cc-section">{{ c.section }}</span>
+        </div>
+        <div class="cc-body">
+          {% if c.reason %}<div class="cc-reason">{{ c.reason }}</div>{% endif %}
+          <div class="cc-diff">
+            <div class="cc-box cc-old"><div class="cc-box-lbl">Before</div>{{ c.old_text }}</div>
+            <div class="cc-box cc-new"><div class="cc-box-lbl">After</div>{{ c.new_text }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}<div class="empty-tab"><i class="bi bi-layout-text-window"></i> No formatting changes</div>{% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Side-by-side split view -->
+  <div class="split-wrap" style="margin-top:20px">
+    <!-- Original -->
+    <div class="split-col">
+      <div class="split-head"><i class="bi bi-file-earmark-text"></i> Original Resume</div>
+      <div class="split-body" id="origBody">
+        {% if resume.personal_info %}
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-weight:800;font-size:1rem">{{ resume.personal_info.full_name }}</div>
+          <div style="color:var(--text3);font-size:.78rem;margin-top:2px">{{ resume.personal_info.email }}{% if resume.personal_info.phone %} · {{ resume.personal_info.phone }}{% endif %}</div>
         </div>
         {% endif %}
-
-        {% if keyword_changes %}
-        <div class="accordion__item">
-            <button class="accordion__header" onclick="toggleAccordion(this)">
-                <i class="bi bi-key" style="color: var(--color-success);"></i>
-                <strong>Keywords Injected ({{ keyword_changes|length }})</strong>
-            </button>
-            <div class="accordion__content">
-                {% for change in keyword_changes %}
-                <div class="change-card change-card--keyword">
-                    <div class="change-card__header">
-                        <span class="change-card__badge change-card__badge--success">KEYWORD ADDED</span>
-                        <span class="change-card__section">{{ change.section }}</span>
-                    </div>
-                    {% if change.keyword %}
-                    <p style="margin-bottom: var(--spacing-2);">
-                        <strong>Keyword:</strong> 
-                        <span class="highlight-keyword">{{ change.keyword }}</span>
-                    </p>
-                    {% endif %}
-                    {% if change.reason %}
-                    <div class="change-card__reason">{{ change.reason }}</div>
-                    {% endif %}
-                    <div class="change-card__comparison">
-                        <div>
-                            <div class="change-card__text-label">Original</div>
-                            <div class="change-card__text-box change-card__text-box--old">{{ change.old_text }}</div>
-                        </div>
-                        <div>
-                            <div class="change-card__text-label">Optimized</div>
-                            <div class="change-card__text-box change-card__text-box--new">{{ change.new_text }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+        {% if resume.experiences.all %}
+        <div class="rs-section-title">Experience</div>
+        {% for exp in resume.experiences.all %}
+        <div class="rs-item">
+          <div class="rs-role">{{ exp.role }}</div>
+          <div class="rs-company">{{ exp.company }}</div>
+          {% if exp.description %}<div class="rs-desc">{{ exp.description|truncatewords:25 }}</div>{% endif %}
         </div>
+        {% endfor %}
         {% endif %}
-
-        {% if quantification_changes %}
-        <div class="accordion__item">
-            <button class="accordion__header" onclick="toggleAccordion(this)">
-                <i class="bi bi-123" style="color: var(--color-warning);"></i>
-                <strong>Quantifications Suggested ({{ quantification_changes|length }})</strong>
-            </button>
-            <div class="accordion__content">
-                {% for change in quantification_changes %}
-                <div class="change-card change-card--quantification">
-                    <div class="change-card__header">
-                        <span class="change-card__badge change-card__badge--warning">QUANTIFICATION</span>
-                        <span class="change-card__section">{{ change.section }}</span>
-                    </div>
-                    {% if change.reason %}
-                    <div class="change-card__reason">{{ change.reason }}</div>
-                    {% endif %}
-                    <div class="change-card__comparison">
-                        <div>
-                            <div class="change-card__text-label">Original</div>
-                            <div class="change-card__text-box change-card__text-box--old">{{ change.old_text }}</div>
-                        </div>
-                        <div>
-                            <div class="change-card__text-label">Optimized</div>
-                            <div class="change-card__text-box change-card__text-box--new">{{ change.new_text }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+        {% if resume.education.all %}
+        <div class="rs-section-title">Education</div>
+        {% for edu in resume.education.all %}
+        <div class="rs-item">
+          <div class="rs-role">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+          <div class="rs-company">{{ edu.institution }}</div>
         </div>
+        {% endfor %}
         {% endif %}
-
-        {% if formatting_changes %}
-        <div class="accordion__item">
-            <button class="accordion__header" onclick="toggleAccordion(this)">
-                <i class="bi bi-layout-text-window" style="color: var(--color-secondary);"></i>
-                <strong>Formatting Standardized ({{ formatting_changes|length }})</strong>
-            </button>
-            <div class="accordion__content">
-                {% for change in formatting_changes %}
-                <div class="change-card change-card--formatting">
-                    <div class="change-card__header">
-                        <span class="change-card__badge change-card__badge--secondary">FORMATTING</span>
-                        <span class="change-card__section">{{ change.section }}</span>
-                    </div>
-                    {% if change.reason %}
-                    <div class="change-card__reason">{{ change.reason }}</div>
-                    {% endif %}
-                    <div class="change-card__comparison">
-                        <div>
-                            <div class="change-card__text-label">Original</div>
-                            <div class="change-card__text-box change-card__text-box--old">{{ change.old_text }}</div>
-                        </div>
-                        <div>
-                            <div class="change-card__text-label">Optimized</div>
-                            <div class="change-card__text-box change-card__text-box--new">{{ change.new_text }}</div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
+        {% if resume.skills.all %}
+        <div class="rs-section-title">Skills</div>
+        {% for s in resume.skills.all %}<span class="rs-skill">{{ s.name }}</span>{% endfor %}
         {% endif %}
-    </div>
-    {% endif %}
-
-    <!-- Split View Comparison -->
-    <div class="split-view">
-        <!-- Original Resume Column -->
-        <div class="split-view__column split-view__column--original">
-            <div class="split-view__header">
-                <h3 class="split-view__header-title">
-                    <i class="bi bi-file-earmark-text"></i>
-                    Original Resume
-                </h3>
-            </div>
-            <div class="split-view__content" id="originalContent">
-                {% if resume.personal_info %}
-                <div style="text-align: center; margin-bottom: var(--spacing-5);">
-                    <h4 style="margin-bottom: var(--spacing-1); color: var(--color-text-primary);">{{ resume.personal_info.full_name }}</h4>
-                    <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin: 0;">
-                        {{ resume.personal_info.email }}
-                        {% if resume.personal_info.phone %} | {{ resume.personal_info.phone }}{% endif %}
-                    </p>
-                </div>
-                {% endif %}
-
-                {% if resume.experiences.all %}
-                <div class="resume-section">
-                    <div class="resume-section__title">Work Experience</div>
-                    {% for exp in resume.experiences.all %}
-                    <div class="resume-section__item">
-                        <div class="resume-section__item-title">{{ exp.role }}</div>
-                        <div class="resume-section__item-subtitle">{{ exp.company }}</div>
-                        <div class="resume-section__bullet">{{ exp.description|truncatewords:30 }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if resume.education.all %}
-                <div class="resume-section">
-                    <div class="resume-section__title">Education</div>
-                    {% for edu in resume.education.all %}
-                    <div class="resume-section__item">
-                        <div class="resume-section__item-title">{{ edu.degree }} in {{ edu.field }}</div>
-                        <div class="resume-section__item-subtitle">{{ edu.institution }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if resume.skills.all %}
-                <div class="resume-section">
-                    <div class="resume-section__title">Skills</div>
-                    {% for skill in resume.skills.all %}
-                    <span class="skill-tag">{{ skill.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Optimized Resume Column -->
-        <div class="split-view__column split-view__column--optimized">
-            <div class="split-view__header">
-                <h3 class="split-view__header-title">
-                    <i class="bi bi-stars"></i>
-                    Optimized Resume
-                </h3>
-            </div>
-            <div class="split-view__content" id="optimizedContent">
-                {% if optimized_data.personal_info %}
-                <div style="text-align: center; margin-bottom: var(--spacing-5);">
-                    <h4 style="margin-bottom: var(--spacing-1); color: var(--color-text-primary);">{{ optimized_data.personal_info.full_name }}</h4>
-                    <p style="color: var(--color-text-secondary); font-size: var(--font-size-sm); margin: 0;">
-                        {{ optimized_data.personal_info.email }}
-                        {% if optimized_data.personal_info.phone %} | {{ optimized_data.personal_info.phone }}{% endif %}
-                    </p>
-                </div>
-                {% endif %}
-
-                {% if optimized_data.experiences %}
-                <div class="resume-section">
-                    <div class="resume-section__title">Work Experience</div>
-                    {% for exp in optimized_data.experiences %}
-                    <div class="resume-section__item">
-                        <div class="resume-section__item-title">{{ exp.role }}</div>
-                        <div class="resume-section__item-subtitle">{{ exp.company }}</div>
-                        <div class="resume-section__bullet">{{ exp.description|truncatewords:30 }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if optimized_data.education %}
-                <div class="resume-section">
-                    <div class="resume-section__title">Education</div>
-                    {% for edu in optimized_data.education %}
-                    <div class="resume-section__item">
-                        <div class="resume-section__item-title">{{ edu.degree }} in {{ edu.field }}</div>
-                        <div class="resume-section__item-subtitle">{{ edu.institution }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                {% if optimized_data.skills %}
-                <div class="resume-section">
-                    <div class="resume-section__title">Skills</div>
-                    {% for skill in optimized_data.skills %}
-                    <span class="skill-tag">{{ skill.name }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- Action Toolbar -->
-    <div class="action-toolbar">
-        <div class="action-toolbar__buttons">
-            <form method="post" action="{% url 'fix_reject' resume.id %}">
-                {% csrf_token %}
-                <button type="submit" class="action-toolbar__btn action-toolbar__btn--reject">
-                    <i class="bi bi-x-circle"></i>
-                    Reject Changes
-                </button>
-            </form>
-            <form method="post" action="{% url 'fix_accept' resume.id %}" id="acceptForm">
-                {% csrf_token %}
-                <button type="submit" class="action-toolbar__btn action-toolbar__btn--accept" id="acceptBtn">
-                    <i class="bi bi-check-circle"></i>
-                    Accept & Apply Changes
-                </button>
-            </form>
+    <!-- Optimized -->
+    <div class="split-col optimized">
+      <div class="split-head"><i class="bi bi-stars"></i> Optimized Resume</div>
+      <div class="split-body" id="optBody">
+        {% if optimized_data.personal_info %}
+        <div style="text-align:center;margin-bottom:14px">
+          <div style="font-weight:800;font-size:1rem">{{ optimized_data.personal_info.full_name }}</div>
+          <div style="color:var(--text3);font-size:.78rem;margin-top:2px">{{ optimized_data.personal_info.email }}{% if optimized_data.personal_info.phone %} · {{ optimized_data.personal_info.phone }}{% endif %}</div>
         </div>
-        <div class="action-toolbar__note">
-            <i class="bi bi-info-circle"></i>
-            Accepting changes will create a new version of your resume. Your original will be preserved.
+        {% endif %}
+        {% if optimized_data.experiences %}
+        <div class="rs-section-title">Experience</div>
+        {% for exp in optimized_data.experiences %}
+        <div class="rs-item">
+          <div class="rs-role">{{ exp.role }}</div>
+          <div class="rs-company">{{ exp.company }}</div>
+          {% if exp.description %}<div class="rs-desc">{{ exp.description|truncatewords:25 }}</div>{% endif %}
         </div>
+        {% endfor %}
+        {% endif %}
+        {% if optimized_data.education %}
+        <div class="rs-section-title">Education</div>
+        {% for edu in optimized_data.education %}
+        <div class="rs-item">
+          <div class="rs-role">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+          <div class="rs-company">{{ edu.institution }}</div>
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% if optimized_data.skills %}
+        <div class="rs-section-title">Skills</div>
+        {% for s in optimized_data.skills %}<span class="rs-skill" style="border-color:rgba(16,185,129,.3);color:var(--green)">{{ s.name }}</span>{% endfor %}
+        {% endif %}
+      </div>
     </div>
+  </div>
 </div>
+
+<!-- Sticky Toolbar -->
+<div class="fc-toolbar">
+  <div style="width:100%;max-width:600px">
+    <div class="fc-toolbar-inner">
+      <form method="post" action="{% url 'fix_reject' resume.id %}" style="flex:1">
+        {% csrf_token %}
+        <button type="submit" class="btn-reject" style="width:100%"><i class="bi bi-x-circle"></i> Reject</button>
+      </form>
+      <form method="post" action="{% url 'fix_accept' resume.id %}" id="acceptForm" style="flex:2">
+        {% csrf_token %}
+        <button type="submit" class="btn-accept" id="acceptBtn" style="width:100%">
+          <i class="bi bi-check-circle"></i> Accept & Apply Changes
+        </button>
+      </form>
+    </div>
+    <div class="toolbar-note"><i class="bi bi-info-circle"></i> Accepting creates a new version — your original is always preserved</div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Synchronized scrolling for split view
-    const originalContent = document.getElementById('originalContent');
-    const optimizedContent = document.getElementById('optimizedContent');
-    
-    let isScrolling = false;
-    
-    function syncScroll(source, target) {
-        if (!isScrolling) {
-            isScrolling = true;
-            const scrollPercentage = source.scrollTop / (source.scrollHeight - source.clientHeight);
-            target.scrollTop = scrollPercentage * (target.scrollHeight - target.clientHeight);
-            setTimeout(() => { isScrolling = false; }, 50);
-        }
-    }
-    
-    if (originalContent && optimizedContent) {
-        originalContent.addEventListener('scroll', () => syncScroll(originalContent, optimizedContent));
-        optimizedContent.addEventListener('scroll', () => syncScroll(optimizedContent, originalContent));
-    }
-    
-    // Accept form loading state
-    const acceptForm = document.getElementById('acceptForm');
-    const acceptBtn = document.getElementById('acceptBtn');
-    
-    if (acceptForm && acceptBtn) {
-        acceptForm.addEventListener('submit', function() {
-            acceptBtn.disabled = true;
-            acceptBtn.innerHTML = '<span class="spinner"></span> Applying changes...';
-        });
-    }
-});
-
-// Accordion toggle function
-function toggleAccordion(button) {
-    const content = button.nextElementSibling;
-    const isActive = content.classList.contains('active');
-    
-    // Close all accordion items
-    document.querySelectorAll('.accordion__content').forEach(item => {
-        item.classList.remove('active');
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     });
-    
-    // Open clicked item if it wasn't active
-    if (!isActive) {
-        content.classList.add('active');
-    }
-}
+  });
+
+  // Sync scroll
+  const orig = document.getElementById('origBody');
+  const opt  = document.getElementById('optBody');
+  let syncing = false;
+  function syncScroll(src, tgt) {
+    if (syncing) return;
+    syncing = true;
+    const pct = src.scrollTop / Math.max(1, src.scrollHeight - src.clientHeight);
+    tgt.scrollTop = pct * (tgt.scrollHeight - tgt.clientHeight);
+    setTimeout(() => syncing = false, 50);
+  }
+  if (orig && opt) {
+    orig.addEventListener('scroll', () => syncScroll(orig, opt));
+    opt.addEventListener('scroll',  () => syncScroll(opt, orig));
+  }
+
+  // Accept loading state
+  document.getElementById('acceptForm').addEventListener('submit', () => {
+    const btn = document.getElementById('acceptBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Applying…';
+  });
 </script>
 {% endblock %}

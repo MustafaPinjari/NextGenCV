@@ -48,8 +48,14 @@ class PDFExportService:
             'font_info': font_info,
         }
         
-        # Use PDF-specific template with print-friendly CSS
+        # Use PDF-specific template; fall back to professional_pdf if variant missing
         template_name = f'resumes/{resume.template}_pdf.html'
+        try:
+            from django.template.loader import get_template
+            get_template(template_name)
+        except Exception:
+            logger.warning(f'PDF template {template_name} not found, falling back to professional_pdf.html')
+            template_name = 'resumes/professional_pdf.html'
         html_string = render_to_string(template_name, context)
         
         return html_string

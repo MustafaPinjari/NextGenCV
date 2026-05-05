@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>{{ resume.title }}</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: {{ font_info.family }}; font-size: 10.5pt; color: {{ color_scheme.text }}; background: #fff; }
+.page { width: 8.5in; margin: 0 auto; padding: 0; }
+
+.header-bar { background: {{ color_scheme.primary }}; height: 6pt; width: 100%; }
+.header { padding: .35in .5in .25in; border-bottom: 1pt solid #e5e7eb; }
+.header-name { font-size: 22pt; font-weight: 800; color: {{ color_scheme.primary }}; letter-spacing: -.02em; }
+.header-contacts { display: flex; flex-wrap: wrap; gap: 0 18pt; margin-top: 6pt; font-size: 9pt; color: #555; }
+.header-contacts span { display: inline-flex; align-items: center; gap: 4pt; }
+
+.body { padding: .3in .5in .5in; display: grid; grid-template-columns: 1fr 2.2in; gap: 24pt; }
+.main { }
+.aside { }
+
+.section { margin-bottom: 16pt; }
+.section-title {
+  font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+  color: {{ color_scheme.primary }}; margin-bottom: 8pt;
+  display: flex; align-items: center; gap: 6pt;
+}
+.section-title::after { content: ''; flex: 1; height: 1pt; background: {{ color_scheme.primary }}; opacity: .25; }
+
+.entry { margin-bottom: 10pt; page-break-inside: avoid; }
+.entry-row { display: flex; justify-content: space-between; align-items: baseline; }
+.entry-title { font-size: 10.5pt; font-weight: 700; }
+.entry-date { font-size: 8.5pt; color: #888; font-style: italic; white-space: nowrap; }
+.entry-sub { font-size: 9.5pt; color: {{ color_scheme.secondary }}; margin: 2pt 0 4pt; }
+.entry-desc { font-size: 9.5pt; line-height: 1.55; white-space: pre-wrap; }
+
+.skill-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5pt; font-size: 9pt; }
+.skill-dots { display: flex; gap: 3pt; }
+.dot { width: 7pt; height: 7pt; border-radius: 50%; background: #e5e7eb; }
+.dot.filled { background: {{ color_scheme.primary }}; }
+
+.summary-text { font-size: 10pt; line-height: 1.65; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="header-bar"></div>
+  <div class="header">
+    {% if personal_info %}
+    <div class="header-name">{{ personal_info.full_name }}</div>
+    <div class="header-contacts">
+      {% if personal_info.email %}<span>{{ personal_info.email }}</span>{% endif %}
+      {% if personal_info.phone %}<span>{{ personal_info.phone }}</span>{% endif %}
+      {% if personal_info.location %}<span>{{ personal_info.location }}</span>{% endif %}
+      {% if personal_info.linkedin %}<span>{{ personal_info.linkedin }}</span>{% endif %}
+      {% if personal_info.github %}<span>{{ personal_info.github }}</span>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="body">
+    <div class="main">
+      {% if resume.summary %}
+      <div class="section">
+        <div class="section-title">Summary</div>
+        <div class="summary-text">{{ resume.summary }}</div>
+      </div>
+      {% endif %}
+
+      {% if experiences %}
+      <div class="section">
+        <div class="section-title">Experience</div>
+        {% for exp in experiences %}
+        <div class="entry">
+          <div class="entry-row">
+            <div class="entry-title">{{ exp.role }}</div>
+            <div class="entry-date">{{ exp.start_date|date:"M Y" }} – {% if exp.end_date %}{{ exp.end_date|date:"M Y" }}{% else %}Present{% endif %}</div>
+          </div>
+          <div class="entry-sub">{{ exp.company }}{% if exp.location %} · {{ exp.location }}{% endif %}</div>
+          {% if exp.description %}<div class="entry-desc">{{ exp.description }}</div>{% endif %}
+          {% if exp.achievements %}<div class="entry-desc" style="margin-top:3pt">{{ exp.achievements }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if education %}
+      <div class="section">
+        <div class="section-title">Education</div>
+        {% for edu in education %}
+        <div class="entry">
+          <div class="entry-row">
+            <div class="entry-title">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+            <div class="entry-date">{{ edu.start_year }} – {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</div>
+          </div>
+          <div class="entry-sub">{{ edu.institution }}</div>
+          {% if edu.gpa %}<div style="font-size:9pt;color:#666;margin-top:2pt">GPA: {{ edu.gpa }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="aside">
+      {% if skills %}
+      <div class="section">
+        <div class="section-title">Skills</div>
+        {% regroup skills by category as skills_by_cat %}
+        {% for cat in skills_by_cat %}
+        <div style="font-size:8pt;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5pt;margin-top:{% if not forloop.first %}8pt{% else %}0{% endif %}">{{ cat.grouper }}</div>
+        {% for skill in cat.list %}
+        <div class="skill-row">
+          <span>{{ skill.name }}</span>
+          <div class="skill-dots">
+            {% with lvl=skill.proficiency_level %}
+            <div class="dot {% if lvl == 'beginner' or lvl == 'intermediate' or lvl == 'advanced' or lvl == 'expert' %}filled{% endif %}"></div>
+            <div class="dot {% if lvl == 'intermediate' or lvl == 'advanced' or lvl == 'expert' %}filled{% endif %}"></div>
+            <div class="dot {% if lvl == 'advanced' or lvl == 'expert' %}filled{% endif %}"></div>
+            <div class="dot {% if lvl == 'expert' %}filled{% endif %}"></div>
+            {% endwith %}
+          </div>
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if projects %}
+      <div class="section">
+        <div class="section-title">Projects</div>
+        {% for proj in projects %}
+        <div class="entry">
+          <div class="entry-title" style="font-size:9.5pt">{{ proj.name }}</div>
+          {% if proj.description %}<div style="font-size:9pt;line-height:1.5;margin-top:2pt;color:#555">{{ proj.description|truncatewords:20 }}</div>{% endif %}
+          {% if proj.technologies %}<div style="font-size:8.5pt;color:{{ color_scheme.secondary }};margin-top:2pt">{{ proj.technologies }}</div>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+</body>
+</html>
