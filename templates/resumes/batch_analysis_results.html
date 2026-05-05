@@ -154,14 +154,14 @@ tr:hover td{background:rgba(99,102,241,.03)}
                 {{ result.final_score|floatformat:1 }}
               </span>
             </td>
-            {% for field in result.keyword_match_score|floatformat:0,result.skill_relevance_score|floatformat:0,result.section_completeness_score|floatformat:0,result.experience_impact_score|floatformat:0,result.quantification_score|floatformat:0,result.action_verb_score|floatformat:0 %}
-            <td>
-              <div class="mini-bar-wrap">
-                <div class="mini-bar"><div class="mini-fill" style="width:{{ field }}%"></div></div>
-                <span style="font-size:.78rem;color:var(--text2)">{{ field }}</span>
-              </div>
-            </td>
-            {% endfor %}
+            {% with kw=result.keyword_match_score|floatformat:0 sk=result.skill_relevance_score|floatformat:0 sc=result.section_completeness_score|floatformat:0 ex=result.experience_impact_score|floatformat:0 qu=result.quantification_score|floatformat:0 av=result.action_verb_score|floatformat:0 %}
+            <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:{{ kw }}%"></div></div><span style="font-size:.78rem;color:var(--text2)">{{ kw }}</span></div></td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:{{ sk }}%"></div></div><span style="font-size:.78rem;color:var(--text2)">{{ sk }}</span></div></td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:{{ sc }}%"></div></div><span style="font-size:.78rem;color:var(--text2)">{{ sc }}</span></div></td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:{{ ex }}%"></div></div><span style="font-size:.78rem;color:var(--text2)">{{ ex }}</span></div></td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:{{ qu }}%"></div></div><span style="font-size:.78rem;color:var(--text2)">{{ qu }}</span></div></td>
+            <td><div class="mini-bar-wrap"><div class="mini-bar"><div class="mini-fill" style="width:{{ av }}%"></div></div><span style="font-size:.78rem;color:var(--text2)">{{ av }}</span></div></td>
+            {% endwith %}
             <td>
               <a href="{% url 'resume_detail' result.resume.id %}" class="btn btn-ghost" style="padding:5px 10px;font-size:.75rem"><i class="bi bi-eye"></i></a>
             </td>

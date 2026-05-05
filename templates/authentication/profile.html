@@ -1,69 +1,233 @@
 {% extends 'layouts/authenticated.html' %}
 {% load static %}
 
-{% block title %}Profile - NextGenCV{% endblock %}
+{% block title %}Profile — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-hero {
+    background: linear-gradient(135deg, var(--color-primary, #6366f1) 0%, #8b5cf6 100%);
+    border-radius: 16px;
+    padding: 2.5rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .profile-avatar {
+    width: 88px; height: 88px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 3px solid rgba(255,255,255,0.5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.25rem; font-weight: 700; color: #fff;
+    flex-shrink: 0;
+  }
+  .profile-hero-info h1 { font-size: 1.5rem; font-weight: 700; margin: 0 0 .25rem; }
+  .profile-hero-info p  { margin: 0; opacity: .8; font-size: .9rem; }
+  .profile-stats { display: flex; gap: 1.5rem; margin-top: 1rem; }
+  .profile-stat { text-align: center; }
+  .profile-stat-value { font-size: 1.5rem; font-weight: 700; }
+  .profile-stat-label { font-size: .75rem; opacity: .75; }
+
+  .tab-nav { display: flex; gap: .5rem; margin-bottom: 1.5rem; border-bottom: 2px solid var(--color-border, #e5e7eb); }
+  .tab-btn {
+    padding: .6rem 1.25rem; border: none; background: none; cursor: pointer;
+    font-size: .9rem; font-weight: 500; color: var(--color-text-secondary, #6b7280);
+    border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s;
+  }
+  .tab-btn.active { color: var(--color-primary, #6366f1); border-bottom-color: var(--color-primary, #6366f1); }
+  .tab-btn:hover:not(.active) { color: var(--color-text-primary, #111); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } .profile-hero { flex-direction: column; text-align: center; } .profile-stats { justify-content: center; } }
+
+  .field-group { margin-bottom: 1.25rem; }
+  .field-group label { display: block; font-size: .8rem; font-weight: 600; color: var(--color-text-secondary, #6b7280); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .04em; }
+  .field-group input {
+    width: 100%; padding: .65rem .9rem;
+    border: 1.5px solid var(--color-border, #e5e7eb);
+    border-radius: 8px; font-size: .95rem;
+    background: var(--color-surface, #fff);
+    color: var(--color-text-primary, #111);
+    transition: border-color .2s;
+    box-sizing: border-box;
+  }
+  .field-group input:focus { outline: none; border-color: var(--color-primary, #6366f1); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+
+  .info-row { display: flex; justify-content: space-between; align-items: center; padding: .85rem 0; border-bottom: 1px solid var(--color-border, #e5e7eb); }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { font-size: .8rem; font-weight: 600; color: var(--color-text-secondary, #6b7280); text-transform: uppercase; letter-spacing: .04em; }
+  .info-value { font-size: .95rem; color: var(--color-text-primary, #111); }
+
+  .badge-verified { background: #d1fae5; color: #065f46; font-size: .75rem; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; }
+  .badge-pending  { background: #fef3c7; color: #92400e; font-size: .75rem; padding: .2rem .6rem; border-radius: 999px; font-weight: 600; }
+
+  .btn-save {
+    background: var(--color-primary, #6366f1); color: #fff;
+    border: none; padding: .65rem 1.75rem; border-radius: 8px;
+    font-size: .95rem; font-weight: 600; cursor: pointer; transition: opacity .2s;
+  }
+  .btn-save:hover { opacity: .88; }
+  .btn-danger {
+    background: #fee2e2; color: #b91c1c;
+    border: none; padding: .65rem 1.75rem; border-radius: 8px;
+    font-size: .95rem; font-weight: 600; cursor: pointer; transition: background .2s;
+  }
+  .btn-danger:hover { background: #fecaca; }
+
+  .password-strength { height: 4px; border-radius: 2px; margin-top: .4rem; background: #e5e7eb; overflow: hidden; }
+  .password-strength-bar { height: 100%; width: 0; transition: width .3s, background .3s; border-radius: 2px; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">
-        <i class="bi bi-person-circle"></i>
-        My Profile
-    </h1>
-    <p class="page-subtitle">Manage your account information</p>
+<!-- Hero Banner -->
+<div class="profile-hero">
+  <div class="profile-avatar">{{ user.username|slice:":1"|upper }}</div>
+  <div class="profile-hero-info">
+    <h1>{{ user.get_full_name|default:user.username }}</h1>
+    <p>@{{ user.username }} &nbsp;·&nbsp; {{ user.email|default:"No email set" }}</p>
+    <div class="profile-stats">
+      <div class="profile-stat">
+        <div class="profile-stat-value">{{ resume_count }}</div>
+        <div class="profile-stat-label">Resumes</div>
+      </div>
+      <div class="profile-stat">
+        <div class="profile-stat-value">{{ user.date_joined|date:"M Y" }}</div>
+        <div class="profile-stat-label">Joined</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div class="card-elevated" style="max-width: 800px; margin: 0 auto;">
-    <div class="card-body" style="padding: var(--spacing-6, 3rem);">
-        <div class="profile-section">
-            <h2 style="font-size: var(--font-size-xl, 1.25rem); margin-bottom: var(--spacing-4, 2rem); color: var(--color-text-primary);">
-                Account Information
-            </h2>
-            
-            <div class="profile-info-grid" style="display: grid; gap: var(--spacing-4, 2rem);">
-                <div class="profile-info-item">
-                    <label style="display: block; font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-1, 0.5rem);">
-                        Username
-                    </label>
-                    <div style="font-size: var(--font-size-base, 1rem); color: var(--color-text-primary);">
-                        {{ user.username }}
-                    </div>
-                </div>
-                
-                <div class="profile-info-item">
-                    <label style="display: block; font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-1, 0.5rem);">
-                        Email
-                    </label>
-                    <div style="font-size: var(--font-size-base, 1rem); color: var(--color-text-primary);">
-                        {{ user.email|default:"Not set" }}
-                    </div>
-                </div>
-                
-                <div class="profile-info-item">
-                    <label style="display: block; font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-1, 0.5rem);">
-                        Member Since
-                    </label>
-                    <div style="font-size: var(--font-size-base, 1rem); color: var(--color-text-primary);">
-                        {{ user.date_joined|date:"F j, Y" }}
-                    </div>
-                </div>
-                
-                <div class="profile-info-item">
-                    <label style="display: block; font-size: var(--font-size-sm, 0.875rem); color: var(--color-text-secondary); margin-bottom: var(--spacing-1, 0.5rem);">
-                        Last Login
-                    </label>
-                    <div style="font-size: var(--font-size-base, 1rem); color: var(--color-text-primary);">
-                        {{ user.last_login|date:"F j, Y g:i A"|default:"Never" }}
-                    </div>
-                </div>
-            </div>
-            
-            <div style="margin-top: var(--spacing-6, 3rem); padding-top: var(--spacing-4, 2rem); border-top: 1px solid var(--color-border);">
-                <a href="{% url 'settings' %}" class="btn btn-primary">
-                    <i class="bi bi-gear"></i>
-                    Edit Profile Settings
-                </a>
-            </div>
-        </div>
+<!-- Tabs -->
+<div class="card-elevated" style="max-width:760px; margin:0 auto; padding:2rem;">
+  <div class="tab-nav">
+    <button class="tab-btn active" data-tab="info">Account Info</button>
+    <button class="tab-btn" data-tab="edit">Edit Profile</button>
+    <button class="tab-btn" data-tab="password">Change Password</button>
+  </div>
+
+  <!-- Account Info -->
+  <div class="tab-panel active" id="tab-info">
+    <div class="info-row">
+      <span class="info-label">Username</span>
+      <span class="info-value">{{ user.username }}</span>
     </div>
+    <div class="info-row">
+      <span class="info-label">Full Name</span>
+      <span class="info-value">{{ user.get_full_name|default:"—" }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Email</span>
+      <span class="info-value">
+        {{ user.email|default:"Not set" }}
+        {% if user.email %}
+          {% if user.is_active %}<span class="badge-verified">Verified</span>{% else %}<span class="badge-pending">Pending</span>{% endif %}
+        {% endif %}
+      </span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Member Since</span>
+      <span class="info-value">{{ user.date_joined|date:"F j, Y" }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Last Login</span>
+      <span class="info-value">{{ user.last_login|date:"F j, Y g:i A"|default:"Never" }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Resumes Created</span>
+      <span class="info-value">{{ resume_count }}</span>
+    </div>
+  </div>
+
+  <!-- Edit Profile -->
+  <div class="tab-panel" id="tab-edit">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_profile">
+      <div class="form-row">
+        <div class="field-group">
+          <label>First Name</label>
+          <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First name">
+        </div>
+        <div class="field-group">
+          <label>Last Name</label>
+          <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last name">
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Email Address</label>
+        <input type="email" name="email" value="{{ user.email }}" placeholder="your@email.com">
+      </div>
+      <div class="field-group">
+        <label>Username</label>
+        <input type="text" value="{{ user.username }}" disabled style="opacity:.6; cursor:not-allowed;">
+      </div>
+      <button type="submit" class="btn-save">Save Changes</button>
+    </form>
+  </div>
+
+  <!-- Change Password -->
+  <div class="tab-panel" id="tab-password">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="change_password">
+      <div class="field-group">
+        <label>Current Password</label>
+        <input type="password" name="current_password" placeholder="Enter current password" required>
+      </div>
+      <div class="field-group">
+        <label>New Password</label>
+        <input type="password" name="new_password" id="newPw" placeholder="Min. 8 characters" required>
+        <div class="password-strength"><div class="password-strength-bar" id="pwBar"></div></div>
+      </div>
+      <div class="field-group">
+        <label>Confirm New Password</label>
+        <input type="password" name="confirm_password" placeholder="Repeat new password" required>
+      </div>
+      <button type="submit" class="btn-danger">Update Password</button>
+    </form>
+  </div>
 </div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Tab switching
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Password strength meter
+  document.getElementById('newPw').addEventListener('input', function () {
+    const v = this.value, bar = document.getElementById('pwBar');
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+    bar.style.width = (score * 25) + '%';
+    bar.style.background = colors[score - 1] || '#e5e7eb';
+  });
+
+  // Auto-open password tab if password error message present
+  {% for message in messages %}
+    {% if 'password' in message.message|lower %}
+      document.querySelector('[data-tab="password"]').click();
+    {% endif %}
+  {% endfor %}
+</script>
 {% endblock %}

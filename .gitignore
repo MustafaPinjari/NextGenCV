@@ -1,35 +1,56 @@
-# Python
+# ── Python ────────────────────────────────────────────────────────────────────
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-venv/
-env/
-ENV/
 *.egg-info/
 dist/
 build/
+.eggs/
 
-# Django
+# ── Virtual environments ──────────────────────────────────────────────────────
+venv/
+env/
+ENV/
+.venv/
+
+# ── Django ────────────────────────────────────────────────────────────────────
 *.log
 logs/
 db.sqlite3
 db.sqlite3-journal
 /media
 /staticfiles
+celery.sqlite
 
-# IDE
+# ── Environment & secrets ─────────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+.env.staging
+*.pem
+*.key
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Environment variables
-.env
-.env.local
+# ── Testing ───────────────────────────────────────────────────────────────────
+.hypothesis/
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ── Node (if frontend tooling is added later) ─────────────────────────────────
+node_modules/
+npm-debug.log*

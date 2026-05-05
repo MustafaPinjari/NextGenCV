@@ -92,18 +92,58 @@ def resend_verification(request):
 
 @login_required
 def profile(request):
-    """User profile view"""
+    """User profile view with editable fields and password change."""
+    user = request.user
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'update_profile':
+            first_name = request.POST.get('first_name', '').strip()
+            last_name = request.POST.get('last_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            if email and email != user.email:
+                from django.contrib.auth.models import User as AuthUser
+                if AuthUser.objects.filter(email=email).exclude(pk=user.pk).exists():
+                    messages.error(request, 'That email is already in use.')
+                    return redirect('profile')
+            user.first_name = first_name
+            user.last_name = last_name
+            user.email = email
+            user.save(update_fields=['first_name', 'last_name', 'email'])
+            messages.success(request, 'Profile updated successfully.')
+
+        elif action == 'change_password':
+            from django.contrib.auth import update_session_auth_hash
+            current = request.POST.get('current_password')
+            new_pw = request.POST.get('new_password')
+            confirm = request.POST.get('confirm_password')
+            if not user.check_password(current):
+                messages.error(request, 'Current password is incorrect.')
+            elif new_pw != confirm:
+                messages.error(request, 'New passwords do not match.')
+            elif len(new_pw) < 8:
+                messages.error(request, 'Password must be at least 8 characters.')
+            else:
+                user.set_password(new_pw)
+                user.save()
+                update_session_auth_hash(request, user)
+                messages.success(request, 'Password changed successfully.')
+
+        return redirect('profile')
+
+    from apps.resumes.models import Resume
+    resume_count = Resume.objects.filter(user=user).count()
     context = {
-        'user': request.user,
+        'user': user,
+        'resume_count': resume_count,
     }
     return render(request, 'authentication/profile.html', context)
 
+
 @login_required
 def settings(request):
-    """User settings view"""
-    context = {
-        'user': request.user,
-    }
+    """User settings view."""
+    context = {'user': request.user}
     return render(request, 'authentication/settings.html', context)
 
 @login_required
