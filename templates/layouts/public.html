@@ -35,7 +35,13 @@
                     <a href="{% url 'landing' %}#features" class="public-nav__link">Features</a>
                 </li>
                 <li class="public-nav__item">
+                    <a href="{% url 'landing' %}#ats-simulator" class="public-nav__link">ATS Simulator</a>
+                </li>
+                <li class="public-nav__item">
                     <a href="{% url 'landing' %}#how-it-works" class="public-nav__link">How It Works</a>
+                </li>
+                <li class="public-nav__item">
+                    <a href="{% url 'landing' %}#pricing" class="public-nav__link">Pricing</a>
                 </li>
                 <li class="public-nav__item">
                     <a href="/help/" class="public-nav__link">Help</a>
@@ -69,7 +75,13 @@
                     <a href="{% url 'landing' %}#features" class="public-nav__mobile-link">Features</a>
                 </li>
                 <li class="public-nav__mobile-item">
+                    <a href="{% url 'landing' %}#ats-simulator" class="public-nav__mobile-link">ATS Simulator</a>
+                </li>
+                <li class="public-nav__mobile-item">
                     <a href="{% url 'landing' %}#how-it-works" class="public-nav__mobile-link">How It Works</a>
+                </li>
+                <li class="public-nav__mobile-item">
+                    <a href="{% url 'landing' %}#pricing" class="public-nav__mobile-link">Pricing</a>
                 </li>
                 <li class="public-nav__mobile-item">
                     <a href="/help/" class="public-nav__mobile-link">Help</a>
@@ -96,7 +108,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="public-footer" role="contentinfo">
+    <footer class="public-footer" role="contentinfo" style="border-top:1px solid transparent;background-image:linear-gradient(var(--bg,#030712),var(--bg,#030712)),linear-gradient(90deg,rgba(99,102,241,.4),rgba(6,182,212,.4),rgba(139,92,246,.4));background-origin:border-box;background-clip:padding-box,border-box">
         <div class="public-footer__container">
             <div class="public-footer__grid">
                 <!-- Brand Column -->
@@ -128,9 +140,10 @@
                     <h3 class="public-footer__heading">Product</h3>
                     <ul class="public-footer__links">
                         <li><a href="{% url 'landing' %}#features" class="public-footer__link">Features</a></li>
+                        <li><a href="{% url 'landing' %}#ats-simulator" class="public-footer__link">ATS Simulator</a></li>
                         <li><a href="{% url 'landing' %}#how-it-works" class="public-footer__link">How It Works</a></li>
+                        <li><a href="{% url 'landing' %}#pricing" class="public-footer__link">Pricing</a></li>
                         <li><a href="#" class="public-footer__link">Templates</a></li>
-                        <li><a href="#" class="public-footer__link">Pricing</a></li>
                     </ul>
                 </div>
 
@@ -173,6 +186,12 @@
                 <p class="public-footer__copyright">
                     &copy; 2026 NextGenCV. All rights reserved.
                 </p>
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center">
+                    <span style="display:inline-flex;align-items:center;gap:5px;font-size:.75rem;color:#10b981;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);padding:3px 10px;border-radius:9999px;font-weight:600">
+                        <i class="bi bi-gift-fill"></i> Free forever — no credit card
+                    </span>
+                    <span style="font-size:.75rem;color:#6e7681">Made with ♥ for job seekers everywhere</span>
+                </div>
             </div>
         </div>
     </footer>

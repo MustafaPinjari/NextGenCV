@@ -23,12 +23,19 @@ img{max-width:100%;display:block}
 /* ── NOISE TEXTURE OVERLAY ── */
 body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4}
 
+/* ── PARTICLE CANVAS ── */
+#particle-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.6}
+
+/* ── SECTION SEPARATORS ── */
+.sep{height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,.3) 30%,rgba(6,182,212,.3) 70%,transparent);margin:0;border:none}
+.sep-glow{height:1px;background:linear-gradient(90deg,transparent,var(--primary) 40%,var(--accent) 60%,transparent);box-shadow:0 0 12px rgba(99,102,241,.4);margin:0;border:none}
+
 /* ── CONTAINER ── */
 .wrap{width:100%;max-width:1200px;margin:0 auto;padding:0 24px}
 
 /* ── NAV OVERRIDE ── */
-.public-nav{background:rgba(3,7,18,.8)!important;backdrop-filter:blur(20px)!important;border-bottom:1px solid var(--border)!important}
-.public-nav--scrolled{background:rgba(3,7,18,.95)!important}
+.public-nav{background:rgba(3,7,18,.8)!important;backdrop-filter:blur(20px)!important;border-bottom:1px solid var(--border)!important;transition:border-color .4s var(--ease)!important}
+.public-nav--scrolled{background:rgba(3,7,18,.95)!important;border-bottom-color:transparent!important;box-shadow:0 1px 0 0 rgba(99,102,241,.35),0 2px 20px rgba(99,102,241,.08)!important}
 
 /* ── HERO ── */
 .hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;overflow:hidden}
@@ -53,6 +60,19 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .hero-score-badge{position:absolute;top:-12px;right:-12px;background:linear-gradient(135deg,var(--primary),var(--accent2));color:#fff;padding:12px 20px;border-radius:var(--r12);box-shadow:0 8px 24px rgba(99,102,241,.4);animation:scoreFloat 3s ease-in-out infinite}
 .hero-score-num{font-size:1.8rem;font-weight:900;line-height:1}
 .hero-score-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;opacity:.9}
+
+/* ── BEFORE/AFTER FLIP CARD ── */
+.flip-card{perspective:1200px;width:100%;cursor:pointer}
+.flip-card-inner{position:relative;width:100%;transition:transform .7s cubic-bezier(.4,0,.2,1);transform-style:preserve-3d}
+.flip-card.flipped .flip-card-inner{transform:rotateY(180deg)}
+.flip-card-front,.flip-card-back{backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:var(--r16);overflow:hidden}
+.flip-card-back{position:absolute;inset:0;transform:rotateY(180deg)}
+.flip-toggle{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px;font-size:.78rem;color:var(--text3);cursor:pointer;user-select:none;transition:color .2s}
+.flip-toggle:hover{color:var(--primary-light)}
+.flip-toggle i{font-size:.9rem}
+.flip-label{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:var(--rfull);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.flip-label-before{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
+.flip-label-after{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);padding:6px 16px;border-radius:var(--rfull);font-size:.8rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:28px;animation:fadeUp .6s var(--ease) both}
 .hero-badge .dot{width:6px;height:6px;background:var(--primary-light);border-radius:50%;animation:pulse 2s infinite}
 .hero-title{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:900;line-height:1.08;letter-spacing:-.03em;margin-bottom:24px;animation:fadeUp .6s .1s var(--ease) both}
@@ -93,10 +113,15 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 /* ── FEATURES BENTO ── */
 .bento{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;margin-top:64px}
-.bento-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:32px;transition:all .3s var(--ease);position:relative;overflow:hidden}
-.bento-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.04),transparent);opacity:0;transition:opacity .3s}
-.bento-card:hover{border-color:rgba(99,102,241,.4);transform:translateY(-3px);box-shadow:0 20px 60px rgba(0,0,0,.4),0 0 0 1px rgba(99,102,241,.15)}
+.bento-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:32px;transition:all .35s var(--ease);position:relative;overflow:hidden}
+/* animated gradient border on hover via pseudo-element */
+.bento-card::after{content:'';position:absolute;inset:-1px;border-radius:inherit;background:linear-gradient(135deg,var(--primary),var(--accent),var(--accent2),var(--primary));opacity:0;transition:opacity .35s var(--ease);z-index:-1;background-size:300% 300%;animation:gradBorder 4s linear infinite paused}
+.bento-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.06),transparent);opacity:0;transition:opacity .35s;z-index:0}
+.bento-card:hover{transform:translateY(-4px);box-shadow:0 24px 64px rgba(0,0,0,.5),0 0 40px rgba(99,102,241,.12)}
+.bento-card:hover::after{opacity:1;animation-play-state:running}
 .bento-card:hover::before{opacity:1}
+/* keep content above pseudo-elements */
+.bento-card>*{position:relative;z-index:1}
 .bento-1{grid-column:span 7}
 .bento-2{grid-column:span 5}
 .bento-3{grid-column:span 4}
@@ -182,12 +207,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .btn-plan-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
 
 /* ── CTA FINAL ── */
-.cta-final{position:relative;overflow:hidden;border-radius:var(--r24);background:linear-gradient(135deg,rgba(99,102,241,.15) 0%,rgba(6,182,212,.1) 50%,rgba(139,92,246,.15) 100%);border:1px solid rgba(99,102,241,.25);padding:80px 48px;text-align:center;margin:100px 0}
-.cta-final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 0%,rgba(99,102,241,.2),transparent);pointer-events:none}
-.cta-final-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;letter-spacing:-.03em;margin-bottom:16px;position:relative}
-.cta-final-sub{font-size:1.05rem;color:var(--text2);max-width:500px;margin:0 auto 36px;position:relative}
-.cta-final-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
-.cta-note{font-size:.8rem;color:var(--text3);margin-top:16px;position:relative}
+.cta-final{position:relative;overflow:hidden;border-radius:var(--r24);background:linear-gradient(135deg,rgba(99,102,241,.15) 0%,rgba(6,182,212,.1) 50%,rgba(139,92,246,.15) 100%);padding:80px 48px;text-align:center;margin:100px 0}
+/* animated gradient border */
+.cta-final::after{content:'';position:absolute;inset:-2px;border-radius:calc(var(--r24) + 2px);background:linear-gradient(135deg,var(--primary),var(--accent),var(--accent2),var(--primary));background-size:300% 300%;animation:gradBorder 3s linear infinite;z-index:-1}
+.cta-final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 0%,rgba(99,102,241,.2),transparent);pointer-events:none;z-index:0}
+.cta-final-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;letter-spacing:-.03em;margin-bottom:16px;position:relative;z-index:1}
+.cta-final-sub{font-size:1.05rem;color:var(--text2);max-width:500px;margin:0 auto 36px;position:relative;z-index:1}
+.cta-final-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative;z-index:1}
+.cta-note{font-size:.8rem;color:var(--text3);margin-top:16px;position:relative;z-index:1}
+/* urgency micro-copy */
+.cta-urgency{display:flex;align-items:center;justify-content:center;gap:16px;margin-bottom:32px;flex-wrap:wrap;position:relative;z-index:1}
+.cta-urgency-item{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--text2)}
+.cta-urgency-item i{color:var(--green);font-size:.85rem}
 
 /* ── BUTTON RIPPLE ── */
 .btn-hero,.btn-plan{position:relative;overflow:hidden}
@@ -230,7 +261,23 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .ats-hero-stat-num{font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
 .ats-hero-stat-label{font-size:.9rem;color:var(--text2);margin-top:8px}
 
-/* ── TESTIMONIALS MARQUEE ── */
+/* ── ATS COMPARISON ── */
+.ats-comparison{margin-top:56px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden}
+.ats-comparison-header{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--surface2);border-bottom:1px solid var(--border)}
+.ats-comparison-header div{padding:14px 20px;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3)}
+.ats-comparison-header div:nth-child(2){color:#ef4444;text-align:center;border-left:1px solid var(--border);border-right:1px solid var(--border)}
+.ats-comparison-header div:nth-child(3){color:var(--green);text-align:center}
+.ats-comparison-row{display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid var(--border);transition:background .2s}
+.ats-comparison-row:last-child{border-bottom:none}
+.ats-comparison-row:hover{background:rgba(99,102,241,.04)}
+.ats-comparison-cell{padding:16px 20px;font-size:.88rem;display:flex;align-items:center;gap:8px}
+.ats-comparison-cell:nth-child(2){border-left:1px solid var(--border);border-right:1px solid var(--border);justify-content:center;color:#ef4444;font-weight:600}
+.ats-comparison-cell:nth-child(3){justify-content:center;color:var(--green);font-weight:600}
+.ats-comparison-cell:first-child{color:var(--text2)}
+.ats-comparison-cell .pct-bar{display:flex;align-items:center;gap:8px;width:100%;justify-content:center}
+.ats-comparison-cell .pct-bar-track{flex:1;max-width:80px;height:4px;background:var(--border2);border-radius:99px;overflow:hidden}
+.ats-comparison-cell .pct-bar-fill-bad{height:100%;border-radius:99px;background:#ef4444}
+.ats-comparison-cell .pct-bar-fill-good{height:100%;border-radius:99px;background:var(--green)}
 .marquee-section{padding:100px 0}
 .marquee-wrapper{overflow:hidden;position:relative;margin-top:64px}
 .marquee-wrapper::before,.marquee-wrapper::after{content:'';position:absolute;top:0;bottom:0;width:160px;z-index:2;pointer-events:none}
@@ -267,6 +314,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 @keyframes shimmer{0%{opacity:.4}50%{opacity:.8}100%{opacity:.4}}
 @keyframes marqueeLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes marqueeRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@keyframes gradBorder{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .65s var(--ease),transform .65s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 .reveal-d1{transition-delay:.1s}
@@ -318,6 +366,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
      HERO
 ═══════════════════════════════════════════════════════ -->
 <section class="hero">
+  <canvas id="particle-canvas"></canvas>
   <div class="hero-orb hero-orb-1"></div>
   <div class="hero-orb hero-orb-2"></div>
   <div class="hero-orb hero-orb-3"></div>
@@ -369,67 +418,116 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         </div>
       </div>
 
-      <!-- RIGHT: floating resume mockup -->
+      <!-- RIGHT: before/after flip card -->
       <div class="hero-visual">
-        <div class="hero-score-badge">
-          <div class="hero-score-num" id="heroScoreNum">87</div>
-          <div class="hero-score-label">ATS Score</div>
-        </div>
-        <div class="hero-mockup">
-          <div class="hero-mockup-header">
-            <div class="hero-mockup-dot"></div>
-            <div class="hero-mockup-dot"></div>
-            <div class="hero-mockup-dot"></div>
-            <span class="hero-mockup-title">resume_v3.pdf</span>
-          </div>
-          <div class="hero-mockup-body">
-            <!-- Name block -->
-            <div style="margin-bottom:4px">
-              <div style="height:14px;width:55%;background:linear-gradient(90deg,var(--primary-light),var(--accent));border-radius:4px;opacity:.9"></div>
-              <div style="height:7px;width:40%;background:var(--border2);border-radius:4px;margin-top:6px"></div>
-            </div>
-            <!-- Section label -->
-            <div style="height:6px;width:30%;background:rgba(99,102,241,.4);border-radius:4px;margin-top:8px"></div>
-            <!-- Lines -->
-            <div class="hero-mockup-line w90"></div>
-            <div class="hero-mockup-line w80"></div>
-            <div class="hero-mockup-line w70"></div>
-            <!-- Section label -->
-            <div style="height:6px;width:25%;background:rgba(6,182,212,.4);border-radius:4px;margin-top:8px"></div>
-            <div class="hero-mockup-line w80"></div>
-            <div class="hero-mockup-line w60"></div>
-            <div class="hero-mockup-line w90"></div>
-            <!-- Skills chips -->
-            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-              <span style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">Python</span>
-              <span style="background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--accent);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">React</span>
-              <span style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:var(--accent2);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">AWS</span>
-              <span style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">Docker</span>
-            </div>
-            <!-- Score bars mini -->
-            <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Keywords</div>
-                <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:82%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:99px"></div></div>
-                <div style="font-size:.65rem;color:var(--text);font-weight:700;width:28px;text-align:right">82%</div>
+        <div class="flip-card" id="heroFlipCard" title="Click to flip">
+          <div class="flip-card-inner">
+
+            <!-- FRONT: Before (unoptimized) -->
+            <div class="flip-card-front hero-mockup">
+              <div class="hero-mockup-header">
+                <div class="hero-mockup-dot" style="background:#ef4444"></div>
+                <div class="hero-mockup-dot" style="background:#f59e0b"></div>
+                <div class="hero-mockup-dot" style="background:#10b981"></div>
+                <span class="hero-mockup-title">resume_v1.pdf</span>
               </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Impact</div>
-                <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:90%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px"></div></div>
-                <div style="font-size:.65rem;color:var(--text);font-weight:700;width:28px;text-align:right">90%</div>
-              </div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Action Verbs</div>
-                <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:75%;background:linear-gradient(90deg,var(--accent2),var(--primary));border-radius:99px"></div></div>
-                <div style="font-size:.65rem;color:var(--text);font-weight:700;width:28px;text-align:right">75%</div>
+              <div class="hero-mockup-body">
+                <div class="flip-label flip-label-before"><i class="bi bi-x-circle-fill"></i> Before NextGenCV</div>
+                <!-- Score badge: bad -->
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:var(--r8);padding:10px 14px;margin-bottom:4px">
+                  <div style="font-size:1.6rem;font-weight:900;color:#ef4444;line-height:1">43</div>
+                  <div>
+                    <div style="font-size:.7rem;font-weight:700;color:#ef4444">ATS Score</div>
+                    <div style="font-size:.65rem;color:var(--text3)">Likely rejected</div>
+                  </div>
+                </div>
+                <div style="height:6px;width:30%;background:rgba(99,102,241,.4);border-radius:4px;margin-top:8px"></div>
+                <div class="hero-mockup-line w90" style="opacity:.5"></div>
+                <div class="hero-mockup-line w70" style="opacity:.5"></div>
+                <div style="height:6px;width:25%;background:rgba(6,182,212,.4);border-radius:4px;margin-top:8px"></div>
+                <div class="hero-mockup-line w60" style="opacity:.5"></div>
+                <div class="hero-mockup-line w80" style="opacity:.5"></div>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Keywords</div>
+                    <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:32%;background:#ef4444;border-radius:99px"></div></div>
+                    <div style="font-size:.65rem;color:#ef4444;font-weight:700;width:28px;text-align:right">32%</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Impact</div>
+                    <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:45%;background:#f59e0b;border-radius:99px"></div></div>
+                    <div style="font-size:.65rem;color:#f59e0b;font-weight:700;width:28px;text-align:right">45%</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Action Verbs</div>
+                    <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:28%;background:#ef4444;border-radius:99px"></div></div>
+                    <div style="font-size:.65rem;color:#ef4444;font-weight:700;width:28px;text-align:right">28%</div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+
+            <!-- BACK: After (optimized) -->
+            <div class="flip-card-back hero-mockup" style="background:var(--surface);border:1px solid rgba(16,185,129,.3);box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(16,185,129,.15)">
+              <div class="hero-mockup-header">
+                <div class="hero-mockup-dot" style="background:#ef4444"></div>
+                <div class="hero-mockup-dot" style="background:#f59e0b"></div>
+                <div class="hero-mockup-dot" style="background:#10b981"></div>
+                <span class="hero-mockup-title">resume_v3_optimized.pdf</span>
+              </div>
+              <div class="hero-mockup-body">
+                <div class="flip-label flip-label-after"><i class="bi bi-check-circle-fill"></i> After NextGenCV</div>
+                <!-- Score badge: good -->
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:var(--r8);padding:10px 14px;margin-bottom:4px">
+                  <div style="font-size:1.6rem;font-weight:900;color:var(--green);line-height:1">87</div>
+                  <div>
+                    <div style="font-size:.7rem;font-weight:700;color:var(--green)">ATS Score</div>
+                    <div style="font-size:.65rem;color:var(--text3)">Top 5% of applicants</div>
+                  </div>
+                </div>
+                <div style="height:6px;width:30%;background:rgba(99,102,241,.4);border-radius:4px;margin-top:8px"></div>
+                <div class="hero-mockup-line w90"></div>
+                <div class="hero-mockup-line w80"></div>
+                <div style="height:6px;width:25%;background:rgba(6,182,212,.4);border-radius:4px;margin-top:8px"></div>
+                <div class="hero-mockup-line w80"></div>
+                <div class="hero-mockup-line w90"></div>
+                <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:8px">
+                  <span style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);padding:2px 8px;border-radius:99px;font-size:.6rem;font-weight:600">Python</span>
+                  <span style="background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--accent);padding:2px 8px;border-radius:99px;font-size:.6rem;font-weight:600">React</span>
+                  <span style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green);padding:2px 8px;border-radius:99px;font-size:.6rem;font-weight:600">AWS</span>
+                </div>
+                <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Keywords</div>
+                    <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:82%;background:linear-gradient(90deg,var(--green),var(--accent));border-radius:99px"></div></div>
+                    <div style="font-size:.65rem;color:var(--green);font-weight:700;width:28px;text-align:right">82%</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Impact</div>
+                    <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:90%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px"></div></div>
+                    <div style="font-size:.65rem;color:var(--green);font-weight:700;width:28px;text-align:right">90%</div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Action Verbs</div>
+                    <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:75%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:99px"></div></div>
+                    <div style="font-size:.65rem;color:var(--green);font-weight:700;width:28px;text-align:right">75%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /flip-card-inner -->
+        </div><!-- /flip-card -->
+        <div class="flip-toggle" id="flipToggle">
+          <i class="bi bi-arrow-repeat"></i>
+          <span id="flipToggleText">Click to see after optimization</span>
         </div>
       </div>
     </div>
   </div>
 </section>
+
+<hr class="sep">
 
 <!-- ═══════════════════════════════════════════════════════
      TRUSTED BY
@@ -468,6 +566,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
     </div>
   </div>
 </div>
+
+<hr class="sep-glow">
 
 <!-- ═══════════════════════════════════════════════════════
      FEATURES BENTO
@@ -649,9 +749,44 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="ats-hero-stat-num">94%</div>
       <div class="ats-hero-stat-label">average ATS pass rate across all platforms — vs. 43% industry average for unoptimized resumes</div>
     </div>
+
+    <!-- Comparison table -->
+    <div class="ats-comparison reveal" style="margin-top:48px">
+      <div class="ats-comparison-header">
+        <div>Feature / Metric</div>
+        <div><i class="bi bi-x-circle-fill"></i> Without NextGenCV</div>
+        <div><i class="bi bi-check-circle-fill"></i> With NextGenCV</div>
+      </div>
+      <div class="ats-comparison-row">
+        <div class="ats-comparison-cell"><i class="bi bi-bullseye" style="color:var(--text3)"></i> Average ATS pass rate</div>
+        <div class="ats-comparison-cell"><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill-bad" style="width:43%"></div></div>43%</div></div>
+        <div class="ats-comparison-cell"><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill-good" style="width:94%"></div></div>94%</div></div>
+      </div>
+      <div class="ats-comparison-row">
+        <div class="ats-comparison-cell"><i class="bi bi-envelope-open" style="color:var(--text3)"></i> Interview callback rate</div>
+        <div class="ats-comparison-cell"><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill-bad" style="width:8%"></div></div>8%</div></div>
+        <div class="ats-comparison-cell"><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill-good" style="width:26%"></div></div>26%</div></div>
+      </div>
+      <div class="ats-comparison-row">
+        <div class="ats-comparison-cell"><i class="bi bi-clock" style="color:var(--text3)"></i> Time to first interview</div>
+        <div class="ats-comparison-cell" style="color:#ef4444">6–8 weeks</div>
+        <div class="ats-comparison-cell" style="color:var(--green)">1–2 weeks</div>
+      </div>
+      <div class="ats-comparison-row">
+        <div class="ats-comparison-cell"><i class="bi bi-search" style="color:var(--text3)"></i> Keyword match accuracy</div>
+        <div class="ats-comparison-cell"><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill-bad" style="width:35%"></div></div>35%</div></div>
+        <div class="ats-comparison-cell"><div class="pct-bar"><div class="pct-bar-track"><div class="pct-bar-fill-good" style="width:89%"></div></div>89%</div></div>
+      </div>
+      <div class="ats-comparison-row">
+        <div class="ats-comparison-cell"><i class="bi bi-lightning" style="color:var(--text3)"></i> Resume tailoring time</div>
+        <div class="ats-comparison-cell" style="color:#ef4444">2–4 hours</div>
+        <div class="ats-comparison-cell" style="color:var(--green)">&lt; 15 minutes</div>
+      </div>
+    </div>
   </div>
 </section>
 
+<hr class="sep">
 
 <!-- ═══════════════════════════════════════════════════════
      HOW IT WORKS
@@ -732,6 +867,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- ═══════════════════════════════════════════════════════
      TESTIMONIALS — MARQUEE
 ═══════════════════════════════════════════════════════ -->
+<hr class="sep-glow">
 <section class="marquee-section">
   <div class="wrap">
     <div class="text-center reveal">
@@ -849,6 +985,11 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <span style="background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">optimized resume away</span>
     </h2>
     <p class="cta-final-sub">Join 10,000+ professionals who use NextGenCV to land interviews at top companies. Start free — no credit card needed.</p>
+    <div class="cta-urgency">
+      <span class="cta-urgency-item"><i class="bi bi-check-circle-fill"></i> No credit card required</span>
+      <span class="cta-urgency-item"><i class="bi bi-check-circle-fill"></i> All features unlocked instantly</span>
+      <span class="cta-urgency-item"><i class="bi bi-check-circle-fill"></i> Cancel anytime (it's free)</span>
+    </div>
     <div class="cta-final-actions">
       <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">
         <i class="bi bi-lightning-charge-fill"></i> Build My Resume Free
@@ -870,97 +1011,135 @@ const cursorGlow = document.createElement('div');
 cursorGlow.className = 'cursor-glow';
 document.body.appendChild(cursorGlow);
 let glowX = 0, glowY = 0;
-document.addEventListener('mousemove', (e) => {
-  glowX = e.clientX;
-  glowY = e.clientY;
-});
-function animateGlow() {
-  cursorGlow.style.left = glowX + 'px';
-  cursorGlow.style.top = glowY + 'px';
-  requestAnimationFrame(animateGlow);
-}
-animateGlow();
+document.addEventListener('mousemove', (e) => { glowX = e.clientX; glowY = e.clientY; });
+(function animateGlow() { cursorGlow.style.left = glowX + 'px'; cursorGlow.style.top = glowY + 'px'; requestAnimationFrame(animateGlow); })();
+
+// ── PARTICLE CANVAS ──
+(function() {
+  const canvas = document.getElementById('particle-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['rgba(99,102,241,', 'rgba(6,182,212,', 'rgba(139,92,246,'];
+  const COUNT = 80;
+
+  for (let i = 0; i < COUNT; i++) {
+    particles.push({
+      x: Math.random() * 1920,
+      y: Math.random() * 900,
+      r: Math.random() * 1.5 + 0.4,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: Math.random() * 0.5 + 0.2
+    });
+  }
+
+  function drawLine(a, b) {
+    const dx = a.x - b.x, dy = a.y - b.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > 120) return;
+    ctx.beginPath();
+    ctx.strokeStyle = `rgba(99,102,241,${0.12 * (1 - dist / 120)})`;
+    ctx.lineWidth = 0.5;
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+
+  function tick() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+    });
+    for (let i = 0; i < particles.length; i++)
+      for (let j = i + 1; j < particles.length; j++)
+        drawLine(particles[i], particles[j]);
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
 
 // ── SCROLL REVEAL ──
 const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in') });
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── NAV GRADIENT BORDER ON SCROLL ──
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('.public-nav');
+  if (!nav) return;
+  nav.classList.toggle('public-nav--scrolled', window.scrollY > 40);
+}, { passive: true });
 
 // ── TYPEWRITER EFFECT ──
 const typewriterEl = document.getElementById('typewriter');
 if (typewriterEl) {
-  const phrases = [
-    'Actually Get You Hired',
-    'Beat Every ATS',
-    'Land More Interviews',
-    'Stand Out From the Crowd'
-  ];
-  let phraseIndex = 0;
-  let charIndex = 0;
-  let isDeleting = false;
-  
-  function typeWriter() {
-    const currentPhrase = phrases[phraseIndex];
-    
-    if (isDeleting) {
-      typewriterEl.textContent = currentPhrase.substring(0, charIndex - 1);
-      charIndex--;
-    } else {
-      typewriterEl.textContent = currentPhrase.substring(0, charIndex + 1);
-      charIndex++;
-    }
-    
-    if (!isDeleting && charIndex === currentPhrase.length) {
-      setTimeout(() => { isDeleting = true; }, 2000);
-    } else if (isDeleting && charIndex === 0) {
-      isDeleting = false;
-      phraseIndex = (phraseIndex + 1) % phrases.length;
-    }
-    
-    const speed = isDeleting ? 50 : 100;
-    setTimeout(typeWriter, speed);
+  const phrases = ['Actually Get You Hired', 'Beat Every ATS', 'Land More Interviews', 'Stand Out From the Crowd'];
+  let pi = 0, ci = 0, del = false;
+  function tw() {
+    const p = phrases[pi];
+    typewriterEl.textContent = del ? p.substring(0, ci - 1) : p.substring(0, ci + 1);
+    del ? ci-- : ci++;
+    if (!del && ci === p.length) { setTimeout(() => { del = true; }, 2000); }
+    else if (del && ci === 0) { del = false; pi = (pi + 1) % phrases.length; }
+    setTimeout(tw, del ? 50 : 100);
   }
-  
-  setTimeout(typeWriter, 1000);
+  setTimeout(tw, 1200);
 }
 
-// ── HERO SCORE BADGE ANIMATION ──
-const heroScoreNum = document.getElementById('heroScoreNum');
-if (heroScoreNum) {
-  let score = 65;
-  const targetScore = 87;
-  const interval = setInterval(() => {
-    if (score < targetScore) {
-      score++;
-      heroScoreNum.textContent = score;
-    } else {
-      clearInterval(interval);
-    }
-  }, 40);
+// ── BEFORE/AFTER FLIP CARD ──
+const flipCard = document.getElementById('heroFlipCard');
+const flipToggle = document.getElementById('flipToggle');
+const flipToggleText = document.getElementById('flipToggleText');
+if (flipCard) {
+  let flipped = false;
+  // Auto-flip once after 3s to hint at the interaction
+  setTimeout(() => {
+    flipped = true;
+    flipCard.classList.add('flipped');
+    if (flipToggleText) flipToggleText.textContent = 'Click to see before optimization';
+  }, 3000);
+
+  [flipCard, flipToggle].forEach(el => {
+    if (!el) return;
+    el.addEventListener('click', () => {
+      flipped = !flipped;
+      flipCard.classList.toggle('flipped', flipped);
+      if (flipToggleText) flipToggleText.textContent = flipped ? 'Click to see before optimization' : 'Click to see after optimization';
+    });
+  });
 }
 
 // ── LIVE COUNTER (CTA) ──
 const liveCounter = document.getElementById('liveCounter');
 if (liveCounter) {
   let count = 47;
-  setInterval(() => {
-    if (Math.random() > 0.7) {
-      count++;
-      liveCounter.textContent = count;
-    }
-  }, 8000);
+  setInterval(() => { if (Math.random() > 0.7) { count++; liveCounter.textContent = count; } }, 8000);
 }
 
 // ── ATS BAR ANIMATION ON SCROLL ──
 const atsObs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
-      const bars = e.target.querySelectorAll('.ats-bar-fill');
-      bars.forEach(bar => {
-        const width = bar.style.width;
-        bar.style.width = '0';
-        setTimeout(() => { bar.style.width = width; }, 100);
+      e.target.querySelectorAll('.ats-bar-fill').forEach(bar => {
+        const w = bar.style.width; bar.style.width = '0';
+        setTimeout(() => { bar.style.width = w; }, 100);
       });
       atsObs.unobserve(e.target);
     }
