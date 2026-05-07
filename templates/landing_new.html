@@ -37,19 +37,35 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .hero-orb-2{width:500px;height:500px;background:radial-gradient(circle,rgba(6,182,212,.2) 0%,transparent 70%);bottom:-50px;right:-50px}
 .hero-orb-3{width:400px;height:400px;background:radial-gradient(circle,rgba(139,92,246,.2) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
 .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%)}
-.hero-inner{position:relative;z-index:1;text-align:center;max-width:860px;margin:0 auto}
+.hero-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;max-width:1200px;margin:0 auto}
+.hero-content{text-align:left}
+.hero-visual{position:relative}
+.hero-mockup{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.5),0 0 0 1px rgba(99,102,241,.1);animation:float 6s ease-in-out infinite}
+.hero-mockup-header{display:flex;align-items:center;gap:8px;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.hero-mockup-dot{width:8px;height:8px;border-radius:50%;background:var(--border2)}
+.hero-mockup-title{font-size:.75rem;color:var(--text3);margin-left:auto}
+.hero-mockup-body{display:flex;flex-direction:column;gap:12px}
+.hero-mockup-line{height:8px;background:var(--border2);border-radius:4px;animation:shimmer 2s infinite}
+.hero-mockup-line.w80{width:80%}
+.hero-mockup-line.w60{width:60%}
+.hero-mockup-line.w90{width:90%}
+.hero-mockup-line.w70{width:70%}
+.hero-score-badge{position:absolute;top:-12px;right:-12px;background:linear-gradient(135deg,var(--primary),var(--accent2));color:#fff;padding:12px 20px;border-radius:var(--r12);box-shadow:0 8px 24px rgba(99,102,241,.4);animation:scoreFloat 3s ease-in-out infinite}
+.hero-score-num{font-size:1.8rem;font-weight:900;line-height:1}
+.hero-score-label{font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;opacity:.9}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);padding:6px 16px;border-radius:var(--rfull);font-size:.8rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:28px;animation:fadeUp .6s var(--ease) both}
 .hero-badge .dot{width:6px;height:6px;background:var(--primary-light);border-radius:50%;animation:pulse 2s infinite}
 .hero-title{font-size:clamp(2.4rem,6vw,4.2rem);font-weight:900;line-height:1.08;letter-spacing:-.03em;margin-bottom:24px;animation:fadeUp .6s .1s var(--ease) both}
 .hero-title .grad{background:linear-gradient(135deg,#fff 0%,var(--primary-light) 40%,var(--accent) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.hero-sub{font-size:1.15rem;color:var(--text2);max-width:580px;margin:0 auto 40px;line-height:1.75;animation:fadeUp .6s .2s var(--ease) both}
-.hero-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;animation:fadeUp .6s .3s var(--ease) both}
+.hero-title .typewriter{display:inline-block;min-width:280px;text-align:left}
+.hero-sub{font-size:1.15rem;color:var(--text2);max-width:580px;margin:0 0 40px;line-height:1.75;animation:fadeUp .6s .2s var(--ease) both}
+.hero-actions{display:flex;gap:12px;justify-content:flex-start;flex-wrap:wrap;animation:fadeUp .6s .3s var(--ease) both}
 .btn-hero{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:var(--r8);font-weight:700;font-size:1rem;transition:all .2s var(--ease);cursor:pointer;border:none}
 .btn-hero-primary{background:linear-gradient(135deg,var(--primary),var(--accent2));color:#fff;box-shadow:0 0 0 0 var(--primary-glow)}
 .btn-hero-primary:hover{transform:translateY(-2px);box-shadow:0 8px 32px var(--primary-glow),0 0 0 1px rgba(99,102,241,.4)}
 .btn-hero-ghost{background:rgba(255,255,255,.05);color:var(--text);border:1px solid var(--border2)}
 .btn-hero-ghost:hover{background:rgba(255,255,255,.09);border-color:var(--border2);transform:translateY(-1px)}
-.hero-stats{display:flex;gap:40px;justify-content:center;margin-top:56px;animation:fadeUp .6s .4s var(--ease) both;flex-wrap:wrap}
+.hero-stats{display:flex;gap:40px;justify-content:flex-start;margin-top:56px;animation:fadeUp .6s .4s var(--ease) both;flex-wrap:wrap}
 .hero-stat{text-align:center}
 .hero-stat-num{font-size:1.8rem;font-weight:800;background:linear-gradient(135deg,var(--text),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .hero-stat-label{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:2px}
@@ -173,23 +189,112 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .cta-final-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative}
 .cta-note{font-size:.8rem;color:var(--text3);margin-top:16px;position:relative}
 
+/* ── BUTTON RIPPLE ── */
+.btn-hero,.btn-plan{position:relative;overflow:hidden}
+.btn-hero::after,.btn-plan::after{content:'';position:absolute;inset:0;background:radial-gradient(circle,rgba(255,255,255,.25) 0%,transparent 70%);opacity:0;transform:scale(0);transition:transform .5s var(--ease),opacity .5s var(--ease);border-radius:inherit}
+.btn-hero:active::after,.btn-plan:active::after{transform:scale(2.5);opacity:1;transition:none}
+
+/* ── CURSOR GLOW ── */
+.cursor-glow{position:fixed;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(99,102,241,.08) 0%,transparent 70%);pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:opacity .3s;mix-blend-mode:screen}
+
+/* ── ATS SIMULATOR ── */
+.ats-section{padding:100px 0;position:relative}
+.ats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:64px}
+.ats-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:28px 24px;transition:all .3s var(--ease);position:relative;overflow:hidden;cursor:default}
+.ats-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .3s;border-radius:inherit}
+.ats-card:hover{transform:translateY(-4px);box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.ats-card:hover::before{opacity:1}
+.ats-taleo::before{background:linear-gradient(135deg,rgba(0,120,212,.08),transparent)}
+.ats-taleo:hover{border-color:rgba(0,120,212,.4)}
+.ats-workday::before{background:linear-gradient(135deg,rgba(255,102,0,.08),transparent)}
+.ats-workday:hover{border-color:rgba(255,102,0,.4)}
+.ats-greenhouse::before{background:linear-gradient(135deg,rgba(69,179,157,.08),transparent)}
+.ats-greenhouse:hover{border-color:rgba(69,179,157,.4)}
+.ats-lever::before{background:linear-gradient(135deg,rgba(99,102,241,.08),transparent)}
+.ats-lever:hover{border-color:rgba(99,102,241,.4)}
+.ats-icims::before{background:linear-gradient(135deg,rgba(6,182,212,.08),transparent)}
+.ats-icims:hover{border-color:rgba(6,182,212,.4)}
+.ats-bamboo::before{background:linear-gradient(135deg,rgba(16,185,129,.08),transparent)}
+.ats-bamboo:hover{border-color:rgba(16,185,129,.4)}
+.ats-logo{font-size:1.1rem;font-weight:800;margin-bottom:8px;letter-spacing:-.01em}
+.ats-usage{font-size:.75rem;color:var(--text3);margin-bottom:16px}
+.ats-pass-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ats-pass-label{font-size:.8rem;color:var(--text2)}
+.ats-pass-pct{font-size:.85rem;font-weight:700;color:var(--green)}
+.ats-bar-track{height:5px;background:var(--border2);border-radius:99px;overflow:hidden}
+.ats-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--accent));transition:width 1.2s var(--ease)}
+.ats-badge{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:var(--rfull);margin-top:12px}
+.ats-badge-pass{background:rgba(16,185,129,.12);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.ats-badge-warn{background:rgba(245,158,11,.12);color:#f59e0b;border:1px solid rgba(245,158,11,.25)}
+.ats-hero-stat{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(6,182,212,.08));border:1px solid rgba(99,102,241,.2);border-radius:var(--r16);padding:32px;text-align:center;margin-top:40px}
+.ats-hero-stat-num{font-size:3rem;font-weight:900;background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.ats-hero-stat-label{font-size:.9rem;color:var(--text2);margin-top:8px}
+
+/* ── TESTIMONIALS MARQUEE ── */
+.marquee-section{padding:100px 0}
+.marquee-wrapper{overflow:hidden;position:relative;margin-top:64px}
+.marquee-wrapper::before,.marquee-wrapper::after{content:'';position:absolute;top:0;bottom:0;width:160px;z-index:2;pointer-events:none}
+.marquee-wrapper::before{left:0;background:linear-gradient(90deg,var(--bg),transparent)}
+.marquee-wrapper::after{right:0;background:linear-gradient(-90deg,var(--bg),transparent)}
+.marquee-row{display:flex;gap:20px;margin-bottom:20px}
+.marquee-track{display:flex;gap:20px;animation:marqueeLeft 40s linear infinite;width:max-content}
+.marquee-track-rev{display:flex;gap:20px;animation:marqueeRight 40s linear infinite;width:max-content}
+.marquee-track:hover,.marquee-track-rev:hover{animation-play-state:paused}
+.mcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;width:320px;flex-shrink:0;transition:border-color .3s}
+.mcard:hover{border-color:rgba(99,102,241,.3)}
+.mcard-stars{color:#f59e0b;font-size:.8rem;margin-bottom:10px}
+.mcard-text{font-size:.85rem;color:var(--text2);line-height:1.65;margin-bottom:16px}
+.mcard-author{display:flex;align-items:center;gap:10px}
+.mcard-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0}
+.mcard-name{font-size:.82rem;font-weight:700}
+.mcard-role{font-size:.72rem;color:var(--text3)}
+
+/* ── CTA URGENCY ── */
+.cta-avatars{display:flex;align-items:center;justify-content:center;gap:0;margin-bottom:20px}
+.cta-avatar{width:40px;height:40px;border-radius:50%;border:2px solid var(--bg);margin-left:-10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0}
+.cta-avatar:first-child{margin-left:0}
+.cta-live-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:var(--green);padding:6px 14px;border-radius:var(--rfull);font-size:.8rem;font-weight:600;margin-bottom:24px}
+.cta-live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 1.5s infinite}
+
 /* ── ANIMATIONS ── */
 @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @keyframes ringFill{from{stroke-dashoffset:502}to{stroke-dashoffset:100}}
 @keyframes barFill{from{width:0}to{}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes scoreFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(-3deg)}}
+@keyframes shimmer{0%{opacity:.4}50%{opacity:.8}100%{opacity:.4}}
+@keyframes marqueeLeft{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes marqueeRight{from{transform:translateX(-50%)}to{transform:translateX(0)}}
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .65s var(--ease),transform .65s var(--ease)}
 .reveal.in{opacity:1;transform:none}
 .reveal-d1{transition-delay:.1s}
 .reveal-d2{transition-delay:.2s}
 .reveal-d3{transition-delay:.3s}
 
+/* ── RESPONSIVE HERO ── */
+@media(max-width:900px){
+.hero-inner{grid-template-columns:1fr;text-align:center}
+.hero-content{text-align:center}
+.hero-sub{margin:0 auto 40px}
+.hero-actions{justify-content:center}
+.hero-stats{justify-content:center}
+.hero-visual{display:none}
+}
+@media(max-width:768px){
+.ats-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+.ats-grid{grid-template-columns:1fr}
+}
+
 /* ── RESPONSIVE ── */
 @media(max-width:1024px){
 .bento-1,.bento-2{grid-column:span 12}
 .bento-3,.bento-4,.bento-5{grid-column:span 4}
 .score-demo{grid-template-columns:1fr;text-align:center}
+.ats-grid{grid-template-columns:repeat(3,1fr)}
 }
 @media(max-width:768px){
 .steps{grid-template-columns:1fr;gap:16px}
@@ -200,6 +305,10 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .hero-stats{gap:24px}
 .hero-divider{display:none}
 .cta-final{padding:48px 24px}
+.ats-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+.ats-grid{grid-template-columns:1fr}
 }
 </style>
 {% endblock %}
@@ -215,45 +324,107 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   <div class="hero-grid"></div>
   <div class="wrap">
     <div class="hero-inner">
-      <div class="hero-badge">
-        <span class="dot"></span>
-        Now with AI-powered optimization
+      <!-- LEFT: copy -->
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="dot"></span>
+          Now with AI-powered optimization
+        </div>
+        <h1 class="hero-title">
+          Build Resumes That<br>
+          <span class="grad"><span class="typewriter" id="typewriter">Actually Get You Hired</span></span>
+        </h1>
+        <p class="hero-sub">
+          The only ATS resume builder with real-time keyword scoring, AI rewriting,
+          and version control. Used by 10,000+ engineers at top tech companies.
+        </p>
+        <div class="hero-actions">
+          <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">
+            <i class="bi bi-lightning-charge-fill"></i> Start for Free
+          </a>
+          <a href="#how-it-works" class="btn-hero btn-hero-ghost">
+            <i class="bi bi-play-circle"></i> See How It Works
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-num" data-count="10000" data-suffix="K+">10K+</div>
+            <div class="hero-stat-label">Professionals</div>
+          </div>
+          <div class="hero-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-num" data-count="3.2" data-suffix="x">3.2x</div>
+            <div class="hero-stat-label">More Interviews</div>
+          </div>
+          <div class="hero-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-num" data-count="94" data-suffix="%">94%</div>
+            <div class="hero-stat-label">ATS Pass Rate</div>
+          </div>
+          <div class="hero-divider"></div>
+          <div class="hero-stat">
+            <div class="hero-stat-num">4.9★</div>
+            <div class="hero-stat-label">User Rating</div>
+          </div>
+        </div>
       </div>
-      <h1 class="hero-title">
-        Build Resumes That<br>
-        <span class="grad">Actually Get You Hired</span>
-      </h1>
-      <p class="hero-sub">
-        The only ATS resume builder with real-time keyword scoring, AI rewriting,
-        and version control. Used by 10,000+ engineers at top tech companies.
-      </p>
-      <div class="hero-actions">
-        <a href="{% url 'register' %}" class="btn-hero btn-hero-primary">
-          <i class="bi bi-lightning-charge-fill"></i> Start for Free
-        </a>
-        <a href="#how-it-works" class="btn-hero btn-hero-ghost">
-          <i class="bi bi-play-circle"></i> See How It Works
-        </a>
-      </div>
-      <div class="hero-stats">
-        <div class="hero-stat">
-          <div class="hero-stat-num">10K+</div>
-          <div class="hero-stat-label">Professionals</div>
+
+      <!-- RIGHT: floating resume mockup -->
+      <div class="hero-visual">
+        <div class="hero-score-badge">
+          <div class="hero-score-num" id="heroScoreNum">87</div>
+          <div class="hero-score-label">ATS Score</div>
         </div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat">
-          <div class="hero-stat-num">3.2x</div>
-          <div class="hero-stat-label">More Interviews</div>
-        </div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat">
-          <div class="hero-stat-num">94%</div>
-          <div class="hero-stat-label">ATS Pass Rate</div>
-        </div>
-        <div class="hero-divider"></div>
-        <div class="hero-stat">
-          <div class="hero-stat-num">4.9★</div>
-          <div class="hero-stat-label">User Rating</div>
+        <div class="hero-mockup">
+          <div class="hero-mockup-header">
+            <div class="hero-mockup-dot"></div>
+            <div class="hero-mockup-dot"></div>
+            <div class="hero-mockup-dot"></div>
+            <span class="hero-mockup-title">resume_v3.pdf</span>
+          </div>
+          <div class="hero-mockup-body">
+            <!-- Name block -->
+            <div style="margin-bottom:4px">
+              <div style="height:14px;width:55%;background:linear-gradient(90deg,var(--primary-light),var(--accent));border-radius:4px;opacity:.9"></div>
+              <div style="height:7px;width:40%;background:var(--border2);border-radius:4px;margin-top:6px"></div>
+            </div>
+            <!-- Section label -->
+            <div style="height:6px;width:30%;background:rgba(99,102,241,.4);border-radius:4px;margin-top:8px"></div>
+            <!-- Lines -->
+            <div class="hero-mockup-line w90"></div>
+            <div class="hero-mockup-line w80"></div>
+            <div class="hero-mockup-line w70"></div>
+            <!-- Section label -->
+            <div style="height:6px;width:25%;background:rgba(6,182,212,.4);border-radius:4px;margin-top:8px"></div>
+            <div class="hero-mockup-line w80"></div>
+            <div class="hero-mockup-line w60"></div>
+            <div class="hero-mockup-line w90"></div>
+            <!-- Skills chips -->
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+              <span style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">Python</span>
+              <span style="background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--accent);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">React</span>
+              <span style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3);color:var(--accent2);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">AWS</span>
+              <span style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green);padding:3px 10px;border-radius:99px;font-size:.65rem;font-weight:600">Docker</span>
+            </div>
+            <!-- Score bars mini -->
+            <div style="margin-top:16px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Keywords</div>
+                <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:82%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:99px"></div></div>
+                <div style="font-size:.65rem;color:var(--text);font-weight:700;width:28px;text-align:right">82%</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Impact</div>
+                <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:90%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px"></div></div>
+                <div style="font-size:.65rem;color:var(--text);font-weight:700;width:28px;text-align:right">90%</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div style="font-size:.65rem;color:var(--text3);width:80px;flex-shrink:0">Action Verbs</div>
+                <div style="flex:1;height:4px;background:var(--border2);border-radius:99px;overflow:hidden"><div style="height:100%;width:75%;background:linear-gradient(90deg,var(--accent2),var(--primary));border-radius:99px"></div></div>
+                <div style="font-size:.65rem;color:var(--text);font-weight:700;width:28px;text-align:right">75%</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -357,6 +528,126 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         <h3>Pro Templates</h3>
         <p>Multiple ATS-safe templates with custom color schemes and fonts. Export to PDF, DOCX, or plain text.</p>
       </div>
+
+      <!-- 6th card: Job Tracker + A/B Testing -->
+      <div class="bento-card reveal reveal-d1" style="grid-column:span 6">
+        <div class="bento-icon" style="background:rgba(239,68,68,.12);color:#ef4444"><i class="bi bi-kanban"></i></div>
+        <h3>Job Tracker &amp; A/B Testing</h3>
+        <p>Track every application in a Kanban board and run A/B tests across resume versions. See which variant gets more callbacks with real data — not guesswork.</p>
+        <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+          <span style="background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.25);padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:600">Applied</span>
+          <span style="background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.25);padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:600">Interview</span>
+          <span style="background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25);padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:600">Offer</span>
+          <span style="background:rgba(99,102,241,.1);color:var(--primary-light);border:1px solid rgba(99,102,241,.25);padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:600">A/B Test</span>
+        </div>
+      </div>
+
+      <div class="bento-card reveal reveal-d2" style="grid-column:span 6">
+        <div class="bento-icon bento-icon-cyan"><i class="bi bi-bar-chart-steps"></i></div>
+        <h3>Analytics Dashboard</h3>
+        <p>Track score trends over time, see which job descriptions you match best, and get actionable insights on what's holding your resume back.</p>
+        <div style="margin-top:16px;display:flex;gap:4px;align-items:flex-end;height:48px">
+          <div style="flex:1;background:rgba(99,102,241,.3);border-radius:3px 3px 0 0;height:40%"></div>
+          <div style="flex:1;background:rgba(99,102,241,.4);border-radius:3px 3px 0 0;height:55%"></div>
+          <div style="flex:1;background:rgba(99,102,241,.5);border-radius:3px 3px 0 0;height:45%"></div>
+          <div style="flex:1;background:rgba(99,102,241,.6);border-radius:3px 3px 0 0;height:70%"></div>
+          <div style="flex:1;background:rgba(99,102,241,.7);border-radius:3px 3px 0 0;height:60%"></div>
+          <div style="flex:1;background:linear-gradient(180deg,var(--primary-light),var(--primary));border-radius:3px 3px 0 0;height:90%"></div>
+          <div style="flex:1;background:linear-gradient(180deg,var(--accent),var(--primary));border-radius:3px 3px 0 0;height:100%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     ATS SIMULATOR
+═══════════════════════════════════════════════════════ -->
+<section class="ats-section" id="ats-simulator" style="background:linear-gradient(180deg,rgba(13,17,23,.6) 0%,var(--bg) 100%)">
+  <div class="wrap">
+    <div class="text-center reveal">
+      <div class="section-label"><i class="bi bi-shield-check"></i> ATS Simulator</div>
+      <h2 class="section-title">Beat every ATS on the market</h2>
+      <p class="section-sub">We simulate the exact parsing logic of the top 6 ATS platforms used by 90% of Fortune 500 companies — so your resume passes before you even apply.</p>
+    </div>
+
+    <div class="ats-grid reveal">
+      <!-- Taleo -->
+      <div class="ats-card ats-taleo">
+        <div class="ats-logo" style="color:#0078d4">Taleo</div>
+        <div class="ats-usage">Used by 40% of Fortune 500</div>
+        <div class="ats-pass-row">
+          <span class="ats-pass-label">Pass rate with NextGenCV</span>
+          <span class="ats-pass-pct">96%</span>
+        </div>
+        <div class="ats-bar-track"><div class="ats-bar-fill" style="width:96%"></div></div>
+        <span class="ats-badge ats-badge-pass"><i class="bi bi-check-circle-fill"></i> Fully Supported</span>
+      </div>
+
+      <!-- Workday -->
+      <div class="ats-card ats-workday">
+        <div class="ats-logo" style="color:#ff6600">Workday</div>
+        <div class="ats-usage">Used by 35% of Fortune 500</div>
+        <div class="ats-pass-row">
+          <span class="ats-pass-label">Pass rate with NextGenCV</span>
+          <span class="ats-pass-pct">94%</span>
+        </div>
+        <div class="ats-bar-track"><div class="ats-bar-fill" style="width:94%"></div></div>
+        <span class="ats-badge ats-badge-pass"><i class="bi bi-check-circle-fill"></i> Fully Supported</span>
+      </div>
+
+      <!-- Greenhouse -->
+      <div class="ats-card ats-greenhouse">
+        <div class="ats-logo" style="color:#45b39d">Greenhouse</div>
+        <div class="ats-usage">Preferred by tech startups</div>
+        <div class="ats-pass-row">
+          <span class="ats-pass-label">Pass rate with NextGenCV</span>
+          <span class="ats-pass-pct">98%</span>
+        </div>
+        <div class="ats-bar-track"><div class="ats-bar-fill" style="width:98%"></div></div>
+        <span class="ats-badge ats-badge-pass"><i class="bi bi-check-circle-fill"></i> Fully Supported</span>
+      </div>
+
+      <!-- Lever -->
+      <div class="ats-card ats-lever">
+        <div class="ats-logo" style="color:var(--primary-light)">Lever</div>
+        <div class="ats-usage">Used by Shopify, Figma, Notion</div>
+        <div class="ats-pass-row">
+          <span class="ats-pass-label">Pass rate with NextGenCV</span>
+          <span class="ats-pass-pct">97%</span>
+        </div>
+        <div class="ats-bar-track"><div class="ats-bar-fill" style="width:97%"></div></div>
+        <span class="ats-badge ats-badge-pass"><i class="bi bi-check-circle-fill"></i> Fully Supported</span>
+      </div>
+
+      <!-- iCIMS -->
+      <div class="ats-card ats-icims">
+        <div class="ats-logo" style="color:var(--accent)">iCIMS</div>
+        <div class="ats-usage">Used by 4,000+ employers</div>
+        <div class="ats-pass-row">
+          <span class="ats-pass-label">Pass rate with NextGenCV</span>
+          <span class="ats-pass-pct">93%</span>
+        </div>
+        <div class="ats-bar-track"><div class="ats-bar-fill" style="width:93%"></div></div>
+        <span class="ats-badge ats-badge-pass"><i class="bi bi-check-circle-fill"></i> Fully Supported</span>
+      </div>
+
+      <!-- BambooHR -->
+      <div class="ats-card ats-bamboo">
+        <div class="ats-logo" style="color:var(--green)">BambooHR</div>
+        <div class="ats-usage">SMB & mid-market leader</div>
+        <div class="ats-pass-row">
+          <span class="ats-pass-label">Pass rate with NextGenCV</span>
+          <span class="ats-pass-pct">95%</span>
+        </div>
+        <div class="ats-bar-track"><div class="ats-bar-fill" style="width:95%"></div></div>
+        <span class="ats-badge ats-badge-pass"><i class="bi bi-check-circle-fill"></i> Fully Supported</span>
+      </div>
+    </div>
+
+    <div class="ats-hero-stat reveal">
+      <div class="ats-hero-stat-num">94%</div>
+      <div class="ats-hero-stat-label">average ATS pass rate across all platforms — vs. 43% industry average for unoptimized resumes</div>
     </div>
   </div>
 </section>
@@ -439,64 +730,53 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 </section>
 
 <!-- ═══════════════════════════════════════════════════════
-     TESTIMONIALS
+     TESTIMONIALS — MARQUEE
 ═══════════════════════════════════════════════════════ -->
-<section class="section">
+<section class="marquee-section">
   <div class="wrap">
     <div class="text-center reveal">
       <div class="section-label"><i class="bi bi-chat-quote"></i> Testimonials</div>
       <h2 class="section-title">Real people. Real results.</h2>
       <p class="section-sub">Join thousands of professionals who landed their dream jobs with NextGenCV.</p>
     </div>
+  </div>
 
-    <div class="testimonials-grid">
-      <div class="tcard reveal reveal-d1">
-        <div class="tcard-stars">★★★★★</div>
-        <p class="tcard-text">"I went from zero callbacks to 4 interviews in a week after optimizing my resume with NextGenCV. The ATS score feature is a game changer."</p>
-        <div class="tcard-author">
-          <div class="tcard-avatar av-1">AK</div>
-          <div><div class="tcard-name">Arjun Kumar</div><div class="tcard-role">Software Engineer → Google</div></div>
-        </div>
+  <div class="marquee-wrapper">
+    <!-- Row 1: left scroll -->
+    <div class="marquee-row">
+      <div class="marquee-track">
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"I went from zero callbacks to 4 interviews in a week. The ATS score feature is a game changer."</p><div class="mcard-author"><div class="mcard-avatar av-1">AK</div><div><div class="mcard-name">Arjun Kumar</div><div class="mcard-role">Software Engineer → Google</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Score jumped from 54 to 89 after one AI optimization. Got a call from Amazon the same week."</p><div class="mcard-author"><div class="mcard-avatar av-2">SL</div><div><div class="mcard-name">Sarah Lin</div><div class="mcard-role">Data Scientist → Amazon</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Version control alone is worth it. I can tailor my resume for each job and track which version performs best."</p><div class="mcard-author"><div class="mcard-avatar av-3">MO</div><div><div class="mcard-name">Marcus O'Brien</div><div class="mcard-role">DevOps Engineer → Stripe</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Uploaded my old PDF, it parsed everything perfectly. Landed a senior FAANG role in 3 weeks."</p><div class="mcard-author"><div class="mcard-avatar av-4">PR</div><div><div class="mcard-name">Priya Rao</div><div class="mcard-role">Product Manager → Meta</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The keyword injection is so natural. Recruiters actually commented on how well-written my resume was."</p><div class="mcard-author"><div class="mcard-avatar av-5">JW</div><div><div class="mcard-name">James Wu</div><div class="mcard-role">Frontend Dev → Shopify</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Analytics showed me exactly which sections were weak. Fixed them and got 3 offers in 2 months."</p><div class="mcard-author"><div class="mcard-avatar av-6">FN</div><div><div class="mcard-name">Fatima Nasser</div><div class="mcard-role">ML Engineer → Apple</div></div></div></div>
+        <!-- duplicate for seamless loop -->
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"I went from zero callbacks to 4 interviews in a week. The ATS score feature is a game changer."</p><div class="mcard-author"><div class="mcard-avatar av-1">AK</div><div><div class="mcard-name">Arjun Kumar</div><div class="mcard-role">Software Engineer → Google</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Score jumped from 54 to 89 after one AI optimization. Got a call from Amazon the same week."</p><div class="mcard-author"><div class="mcard-avatar av-2">SL</div><div><div class="mcard-name">Sarah Lin</div><div class="mcard-role">Data Scientist → Amazon</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Version control alone is worth it. I can tailor my resume for each job and track which version performs best."</p><div class="mcard-author"><div class="mcard-avatar av-3">MO</div><div><div class="mcard-name">Marcus O'Brien</div><div class="mcard-role">DevOps Engineer → Stripe</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Uploaded my old PDF, it parsed everything perfectly. Landed a senior FAANG role in 3 weeks."</p><div class="mcard-author"><div class="mcard-avatar av-4">PR</div><div><div class="mcard-name">Priya Rao</div><div class="mcard-role">Product Manager → Meta</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The keyword injection is so natural. Recruiters actually commented on how well-written my resume was."</p><div class="mcard-author"><div class="mcard-avatar av-5">JW</div><div><div class="mcard-name">James Wu</div><div class="mcard-role">Frontend Dev → Shopify</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Analytics showed me exactly which sections were weak. Fixed them and got 3 offers in 2 months."</p><div class="mcard-author"><div class="mcard-avatar av-6">FN</div><div><div class="mcard-name">Fatima Nasser</div><div class="mcard-role">ML Engineer → Apple</div></div></div></div>
       </div>
-      <div class="tcard reveal reveal-d2">
-        <div class="tcard-stars">★★★★★</div>
-        <p class="tcard-text">"The AI optimizer rewrote my bullet points and my score jumped from 54 to 89. I got a call from Amazon the same week I updated my resume."</p>
-        <div class="tcard-author">
-          <div class="tcard-avatar av-2">SL</div>
-          <div><div class="tcard-name">Sarah Lin</div><div class="tcard-role">Data Scientist → Amazon</div></div>
-        </div>
-      </div>
-      <div class="tcard reveal reveal-d3">
-        <div class="tcard-stars">★★★★★</div>
-        <p class="tcard-text">"Version control alone is worth it. I can tailor my resume for each job and track which version performs best. Absolutely brilliant product."</p>
-        <div class="tcard-author">
-          <div class="tcard-avatar av-3">MO</div>
-          <div><div class="tcard-name">Marcus O'Brien</div><div class="tcard-role">DevOps Engineer → Stripe</div></div>
-        </div>
-      </div>
-      <div class="tcard reveal reveal-d1">
-        <div class="tcard-stars">★★★★★</div>
-        <p class="tcard-text">"Uploaded my old PDF, it parsed everything perfectly, then the AI fixed my weak action verbs. Landed a senior role at a FAANG in 3 weeks."</p>
-        <div class="tcard-author">
-          <div class="tcard-avatar av-4">PR</div>
-          <div><div class="tcard-name">Priya Rao</div><div class="tcard-role">Product Manager → Meta</div></div>
-        </div>
-      </div>
-      <div class="tcard reveal reveal-d2">
-        <div class="tcard-stars">★★★★★</div>
-        <p class="tcard-text">"The keyword injection is so natural — it doesn't feel stuffed at all. Recruiters actually commented on how well-written my resume was."</p>
-        <div class="tcard-author">
-          <div class="tcard-avatar av-5">JW</div>
-          <div><div class="tcard-name">James Wu</div><div class="tcard-role">Frontend Dev → Shopify</div></div>
-        </div>
-      </div>
-      <div class="tcard reveal reveal-d3">
-        <div class="tcard-stars">★★★★★</div>
-        <p class="tcard-text">"I was skeptical but the analytics dashboard showed me exactly which sections were weak. Fixed them, applied, and got 3 offers in 2 months."</p>
-        <div class="tcard-author">
-          <div class="tcard-avatar av-6">FN</div>
-          <div><div class="tcard-name">Fatima Nasser</div><div class="tcard-role">ML Engineer → Apple</div></div>
-        </div>
+    </div>
+
+    <!-- Row 2: right scroll -->
+    <div class="marquee-row">
+      <div class="marquee-track-rev">
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The ATS simulator told me exactly which platforms my resume would fail. Fixed it in 10 minutes."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#6366f1,#06b6d4)">DK</div><div><div class="mcard-name">David Kim</div><div class="mcard-role">Backend Engineer → Netflix</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"I used to spend hours tailoring my resume. Now it takes 15 minutes with the AI optimizer."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#10b981,#6366f1)">RM</div><div><div class="mcard-name">Riya Mehta</div><div class="mcard-role">UX Designer → Figma</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The job tracker keeps me sane during my search. I can see exactly where every application stands."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">TC</div><div><div class="mcard-name">Tom Chen</div><div class="mcard-role">SRE → Cloudflare</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"A/B testing my resume versions was a revelation. Version B got 3x more responses than Version A."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">NP</div><div><div class="mcard-name">Nina Patel</div><div class="mcard-role">Data Engineer → Databricks</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Went from 0% to 94% ATS pass rate on Workday. The difference was night and day."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#ef4444,#8b5cf6)">LB</div><div><div class="mcard-name">Liam Brooks</div><div class="mcard-role">iOS Dev → Airbnb</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The cover letter generator saved me hours. Each one feels personalized, not templated."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#06b6d4,#10b981)">AJ</div><div><div class="mcard-name">Aisha Johnson</div><div class="mcard-role">PM → Notion</div></div></div></div>
+        <!-- duplicate -->
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The ATS simulator told me exactly which platforms my resume would fail. Fixed it in 10 minutes."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#6366f1,#06b6d4)">DK</div><div><div class="mcard-name">David Kim</div><div class="mcard-role">Backend Engineer → Netflix</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"I used to spend hours tailoring my resume. Now it takes 15 minutes with the AI optimizer."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#10b981,#6366f1)">RM</div><div><div class="mcard-name">Riya Mehta</div><div class="mcard-role">UX Designer → Figma</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The job tracker keeps me sane during my search. I can see exactly where every application stands."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">TC</div><div><div class="mcard-name">Tom Chen</div><div class="mcard-role">SRE → Cloudflare</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"A/B testing my resume versions was a revelation. Version B got 3x more responses than Version A."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#8b5cf6,#06b6d4)">NP</div><div><div class="mcard-name">Nina Patel</div><div class="mcard-role">Data Engineer → Databricks</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"Went from 0% to 94% ATS pass rate on Workday. The difference was night and day."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#ef4444,#8b5cf6)">LB</div><div><div class="mcard-name">Liam Brooks</div><div class="mcard-role">iOS Dev → Airbnb</div></div></div></div>
+        <div class="mcard"><div class="mcard-stars">★★★★★</div><p class="mcard-text">"The cover letter generator saved me hours. Each one feels personalized, not templated."</p><div class="mcard-author"><div class="mcard-avatar" style="background:linear-gradient(135deg,#06b6d4,#10b981)">AJ</div><div><div class="mcard-name">Aisha Johnson</div><div class="mcard-role">PM → Notion</div></div></div></div>
       </div>
     </div>
   </div>
@@ -549,6 +829,21 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 ═══════════════════════════════════════════════════════ -->
 <div class="wrap">
   <div class="cta-final reveal">
+    <!-- Floating avatars -->
+    <div class="cta-avatars">
+      <div class="cta-avatar av-1">AK</div>
+      <div class="cta-avatar av-2">SL</div>
+      <div class="cta-avatar av-3">MO</div>
+      <div class="cta-avatar av-4">PR</div>
+      <div class="cta-avatar av-5">JW</div>
+      <div class="cta-avatar av-6">FN</div>
+      <div class="cta-avatar" style="background:linear-gradient(135deg,#6366f1,#06b6d4)">DK</div>
+    </div>
+    <!-- Live counter badge -->
+    <div class="cta-live-badge">
+      <span class="cta-live-dot"></span>
+      <span id="liveCounter">47</span> people signed up today
+    </div>
     <h2 class="cta-final-title">
       Your next job is one<br>
       <span style="background:linear-gradient(135deg,var(--primary-light),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">optimized resume away</span>
@@ -570,31 +865,107 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 {% block extra_js %}
 <script>
-// Scroll reveal
+// ── CURSOR GLOW ──
+const cursorGlow = document.createElement('div');
+cursorGlow.className = 'cursor-glow';
+document.body.appendChild(cursorGlow);
+let glowX = 0, glowY = 0;
+document.addEventListener('mousemove', (e) => {
+  glowX = e.clientX;
+  glowY = e.clientY;
+});
+function animateGlow() {
+  cursorGlow.style.left = glowX + 'px';
+  cursorGlow.style.top = glowY + 'px';
+  requestAnimationFrame(animateGlow);
+}
+animateGlow();
+
+// ── SCROLL REVEAL ──
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in') });
 }, { threshold: 0.12 });
 document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
-// Animated counter
-function animateCounter(el, target, duration=1800) {
-  let start = 0, step = target / (duration / 16);
-  const tick = () => {
-    start = Math.min(start + step, target);
-    el.textContent = (target % 1 !== 0 ? start.toFixed(1) : Math.floor(start));
-    if (start < target) requestAnimationFrame(tick);
-  };
-  requestAnimationFrame(tick);
+// ── TYPEWRITER EFFECT ──
+const typewriterEl = document.getElementById('typewriter');
+if (typewriterEl) {
+  const phrases = [
+    'Actually Get You Hired',
+    'Beat Every ATS',
+    'Land More Interviews',
+    'Stand Out From the Crowd'
+  ];
+  let phraseIndex = 0;
+  let charIndex = 0;
+  let isDeleting = false;
+  
+  function typeWriter() {
+    const currentPhrase = phrases[phraseIndex];
+    
+    if (isDeleting) {
+      typewriterEl.textContent = currentPhrase.substring(0, charIndex - 1);
+      charIndex--;
+    } else {
+      typewriterEl.textContent = currentPhrase.substring(0, charIndex + 1);
+      charIndex++;
+    }
+    
+    if (!isDeleting && charIndex === currentPhrase.length) {
+      setTimeout(() => { isDeleting = true; }, 2000);
+    } else if (isDeleting && charIndex === 0) {
+      isDeleting = false;
+      phraseIndex = (phraseIndex + 1) % phrases.length;
+    }
+    
+    const speed = isDeleting ? 50 : 100;
+    setTimeout(typeWriter, speed);
+  }
+  
+  setTimeout(typeWriter, 1000);
 }
 
-// Trigger counters when hero stats are visible
-const statsObs = new IntersectionObserver((entries) => {
+// ── HERO SCORE BADGE ANIMATION ──
+const heroScoreNum = document.getElementById('heroScoreNum');
+if (heroScoreNum) {
+  let score = 65;
+  const targetScore = 87;
+  const interval = setInterval(() => {
+    if (score < targetScore) {
+      score++;
+      heroScoreNum.textContent = score;
+    } else {
+      clearInterval(interval);
+    }
+  }, 40);
+}
+
+// ── LIVE COUNTER (CTA) ──
+const liveCounter = document.getElementById('liveCounter');
+if (liveCounter) {
+  let count = 47;
+  setInterval(() => {
+    if (Math.random() > 0.7) {
+      count++;
+      liveCounter.textContent = count;
+    }
+  }, 8000);
+}
+
+// ── ATS BAR ANIMATION ON SCROLL ──
+const atsObs = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if (e.isIntersecting) {
-      statsObs.unobserve(e.target);
+      const bars = e.target.querySelectorAll('.ats-bar-fill');
+      bars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0';
+        setTimeout(() => { bar.style.width = width; }, 100);
+      });
+      atsObs.unobserve(e.target);
     }
   });
-}, { threshold: 0.5 });
-document.querySelectorAll('.hero-stat-num').forEach(el => statsObs.observe(el));
+}, { threshold: 0.3 });
+document.querySelectorAll('.ats-grid').forEach(el => atsObs.observe(el));
 </script>
 {% endblock %}
