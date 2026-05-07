@@ -377,7 +377,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <div class="step reveal reveal-d1">
         <div class="step-num">1</div>
         <h3>Create Your Account</h3>
-        <p>Sign up free in 30 seconds. No credit card required. Instant access to the full builder.</p>
+        <p>Sign up in 30 seconds. No credit card, no payment, no limits. Instant access to every feature.</p>
       </div>
       <div class="step reveal reveal-d2">
         <div class="step-num">2</div>
@@ -504,70 +504,41 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 
 <!-- ═══════════════════════════════════════════════════════
-     PRICING
+     FREE — NO PRICING
 ═══════════════════════════════════════════════════════ -->
 <section class="section" id="pricing" style="background:linear-gradient(180deg,var(--bg) 0%,rgba(13,17,23,.5) 100%)">
   <div class="wrap">
     <div class="text-center reveal">
-      <div class="section-label"><i class="bi bi-tag"></i> Pricing</div>
-      <h2 class="section-title">Simple, transparent pricing</h2>
-      <p class="section-sub">Start free. Upgrade when you're ready. No hidden fees, no surprises.</p>
+      <div class="section-label"><i class="bi bi-gift"></i> 100% Free</div>
+      <h2 class="section-title">Everything is free.<br>No catch, no card.</h2>
+      <p class="section-sub">NextGenCV is completely free to use. Every feature — AI optimization, version control, analytics, all templates — is available to every user at no cost.</p>
     </div>
 
-    <div class="pricing-grid">
-      <!-- Free -->
-      <div class="pcard reveal reveal-d1">
-        <div class="pcard-name">Free</div>
-        <div class="pcard-price">$0</div>
-        <div class="pcard-period">forever</div>
+    <!-- Single free card -->
+    <div style="max-width:520px;margin:56px auto 0" class="reveal">
+      <div class="pcard pcard-popular" style="text-align:center">
+        <div class="pcard-popular-badge">Everything Included</div>
+        <div style="margin-top:8px">
+          <div class="pcard-name">NextGenCV</div>
+          <div class="pcard-price">$0</div>
+          <div class="pcard-period">forever — no credit card needed</div>
+        </div>
         <div class="pcard-divider"></div>
-        <ul class="pcard-features">
-          <li><i class="bi bi-check-circle-fill"></i> 1 resume</li>
-          <li><i class="bi bi-check-circle-fill"></i> ATS score analysis</li>
-          <li><i class="bi bi-check-circle-fill"></i> 3 professional templates</li>
-          <li><i class="bi bi-check-circle-fill"></i> PDF export</li>
-          <li class="off"><i class="bi bi-x-circle"></i> AI optimizer</li>
-          <li class="off"><i class="bi bi-x-circle"></i> Version control</li>
-          <li class="off"><i class="bi bi-x-circle"></i> DOCX export</li>
-        </ul>
-        <a href="{% url 'register' %}" class="btn-plan btn-plan-ghost">Get Started Free</a>
-      </div>
-
-      <!-- Pro (popular) -->
-      <div class="pcard pcard-popular reveal reveal-d2">
-        <div class="pcard-popular-badge">Most Popular</div>
-        <div class="pcard-name">Pro</div>
-        <div class="pcard-price">$12<span>/mo</span></div>
-        <div class="pcard-period">billed monthly</div>
-        <div class="pcard-divider"></div>
-        <ul class="pcard-features">
+        <ul class="pcard-features" style="text-align:left">
           <li><i class="bi bi-check-circle-fill"></i> Unlimited resumes</li>
-          <li><i class="bi bi-check-circle-fill"></i> ATS score analysis</li>
-          <li><i class="bi bi-check-circle-fill"></i> All templates</li>
-          <li><i class="bi bi-check-circle-fill"></i> PDF + DOCX + Text export</li>
-          <li><i class="bi bi-check-circle-fill"></i> AI optimizer (unlimited)</li>
-          <li><i class="bi bi-check-circle-fill"></i> Version control</li>
+          <li><i class="bi bi-check-circle-fill"></i> AI-powered optimizer</li>
+          <li><i class="bi bi-check-circle-fill"></i> Real-time ATS scoring</li>
+          <li><i class="bi bi-check-circle-fill"></i> All 5 resume templates</li>
+          <li><i class="bi bi-check-circle-fill"></i> PDF, DOCX &amp; text export</li>
+          <li><i class="bi bi-check-circle-fill"></i> Version control &amp; history</li>
           <li><i class="bi bi-check-circle-fill"></i> Analytics dashboard</li>
+          <li><i class="bi bi-check-circle-fill"></i> Job application tracker</li>
+          <li><i class="bi bi-check-circle-fill"></i> Cover letter generation</li>
+          <li><i class="bi bi-check-circle-fill"></i> Interview prep</li>
         </ul>
-        <a href="{% url 'register' %}" class="btn-plan btn-plan-primary">Start Pro Trial</a>
-      </div>
-
-      <!-- Team -->
-      <div class="pcard reveal reveal-d3">
-        <div class="pcard-name">Team</div>
-        <div class="pcard-price">$29<span>/mo</span></div>
-        <div class="pcard-period">per seat, billed monthly</div>
-        <div class="pcard-divider"></div>
-        <ul class="pcard-features">
-          <li><i class="bi bi-check-circle-fill"></i> Everything in Pro</li>
-          <li><i class="bi bi-check-circle-fill"></i> Team workspace</li>
-          <li><i class="bi bi-check-circle-fill"></i> Shared templates</li>
-          <li><i class="bi bi-check-circle-fill"></i> Admin dashboard</li>
-          <li><i class="bi bi-check-circle-fill"></i> Priority support</li>
-          <li><i class="bi bi-check-circle-fill"></i> Custom branding</li>
-          <li><i class="bi bi-check-circle-fill"></i> SSO / SAML</li>
-        </ul>
-        <a href="{% url 'register' %}" class="btn-plan btn-plan-ghost">Contact Sales</a>
+        <a href="{% url 'register' %}" class="btn-plan btn-plan-primary" style="font-size:1rem;padding:14px">
+          <i class="bi bi-lightning-charge-fill"></i> Create Free Account
+        </a>
       </div>
     </div>
   </div>
@@ -591,7 +562,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
         Sign In
       </a>
     </div>
-    <p class="cta-note">Free forever plan available &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; Cancel anytime</p>
+    <p class="cta-note">100% free &nbsp;·&nbsp; No credit card required &nbsp;·&nbsp; All features included</p>
   </div>
 </div>
 

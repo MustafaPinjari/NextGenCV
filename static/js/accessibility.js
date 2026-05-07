@@ -1,4 +1,4 @@
-/**
+can you enhance ui ux of our landing page/**
  * Accessibility Enhancement Module
  * Implements ARIA labels, keyboard navigation, focus management, and redundant encoding
  * for NextGenCV UI/UX Redesign
