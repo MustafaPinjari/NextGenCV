@@ -33,7 +33,7 @@ def parse_pdf_task(self, upload_id: int):
         cleaned_text = PDFParserService.clean_extracted_text(raw_text)
 
         # Parse sections
-        parsed_data = SectionParserService.parse_resume_sections(cleaned_text)
+        parsed_data = SectionParserService.parse_resume(cleaned_text)
         confidence = PDFParserService.calculate_parsing_confidence(cleaned_text, parsed_data)
 
         upload.extracted_text = cleaned_text

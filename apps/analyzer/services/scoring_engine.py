@@ -25,42 +25,42 @@ class ScoringEngineService:
     def calculate_ats_score(resume, job_description: str) -> Dict:
         """
         Calculate comprehensive ATS score for a resume.
-        
-        Args:
-            resume: Resume model instance
-            job_description: Job description text
-            
-        Returns:
-            Dictionary containing all component scores and final weighted score
         """
+        # Ensure related objects are prefetched to avoid N+1 queries
+        from django.db.models import prefetch_related_objects
+        prefetch_related_objects(
+            [resume],
+            'experiences', 'education', 'skills', 'projects', 'personal_info'
+        )
+
         # Extract resume text
         resume_text = ScoringEngineService._get_resume_text(resume)
-        
+
         # Calculate component scores
         keyword_score = ScoringEngineService.calculate_keyword_match_score(
             resume_text, job_description
         )
-        
+
         skill_score = ScoringEngineService.calculate_skill_relevance_score(
             resume, job_description
         )
-        
+
         completeness_score = ScoringEngineService.calculate_section_completeness_score(
             resume
         )
-        
+
         impact_score = ScoringEngineService.calculate_experience_impact_score(
             resume
         )
-        
+
         quant_score = ScoringEngineService.calculate_quantification_score(
             resume
         )
-        
+
         verb_score = ScoringEngineService.calculate_action_verb_score(
             resume
         )
-        
+
         # Calculate weighted final score
         final_score = (
             keyword_score * ScoringEngineService.WEIGHTS['keyword_match'] +
@@ -70,21 +70,21 @@ class ScoringEngineService:
             quant_score * ScoringEngineService.WEIGHTS['quantification'] +
             verb_score * ScoringEngineService.WEIGHTS['action_verb']
         )
-        
+
         # Extract keywords for detailed analysis
         resume_keywords = KeywordExtractorService.extract_keywords(resume_text)
         jd_keywords = KeywordExtractorService.extract_keywords(job_description)
-        
+
         matched_keywords = list(resume_keywords & jd_keywords)
         missing_keywords = list(jd_keywords - resume_keywords)
-        
+
         # Analyze action verbs
         experience_text = ScoringEngineService._get_experience_text(resume)
         verb_analysis = ActionVerbAnalyzerService.analyze_action_verbs(experience_text)
-        
+
         # Detect missing quantifications
         missing_quants = ScoringEngineService._identify_missing_quantifications(resume)
-        
+
         return {
             'final_score': round(final_score, 2),
             'keyword_match_score': round(keyword_score, 2),
@@ -93,8 +93,8 @@ class ScoringEngineService:
             'experience_impact_score': round(impact_score, 2),
             'quantification_score': round(quant_score, 2),
             'action_verb_score': round(verb_score, 2),
-            'matched_keywords': matched_keywords[:20],  # Top 20
-            'missing_keywords': missing_keywords[:20],  # Top 20
+            'matched_keywords': matched_keywords[:20],
+            'missing_keywords': missing_keywords[:20],
             'weak_action_verbs': verb_analysis['weak_verbs'],
             'missing_quantifications': missing_quants
         }

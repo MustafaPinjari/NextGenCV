@@ -17,14 +17,21 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
+# Singleton client — created once, reused across all requests
+_openai_client = None
+
 
 def _get_client():
-    """Lazily create OpenAI client to avoid import errors when key is absent."""
+    """Return a singleton OpenAI client. Thread-safe for read after first write."""
+    global _openai_client
+    if _openai_client is not None:
+        return _openai_client
     if not settings.AI_ENABLED:
         return None
     try:
         from openai import OpenAI
-        return OpenAI(api_key=settings.OPENAI_API_KEY)
+        _openai_client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        return _openai_client
     except Exception as e:
         logger.warning(f"Could not initialise OpenAI client: {e}")
         return None

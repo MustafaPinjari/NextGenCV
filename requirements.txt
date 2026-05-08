@@ -23,5 +23,8 @@ djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
 django-cors-headers==4.3.1
 
+# Rate limiting (AI endpoint protection)
+django-ratelimit==4.1.0
+
 # HTTP requests (LinkedIn import, job scraping)
 requests==2.31.0

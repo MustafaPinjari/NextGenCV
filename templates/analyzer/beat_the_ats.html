@@ -1,0 +1,298 @@
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}Beat the ATS — {{ resume.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--accent:#06b6d4;--green:#10b981;
+  --amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;--ease:cubic-bezier(.4,0,.2,1);
+}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.wrap{max-width:1100px;margin:0 auto;padding:32px}
+.page-title{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.page-sub{font-size:.85rem;color:var(--text3);margin-bottom:28px}
+
+/* JD form */
+.jd-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:24px}
+.jd-card label{font-size:.82rem;font-weight:600;color:var(--text2);display:block;margin-bottom:8px}
+.jd-card textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;
+  color:var(--text);padding:12px;font-family:var(--font);font-size:.85rem;resize:vertical;min-height:100px;outline:none}
+.jd-card textarea:focus{border-color:var(--primary)}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:9px;
+  background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff;font-weight:700;
+  font-size:.85rem;font-family:var(--font);border:none;cursor:pointer;transition:opacity .2s}
+.btn-primary:hover{opacity:.88}
+
+/* Main grid */
+.main-grid{display:grid;grid-template-columns:280px 1fr;gap:20px;align-items:start}
+
+/* Score panel */
+.score-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;
+  display:flex;flex-direction:column;align-items:center;gap:16px;position:sticky;top:24px}
+.score-ring{position:relative;width:160px;height:160px}
+.score-ring svg{transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border2);stroke-width:12}
+.ring-fill{fill:none;stroke:url(#sGrad);stroke-width:12;stroke-linecap:round;
+  stroke-dasharray:471;stroke-dashoffset:471;transition:stroke-dashoffset 1s var(--ease)}
+.ring-sim{fill:none;stroke:rgba(16,185,129,.35);stroke-width:12;stroke-linecap:round;
+  stroke-dasharray:471;stroke-dashoffset:471;transition:stroke-dashoffset .6s var(--ease)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-num{font-size:2.4rem;font-weight:900;line-height:1;
+  background:linear-gradient(135deg,var(--primary-light),var(--accent));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.ring-lbl{font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+.sim-score{font-size:.8rem;color:var(--green);font-weight:700;display:none}
+.threshold-bar{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px}
+.threshold-label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.threshold-track{height:6px;background:var(--border2);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.threshold-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--accent));
+  transition:width 1s var(--ease)}
+.threshold-info{display:flex;justify-content:space-between;font-size:.72rem;color:var(--text3)}
+.next-badge{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;
+  background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);
+  color:var(--primary-light);font-size:.78rem;font-weight:700}
+
+/* Keywords panel */
+.kw-panel{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px}
+.kw-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.kw-title{font-size:1rem;font-weight:700}
+.kw-count{font-size:.78rem;color:var(--text3)}
+.kw-list{display:flex;flex-direction:column;gap:10px}
+.kw-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;display:flex;align-items:flex-start;gap:12px;
+  transition:border-color .2s,background .2s;cursor:pointer}
+.kw-item:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.04)}
+.kw-item.checked{border-color:rgba(16,185,129,.4);background:rgba(16,185,129,.05)}
+.kw-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
+  transition:all .2s;background:transparent}
+.kw-item.checked .kw-check{background:var(--green);border-color:var(--green)}
+.kw-check i{font-size:.7rem;color:#fff;display:none}
+.kw-item.checked .kw-check i{display:block}
+.kw-body{flex:1;min-width:0}
+.kw-name{font-size:.9rem;font-weight:700;margin-bottom:3px;display:flex;align-items:center;gap:8px}
+.kw-section{font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:99px;
+  background:rgba(6,182,212,.12);color:var(--accent)}
+.kw-reason{font-size:.78rem;color:var(--text3);line-height:1.5}
+.kw-impact{font-size:.72rem;font-weight:700;color:var(--green);margin-top:4px;
+  display:flex;align-items:center;gap:4px}
+
+/* Already winning */
+.winning{background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(6,182,212,.08));
+  border:1px solid rgba(16,185,129,.3);border-radius:16px;padding:32px;text-align:center}
+.winning-icon{font-size:3rem;margin-bottom:12px}
+.winning-title{font-size:1.2rem;font-weight:800;margin-bottom:6px}
+.winning-sub{font-size:.85rem;color:var(--text2)}
+
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty i{font-size:2.5rem;margin-bottom:12px;display:block;opacity:.5}
+
+@media(max-width:768px){.main-grid{grid-template-columns:1fr}.score-panel{position:static}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div class="page-title">🎯 Beat the ATS</div>
+  <div class="page-sub">{{ resume.title }} — Find the exact keywords to cross the next score threshold</div>
+
+  <!-- JD Form -->
+  <div class="jd-card">
+    <form method="get" id="jdForm">
+      <label for="jd">Paste the job description you're targeting</label>
+      <textarea name="job_description" id="jd" placeholder="Paste the full job description here...">{{ job_description }}</textarea>
+      <div style="margin-top:12px">
+        <button type="submit" class="btn-primary"><i class="bi bi-search"></i> Analyse</button>
+      </div>
+    </form>
+  </div>
+
+  {% if plan %}
+    {% if plan.already_winning %}
+    <div class="winning">
+      <div class="winning-icon">🏆</div>
+      <div class="winning-title">You're already winning!</div>
+      <div class="winning-sub">Your ATS score of {{ plan.current_score }}/100 is excellent. You're competitive for this role.</div>
+    </div>
+
+    {% else %}
+    <div class="main-grid">
+
+      <!-- Score Panel -->
+      <div class="score-panel">
+        <div class="score-ring">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <defs>
+              <linearGradient id="sGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#06b6d4"/>
+              </linearGradient>
+            </defs>
+            <circle class="ring-bg" cx="80" cy="80" r="75"/>
+            <circle class="ring-sim" cx="80" cy="80" r="75" id="simRing"/>
+            <circle class="ring-fill" cx="80" cy="80" r="75" id="scoreRing"/>
+          </svg>
+          <div class="ring-center">
+            <div class="ring-num" id="scoreNum">{{ plan.current_score }}</div>
+            <div class="ring-lbl">/ 100</div>
+          </div>
+        </div>
+
+        <div class="sim-score" id="simScore">
+          <i class="bi bi-arrow-up-circle-fill"></i> Simulated: <span id="simNum">—</span>
+        </div>
+
+        <div class="threshold-bar">
+          <div class="threshold-label">Progress to next level</div>
+          <div class="threshold-track">
+            <div class="threshold-fill" id="threshFill"
+                 style="width:{{ plan.current_score|floatformat:0 }}%"></div>
+          </div>
+          <div class="threshold-info">
+            <span>{{ plan.current_score }}/100</span>
+            <span>Target: {{ plan.next_threshold }}</span>
+          </div>
+        </div>
+
+        <div class="next-badge">
+          <i class="bi bi-trophy"></i> Next: {{ plan.next_label }} ({{ plan.next_threshold }})
+        </div>
+
+        <div style="font-size:.78rem;color:var(--text3);text-align:center;line-height:1.5">
+          {{ plan.next_message }}
+        </div>
+
+        <div style="font-size:.82rem;color:var(--amber);font-weight:600;text-align:center">
+          Add {{ plan.keywords_needed_count }} keyword{{ plan.keywords_needed_count|pluralize }} to reach {{ plan.next_label }}
+        </div>
+      </div>
+
+      <!-- Keywords Panel -->
+      <div class="kw-panel">
+        <div class="kw-header">
+          <div class="kw-title">Keywords to Add</div>
+          <div class="kw-count">{{ plan.keywords_to_add|length }} suggestions</div>
+        </div>
+
+        {% if plan.keywords_to_add %}
+        <div class="kw-list" id="kwList">
+          {% for kw in plan.keywords_to_add %}
+          <div class="kw-item" data-keyword="{{ kw.keyword }}" onclick="toggleKeyword(this)">
+            <div class="kw-check"><i class="bi bi-check"></i></div>
+            <div class="kw-body">
+              <div class="kw-name">
+                {{ kw.keyword }}
+                <span class="kw-section">{{ kw.section }}</span>
+              </div>
+              <div class="kw-reason">{{ kw.reason }}</div>
+              <div class="kw-impact">
+                <i class="bi bi-graph-up-arrow"></i> +{{ kw.impact_points }} pts
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty">
+          <i class="bi bi-check-circle"></i>
+          No missing keywords found. Your resume already covers this job description well.
+        </div>
+        {% endif %}
+      </div>
+
+    </div>
+    {% endif %}
+
+  {% else %}
+  <div class="empty" style="padding:60px 20px">
+    <i class="bi bi-search"></i>
+    <div style="font-size:1rem;font-weight:700;margin-bottom:6px;color:var(--text2)">Paste a job description above</div>
+    <div style="font-size:.85rem">We'll show you exactly which keywords to add to cross the next ATS threshold.</div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CIRC = 471; // 2 * PI * 75
+const currentScore = {{ plan.current_score|default:"0" }};
+const nextThreshold = {{ plan.next_threshold|default:"100" }};
+const jobDescription = {{ job_description|default:"''"|escapejs|safe }};
+const resumeId = {{ resume.id }};
+
+// Animate score ring on load
+window.addEventListener('DOMContentLoaded', () => {
+  const ring = document.getElementById('scoreRing');
+  if (ring && currentScore > 0) {
+    let start = null;
+    const dur = 1200;
+    function step(ts) {
+      if (!start) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      const ease = 1 - Math.pow(1 - p, 3);
+      ring.style.strokeDashoffset = CIRC - (currentScore * ease / 100) * CIRC;
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+});
+
+// Track checked keywords and simulate score
+const checkedKeywords = new Set();
+
+function toggleKeyword(el) {
+  const kw = el.dataset.keyword;
+  el.classList.toggle('checked');
+  if (checkedKeywords.has(kw)) {
+    checkedKeywords.delete(kw);
+  } else {
+    checkedKeywords.add(kw);
+  }
+  simulateScore();
+}
+
+let simTimeout = null;
+function simulateScore() {
+  clearTimeout(simTimeout);
+  simTimeout = setTimeout(async () => {
+    if (checkedKeywords.size === 0) {
+      document.getElementById('simScore').style.display = 'none';
+      document.getElementById('simRing').style.strokeDashoffset = CIRC;
+      return;
+    }
+    try {
+      const resp = await fetch(`/analyzer/${resumeId}/beat-the-ats/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: JSON.stringify({
+          job_description: document.getElementById('jd').value,
+          added_keywords: [...checkedKeywords],
+        }),
+      });
+      const data = await resp.json();
+      if (data.simulated_score !== undefined) {
+        const sim = data.simulated_score;
+        document.getElementById('simNum').textContent = sim + '/100';
+        document.getElementById('simScore').style.display = 'flex';
+        // Animate sim ring
+        const simRing = document.getElementById('simRing');
+        simRing.style.strokeDashoffset = CIRC - (sim / 100) * CIRC;
+      }
+    } catch (e) { /* silent */ }
+  }, 400);
+}
+
+function getCookie(name) {
+  const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+  return v ? v[2] : '';
+}
+</script>
+{% endblock %}

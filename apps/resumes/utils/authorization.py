@@ -19,6 +19,52 @@ from ..models import Resume, UploadedResume, ResumeVersion, OptimizationHistory,
 logger = logging.getLogger(__name__)
 
 
+def owns_resume(view_func=None, *, pk_kwarg='pk', prefetch=True):
+    """
+    Decorator that fetches the resume, verifies ownership, and injects it as
+    a keyword argument named ``resume``. Eliminates the copy-pasted ownership
+    check that previously appeared in every view.
+
+    Usage::
+
+        @login_required
+        @owns_resume
+        def resume_detail(request, pk, resume):
+            ...
+
+        # Custom pk kwarg name:
+        @login_required
+        @owns_resume(pk_kwarg='resume_pk')
+        def experience_add(request, resume_pk, resume):
+            ...
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            resume_id = kwargs.get(pk_kwarg)
+            qs = Resume.objects
+            if prefetch:
+                qs = qs.prefetch_related(
+                    'personal_info', 'experiences', 'education',
+                    'skills', 'projects', 'certifications'
+                )
+            resume = get_object_or_404(qs, id=resume_id)
+            if resume.user != request.user:
+                logger.warning(
+                    f'IDOR attempt: user={request.user.id} '
+                    f'tried to access resume={resume_id} owned by user={resume.user_id}'
+                )
+                return HttpResponseForbidden('You do not have permission.')
+            kwargs['resume'] = resume
+            return func(request, *args, **kwargs)
+        return wrapper
+
+    if view_func is not None:
+        # Called as @owns_resume without parentheses
+        return decorator(view_func)
+    return decorator
+
+
 def check_resume_ownership(user, resume_id):
     """
     Verify that a resume belongs to the specified user.

@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib import messages
 from apps.resumes.models import Resume
 from .forms import JobDescriptionForm
@@ -123,3 +123,53 @@ def analyze_resume(request, resume_id):
         'saved_jds': saved_jds,
     }
     return render(request, 'analyzer/analyze_new.html', context)
+
+
+@login_required
+def beat_the_ats(request, resume_id):
+    """
+    Returns the exact keywords needed to cross the next ATS score threshold.
+    Supports both full page render and AJAX for live score simulation.
+
+    GET  ?job_description=...  → full page
+    POST {job_description, added_keywords[]}  → JSON battle plan + simulated score
+    """
+    resume = get_object_or_404(Resume, id=resume_id)
+    if resume.user != request.user:
+        return HttpResponseForbidden('You do not have permission.')
+
+    from apps.analyzer.services.beat_the_ats import BeatTheATSService
+
+    if request.method == 'POST':
+        import json
+        try:
+            body = json.loads(request.body)
+        except (ValueError, TypeError):
+            body = request.POST
+
+        job_description = body.get('job_description', '').strip()
+        added_keywords = body.get('added_keywords', [])
+
+        if not job_description:
+            return JsonResponse({'error': 'job_description is required'}, status=400)
+
+        plan = BeatTheATSService.get_battle_plan(resume, job_description)
+
+        if added_keywords:
+            plan['simulated_score'] = BeatTheATSService.simulate_score_after_keywords(
+                resume, job_description, added_keywords
+            )
+
+        return JsonResponse(plan)
+
+    # GET — render the page
+    job_description = request.GET.get('job_description', '')
+    plan = None
+    if job_description:
+        plan = BeatTheATSService.get_battle_plan(resume, job_description)
+
+    return render(request, 'analyzer/beat_the_ats.html', {
+        'resume': resume,
+        'plan': plan,
+        'job_description': job_description,
+    })

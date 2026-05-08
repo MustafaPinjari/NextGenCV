@@ -1,68 +1,465 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}{{ action }} Project — {{ resume.title }}{% endblock %}
 
-{% block title %}{{ action }} Project - {{ resume.title }}{% endblock %}
+{% block extra_css %}
+<style>
+:root {
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--primary-glow:rgba(99,102,241,.18);
+  --accent:#06b6d4;--green:#10b981;--amber:#f59e0b;--red:#f87171;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;--ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+
+.page-wrap{max-width:800px;margin:0 auto;padding:32px 20px}
+
+/* ── Breadcrumb ── */
+.breadcrumb-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text3);margin-bottom:24px}
+.breadcrumb-row a{color:var(--text3);text-decoration:none;transition:color .15s}
+.breadcrumb-row a:hover{color:var(--primary-light)}
+.breadcrumb-row i{font-size:.65rem}
+
+/* ── Card ── */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.form-card-header{padding:28px 32px 24px;border-bottom:1px solid var(--border);
+  background:linear-gradient(135deg,rgba(6,182,212,.06) 0%,transparent 60%)}
+.form-icon{width:48px;height:48px;border-radius:14px;background:rgba(6,182,212,.15);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--accent);margin-bottom:14px}
+.form-title{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.form-sub{font-size:.82rem;color:var(--text3)}
+.form-body{padding:28px 32px}
+
+/* ── Section dividers ── */
+.section-divider{display:flex;align-items:center;gap:10px;margin:28px 0 20px;font-size:.72rem;
+  font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.section-divider::before,.section-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── Field groups ── */
+.field-group{margin-bottom:20px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field-label{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.field-label .req{color:var(--primary-light);font-size:.9em}
+.field-label .opt{font-size:.7rem;font-weight:500;color:var(--text3);text-transform:none;letter-spacing:0}
+.field-hint{font-size:.74rem;color:var(--text3);margin-top:5px;display:flex;align-items:center;gap:4px}
+
+/* ── Inputs ── */
+.f-input{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;
+  color:var(--text);padding:11px 14px;font-family:var(--font);font-size:.9rem;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+.f-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+.f-input::placeholder{color:var(--text3)}
+.f-input.error{border-color:var(--red)}
+textarea.f-input{resize:vertical;min-height:90px;line-height:1.6}
+.field-error{font-size:.75rem;color:var(--red);margin-top:5px;display:flex;align-items:center;gap:4px}
+
+/* ── URL input with icon ── */
+.url-wrap{position:relative}
+.url-wrap .url-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);
+  color:var(--text3);font-size:.9rem;pointer-events:none;transition:color .2s}
+.url-wrap .f-input{padding-left:36px}
+.url-wrap .f-input:focus ~ .url-icon,
+.url-wrap:focus-within .url-icon{color:var(--primary-light)}
+.url-status{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.85rem}
+
+/* ── Tech tag input ── */
+.tech-input-wrap{position:relative}
+.tech-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;min-height:0}
+.tech-tag{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;
+  font-size:.75rem;font-weight:600;background:rgba(6,182,212,.12);border:1px solid rgba(6,182,212,.3);
+  color:var(--accent);cursor:default;animation:tagIn .15s var(--ease)}
+.tech-tag button{background:none;border:none;color:var(--accent);cursor:pointer;padding:0;
+  font-size:.8rem;line-height:1;opacity:.7;transition:opacity .15s}
+.tech-tag button:hover{opacity:1}
+@keyframes tagIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+.tech-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tech-suggest{padding:4px 10px;border-radius:99px;font-size:.72rem;font-weight:600;cursor:pointer;
+  border:1px solid var(--border2);background:var(--surface2);color:var(--text3);
+  transition:all .15s}
+.tech-suggest:hover{border-color:var(--accent);color:var(--accent);background:rgba(6,182,212,.06)}
+
+/* ── Impact helper ── */
+.impact-helper{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);
+  border-radius:10px;padding:12px 14px;margin-top:8px}
+.impact-helper-title{font-size:.72rem;font-weight:700;color:var(--green);margin-bottom:6px;
+  display:flex;align-items:center;gap:5px}
+.impact-examples{display:flex;flex-direction:column;gap:4px}
+.impact-ex{font-size:.74rem;color:var(--text3);cursor:pointer;padding:3px 6px;border-radius:5px;
+  transition:background .15s;display:flex;align-items:center;gap:5px}
+.impact-ex:hover{background:rgba(16,185,129,.08);color:var(--text2)}
+.impact-ex i{font-size:.65rem;color:var(--green)}
+
+/* ── Date range ── */
+.date-range{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center}
+.date-sep{font-size:.8rem;color:var(--text3);text-align:center;padding-top:28px}
+.ongoing-toggle{display:flex;align-items:center;gap:8px;margin-top:8px;cursor:pointer;
+  font-size:.8rem;color:var(--text3);user-select:none}
+.toggle-box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border2);
+  background:var(--surface2);display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0}
+.toggle-box.checked{background:var(--primary);border-color:var(--primary)}
+.toggle-box.checked::after{content:'✓';font-size:.65rem;color:#fff}
+
+/* ── Live preview card ── */
+.preview-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;margin-top:24px}
+.preview-label{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.preview-project-name{font-size:1rem;font-weight:700;margin-bottom:4px;color:var(--text)}
+.preview-tech-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:8px}
+.preview-tech-chip{padding:2px 8px;border-radius:99px;font-size:.7rem;font-weight:600;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.25);color:var(--accent)}
+.preview-desc{font-size:.82rem;color:var(--text2);line-height:1.6}
+.preview-url{font-size:.75rem;color:var(--primary-light);display:flex;align-items:center;gap:4px;margin-top:6px}
+.preview-empty{font-size:.8rem;color:var(--text3);font-style:italic}
+
+/* ── Footer ── */
+.form-footer{display:flex;align-items:center;justify-content:space-between;
+  padding:20px 32px;border-top:1px solid var(--border);background:rgba(0,0,0,.15)}
+.btn-cancel{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:9px;
+  background:transparent;border:1.5px solid var(--border2);color:var(--text2);font-size:.85rem;
+  font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;transition:all .18s}
+.btn-cancel:hover{border-color:var(--text3);color:var(--text)}
+.btn-save{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:9px;
+  background:linear-gradient(135deg,var(--accent),var(--primary));color:#fff;font-size:.88rem;
+  font-weight:700;font-family:var(--font);border:none;cursor:pointer;transition:opacity .18s,transform .18s}
+.btn-save:hover{opacity:.9;transform:translateY(-1px)}
+.btn-save:active{transform:translateY(0)}
+
+/* ── Error banner ── */
+.error-banner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
+  border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:.82rem;color:var(--red);
+  display:flex;align-items:flex-start;gap:8px}
+
+/* ── Char counter ── */
+.char-counter{font-size:.72rem;color:var(--text3);text-align:right;margin-top:4px}
+.char-counter.warn{color:var(--amber)}
+.char-counter.over{color:var(--red)}
+
+@media(max-width:640px){
+  .form-card-header,.form-body,.form-footer{padding-left:20px;padding-right:20px}
+  .field-row{grid-template-columns:1fr}
+  .date-range{grid-template-columns:1fr;gap:8px}
+  .date-sep{display:none}
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>{{ action }} Project - {{ resume.title }}</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.name.id_for_label }}" class="form-label">Project Name *</label>
-                            {{ form.name }}
-                            {% if form.name.errors %}
-                                <div class="text-danger">{{ form.name.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
-                            {{ form.description }}
-                            <small class="form-text text-muted">Describe the project and your contributions</small>
-                            {% if form.description.errors %}
-                                <div class="text-danger">{{ form.description.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.technologies.id_for_label }}" class="form-label">Technologies</label>
-                            {{ form.technologies }}
-                            <small class="form-text text-muted">List the technologies used (e.g., Python, Django, React)</small>
-                            {% if form.technologies.errors %}
-                                <div class="text-danger">{{ form.technologies.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.url.id_for_label }}" class="form-label">Project URL</label>
-                            {{ form.url }}
-                            <small class="form-text text-muted">Optional: Link to GitHub, live demo, or project page</small>
-                            {% if form.url.errors %}
-                                <div class="text-danger">{{ form.url.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'resume_update' resume.id %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Project</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="page-wrap">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-row">
+    <a href="{% url 'resume_list' %}">Resumes</a>
+    <i class="bi bi-chevron-right"></i>
+    <a href="{% url 'resume_detail' resume.id %}">{{ resume.title|truncatechars:30 }}</a>
+    <i class="bi bi-chevron-right"></i>
+    <span>{{ action }} Project</span>
+  </div>
+
+  <div class="form-card">
+
+    <!-- Header -->
+    <div class="form-card-header">
+      <div class="form-icon"><i class="bi bi-kanban-fill"></i></div>
+      <div class="form-title">{{ action }} Project</div>
+      <div class="form-sub">Adding to <strong>{{ resume.title }}</strong> — projects prove your skills with real evidence</div>
     </div>
+
+    <!-- Body -->
+    <div class="form-body">
+      <form method="post" id="projectForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="error-banner">
+          <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0;margin-top:1px"></i>
+          <div>{{ form.non_field_errors }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Project Name -->
+        <div class="field-group">
+          <div class="field-label">Project Name <span class="req">*</span></div>
+          <input type="text" name="name" id="id_name"
+                 class="f-input {% if form.name.errors %}error{% endif %}"
+                 placeholder="e.g. NextGenCV, E-Commerce Platform, ML Pipeline"
+                 value="{{ form.name.value|default:'' }}"
+                 autocomplete="off" autofocus oninput="updatePreview()">
+          {% if form.name.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.name.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="field-group">
+          <div class="field-label">Description <span class="req">*</span></div>
+          <textarea name="description" id="id_description"
+                    class="f-input {% if form.description.errors %}error{% endif %}"
+                    rows="4"
+                    placeholder="What does this project do? What was your role? What problem does it solve?"
+                    oninput="countChars(this,500,'descCount');updatePreview()">{{ form.description.value|default:'' }}</textarea>
+          <div class="char-counter" id="descCount"></div>
+          {% if form.description.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.description.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Technologies -->
+        <div class="field-group">
+          <div class="field-label">Technologies <span class="req">*</span></div>
+          <!-- Hidden real input -->
+          <input type="hidden" name="technologies" id="id_technologies"
+                 value="{{ form.technologies.value|default:'' }}">
+          <input type="text" id="techInput"
+                 class="f-input"
+                 placeholder="Type a technology and press Enter or comma…"
+                 autocomplete="off">
+          <div class="tech-tags" id="techTags"></div>
+          <div class="tech-suggestions" id="techSuggestions"></div>
+          {% if form.technologies.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.technologies.errors.0 }}</div>
+          {% endif %}
+          <div class="field-hint"><i class="bi bi-info-circle"></i> Press <kbd style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:1px 5px;font-size:.7rem">Enter</kbd> or <kbd style="background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:1px 5px;font-size:.7rem">,</kbd> to add each technology</div>
+        </div>
+
+        <!-- Impact -->
+        <div class="field-group">
+          <div class="field-label">Impact <span class="opt">(optional but powerful)</span></div>
+          <textarea name="impact" id="id_impact"
+                    class="f-input"
+                    rows="2"
+                    placeholder="Quantifiable results — numbers make this section shine"
+                    oninput="updatePreview()">{{ form.impact.value|default:'' }}</textarea>
+          <div class="impact-helper">
+            <div class="impact-helper-title"><i class="bi bi-stars"></i> Impact examples — click to use</div>
+            <div class="impact-examples">
+              <div class="impact-ex" onclick="appendImpact('Serving 10,000+ active users with 99.9% uptime')">
+                <i class="bi bi-plus-circle"></i> Serving 10,000+ active users with 99.9% uptime
+              </div>
+              <div class="impact-ex" onclick="appendImpact('Reduced processing time by 40% through caching optimisation')">
+                <i class="bi bi-plus-circle"></i> Reduced processing time by 40% through caching optimisation
+              </div>
+              <div class="impact-ex" onclick="appendImpact('Achieved 95% test coverage with automated CI/CD pipeline')">
+                <i class="bi bi-plus-circle"></i> Achieved 95% test coverage with automated CI/CD pipeline
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- URL -->
+        <div class="field-group">
+          <div class="field-label">Project URL <span class="opt">(optional)</span></div>
+          <div class="url-wrap">
+            <i class="bi bi-link-45deg url-icon"></i>
+            <input type="url" name="url" id="id_url"
+                   class="f-input {% if form.url.errors %}error{% endif %}"
+                   placeholder="https://github.com/you/project"
+                   value="{{ form.url.value|default:'' }}"
+                   oninput="validateUrl(this);updatePreview()">
+            <span class="url-status" id="urlStatus"></span>
+          </div>
+          {% if form.url.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.url.errors.0 }}</div>
+          {% endif %}
+          <div class="field-hint"><i class="bi bi-info-circle"></i> GitHub repo, live demo, or portfolio link</div>
+        </div>
+
+        <!-- Date range -->
+        <div class="section-divider">Timeline</div>
+        <div class="field-group">
+          <div class="date-range">
+            <div>
+              <div class="field-label">Start Date</div>
+              <input type="date" name="start_date" id="id_start_date"
+                     class="f-input"
+                     value="{{ form.start_date.value|default:'' }}">
+            </div>
+            <div class="date-sep">→</div>
+            <div>
+              <div class="field-label">End Date</div>
+              <input type="date" name="end_date" id="id_end_date"
+                     class="f-input"
+                     value="{{ form.end_date.value|default:'' }}"
+                     {% if not form.end_date.value %}disabled{% endif %}>
+            </div>
+          </div>
+          <label class="ongoing-toggle" onclick="toggleOngoing()">
+            <div class="toggle-box {% if not form.end_date.value %}checked{% endif %}" id="ongoingBox"></div>
+            <span id="ongoingLabel">{% if not form.end_date.value %}Ongoing / In Progress{% else %}Project completed{% endif %}</span>
+          </label>
+        </div>
+
+        <!-- Live preview -->
+        <div class="preview-card">
+          <div class="preview-label"><i class="bi bi-eye"></i> Live Preview</div>
+          <div id="previewContent">
+            <span class="preview-empty">Start filling in the form to see your project card…</span>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer">
+      <a href="{% url 'resume_update' resume.id %}" class="btn-cancel">
+        <i class="bi bi-arrow-left"></i> Cancel
+      </a>
+      <button type="submit" form="projectForm" class="btn-save">
+        <i class="bi bi-check-lg"></i>
+        {% if action == 'Edit' %}Update Project{% else %}Add Project{% endif %}
+      </button>
+    </div>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Tech tag system ─────────────────────────────────────────────────────────
+const TECH_SUGGESTIONS = [
+  'Python','JavaScript','TypeScript','React','Vue','Django','Node.js',
+  'PostgreSQL','MongoDB','Redis','Docker','AWS','GCP','Kubernetes','Git'
+];
+
+let techList = [];
+
+// Init from existing value
+const initTech = document.getElementById('id_technologies').value;
+if (initTech) {
+  initTech.split(',').map(t => t.trim()).filter(Boolean).forEach(addTag);
+}
+
+function addTag(name) {
+  name = name.trim();
+  if (!name || techList.includes(name.toLowerCase())) return;
+  techList.push(name.toLowerCase());
+
+  const tag = document.createElement('span');
+  tag.className = 'tech-tag';
+  tag.innerHTML = `${name} <button type="button" onclick="removeTag(this,'${name.toLowerCase()}')" title="Remove">×</button>`;
+  document.getElementById('techTags').appendChild(tag);
+  syncTechInput();
+  updatePreview();
+  renderSuggestions();
+}
+
+function removeTag(btn, nameLower) {
+  techList = techList.filter(t => t !== nameLower);
+  btn.parentElement.remove();
+  syncTechInput();
+  updatePreview();
+  renderSuggestions();
+}
+
+function syncTechInput() {
+  // Rebuild display names from tags
+  const tags = [...document.querySelectorAll('.tech-tag')].map(t => t.textContent.replace('×','').trim());
+  document.getElementById('id_technologies').value = tags.join(', ');
+}
+
+function renderSuggestions() {
+  const wrap = document.getElementById('techSuggestions');
+  const remaining = TECH_SUGGESTIONS.filter(t => !techList.includes(t.toLowerCase())).slice(0, 8);
+  wrap.innerHTML = remaining.map(t =>
+    `<span class="tech-suggest" onclick="addTag('${t}')">${t}</span>`
+  ).join('');
+}
+
+const techInput = document.getElementById('techInput');
+techInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    addTag(techInput.value);
+    techInput.value = '';
+  }
+});
+techInput.addEventListener('blur', () => {
+  if (techInput.value.trim()) { addTag(techInput.value); techInput.value = ''; }
+});
+
+renderSuggestions();
+
+// ── Char counter ────────────────────────────────────────────────────────────
+function countChars(el, max, counterId) {
+  const len = el.value.length;
+  const counter = document.getElementById(counterId);
+  counter.textContent = `${len} / ${max}`;
+  counter.className = 'char-counter' + (len > max ? ' over' : len > max * 0.85 ? ' warn' : '');
+}
+countChars(document.getElementById('id_description'), 500, 'descCount');
+
+// ── URL validator ───────────────────────────────────────────────────────────
+function validateUrl(inp) {
+  const status = document.getElementById('urlStatus');
+  if (!inp.value) { status.textContent = ''; return; }
+  try {
+    new URL(inp.value);
+    status.innerHTML = '<i class="bi bi-check-circle-fill" style="color:var(--green)"></i>';
+    inp.style.borderColor = 'var(--green)';
+  } catch {
+    status.innerHTML = '<i class="bi bi-x-circle-fill" style="color:var(--red)"></i>';
+    inp.style.borderColor = 'var(--red)';
+  }
+}
+validateUrl(document.getElementById('id_url'));
+
+// ── Ongoing toggle ──────────────────────────────────────────────────────────
+function toggleOngoing() {
+  const box = document.getElementById('ongoingBox');
+  const endInput = document.getElementById('id_end_date');
+  const label = document.getElementById('ongoingLabel');
+  const isChecked = box.classList.contains('checked');
+  if (isChecked) {
+    box.classList.remove('checked');
+    endInput.disabled = false;
+    endInput.focus();
+    label.textContent = 'Project completed';
+  } else {
+    box.classList.add('checked');
+    endInput.disabled = true;
+    endInput.value = '';
+    label.textContent = 'Ongoing / In Progress';
+  }
+}
+
+// ── Impact helper ───────────────────────────────────────────────────────────
+function appendImpact(text) {
+  const ta = document.getElementById('id_impact');
+  ta.value = ta.value ? ta.value + '\n' + text : text;
+  updatePreview();
+}
+
+// ── Live preview ────────────────────────────────────────────────────────────
+function updatePreview() {
+  const name = document.getElementById('id_name').value.trim();
+  const desc = document.getElementById('id_description').value.trim();
+  const url  = document.getElementById('id_url').value.trim();
+  const tags = [...document.querySelectorAll('.tech-tag')].map(t => t.textContent.replace('×','').trim());
+  const wrap = document.getElementById('previewContent');
+
+  if (!name && !desc) {
+    wrap.innerHTML = '<span class="preview-empty">Start filling in the form to see your project card…</span>';
+    return;
+  }
+
+  const techHtml = tags.map(t => `<span class="preview-tech-chip">${t}</span>`).join('');
+  const urlHtml  = url ? `<div class="preview-url"><i class="bi bi-link-45deg"></i> ${url}</div>` : '';
+  const descHtml = desc ? `<div class="preview-desc">${desc.substring(0,180)}${desc.length>180?'…':''}</div>` : '';
+
+  wrap.innerHTML = `
+    <div class="preview-project-name">${name || '<em style="color:var(--text3)">Project name…</em>'}</div>
+    ${tags.length ? `<div class="preview-tech-row">${techHtml}</div>` : ''}
+    ${descHtml}
+    ${urlHtml}
+  `;
+}
+
+updatePreview();
+</script>
 {% endblock %}

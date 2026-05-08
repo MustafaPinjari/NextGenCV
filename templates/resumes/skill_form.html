@@ -1,50 +1,338 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}{{ action }} Skill — {{ resume.title }}{% endblock %}
 
-{% block title %}{{ action }} Skill - {{ resume.title }}{% endblock %}
+{% block extra_css %}
+<style>
+:root {
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--primary-glow:rgba(99,102,241,.18);
+  --accent:#06b6d4;--green:#10b981;--amber:#f59e0b;--red:#f87171;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;--ease:cubic-bezier(.4,0,.2,1);
+}
+*{box-sizing:border-box}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+
+.page-wrap{max-width:760px;margin:0 auto;padding:32px 20px}
+
+/* ── Breadcrumb ── */
+.breadcrumb-row{display:flex;align-items:center;gap:8px;font-size:.78rem;color:var(--text3);margin-bottom:24px}
+.breadcrumb-row a{color:var(--text3);text-decoration:none;transition:color .15s}
+.breadcrumb-row a:hover{color:var(--primary-light)}
+.breadcrumb-row i{font-size:.65rem}
+
+/* ── Card ── */
+.form-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.form-card-header{padding:28px 32px 0;border-bottom:1px solid var(--border);padding-bottom:24px;
+  background:linear-gradient(135deg,rgba(99,102,241,.06) 0%,transparent 60%)}
+.form-icon{width:48px;height:48px;border-radius:14px;background:rgba(99,102,241,.15);
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;color:var(--primary-light);margin-bottom:14px}
+.form-title{font-size:1.35rem;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.form-sub{font-size:.82rem;color:var(--text3)}
+.form-body{padding:28px 32px}
+
+/* ── Field groups ── */
+.field-group{margin-bottom:22px}
+.field-label{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;
+  letter-spacing:.06em;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.field-label .req{color:var(--primary-light);font-size:.9em}
+.field-hint{font-size:.74rem;color:var(--text3);margin-top:5px;display:flex;align-items:center;gap:4px}
+
+/* ── Inputs ── */
+.f-input{width:100%;background:var(--surface2);border:1.5px solid var(--border2);border-radius:10px;
+  color:var(--text);padding:11px 14px;font-family:var(--font);font-size:.9rem;outline:none;
+  transition:border-color .2s,box-shadow .2s}
+.f-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-glow)}
+.f-input::placeholder{color:var(--text3)}
+.f-input.error{border-color:var(--red)}
+.field-error{font-size:.75rem;color:var(--red);margin-top:5px;display:flex;align-items:center;gap:4px}
+
+/* ── Category chips ── */
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:7px 14px;border-radius:99px;font-size:.78rem;font-weight:600;cursor:pointer;
+  border:1.5px solid var(--border2);background:var(--surface2);color:var(--text2);
+  transition:all .18s var(--ease);user-select:none;display:flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--primary);color:var(--primary-light);background:rgba(99,102,241,.08)}
+.chip.active{border-color:var(--primary);background:rgba(99,102,241,.15);color:var(--primary-light)}
+.chip i{font-size:.8rem}
+/* hidden real select */
+#id_category{display:none}
+
+/* ── Proficiency selector ── */
+.prof-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.prof-card{border:1.5px solid var(--border2);border-radius:12px;padding:14px 10px;text-align:center;
+  cursor:pointer;transition:all .18s var(--ease);background:var(--surface2)}
+.prof-card:hover{border-color:var(--primary);background:rgba(99,102,241,.06)}
+.prof-card.active{border-color:var(--primary);background:rgba(99,102,241,.12)}
+.prof-card.active .prof-icon{color:var(--primary-light)}
+.prof-icon{font-size:1.4rem;margin-bottom:6px;color:var(--text3);transition:color .18s}
+.prof-label{font-size:.75rem;font-weight:700;color:var(--text2)}
+.prof-desc{font-size:.68rem;color:var(--text3);margin-top:2px}
+#id_proficiency_level{display:none}
+
+/* ── Years input with stepper ── */
+.stepper-wrap{display:flex;align-items:center;gap:0;width:140px}
+.stepper-btn{width:38px;height:40px;background:var(--surface2);border:1.5px solid var(--border2);
+  color:var(--text2);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0}
+.stepper-btn:first-child{border-radius:10px 0 0 10px;border-right:none}
+.stepper-btn:last-child{border-radius:0 10px 10px 0;border-left:none}
+.stepper-btn:hover{background:rgba(99,102,241,.1);color:var(--primary-light);border-color:var(--primary)}
+.stepper-input{width:64px;height:40px;background:var(--surface2);border:1.5px solid var(--border2);
+  border-left:none;border-right:none;color:var(--text);text-align:center;font-family:var(--font);
+  font-size:.9rem;outline:none}
+.stepper-input:focus{border-color:var(--primary);box-shadow:none}
+
+/* ── Live preview ── */
+.preview-wrap{background:var(--surface2);border:1px solid var(--border);border-radius:14px;
+  padding:18px 20px;margin-top:24px}
+.preview-label{font-size:.7rem;font-weight:700;color:var(--text3);text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.preview-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:99px;
+  font-size:.82rem;font-weight:600;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);
+  color:var(--primary-light);transition:all .2s}
+.preview-tag .preview-level{font-size:.7rem;opacity:.7;font-weight:500}
+.preview-empty{font-size:.8rem;color:var(--text3);font-style:italic}
+
+/* ── Footer ── */
+.form-footer{display:flex;align-items:center;justify-content:space-between;
+  padding:20px 32px;border-top:1px solid var(--border);background:rgba(0,0,0,.15)}
+.btn-cancel{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:9px;
+  background:transparent;border:1.5px solid var(--border2);color:var(--text2);font-size:.85rem;
+  font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;transition:all .18s}
+.btn-cancel:hover{border-color:var(--text3);color:var(--text)}
+.btn-save{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:9px;
+  background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff;font-size:.88rem;
+  font-weight:700;font-family:var(--font);border:none;cursor:pointer;transition:opacity .18s,transform .18s}
+.btn-save:hover{opacity:.9;transform:translateY(-1px)}
+.btn-save:active{transform:translateY(0)}
+
+/* ── Error banner ── */
+.error-banner{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.3);
+  border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:.82rem;color:var(--red);
+  display:flex;align-items:flex-start;gap:8px}
+
+@media(max-width:600px){
+  .form-card-header,.form-body,.form-footer{padding-left:20px;padding-right:20px}
+  .prof-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>{{ action }} Skill - {{ resume.title }}</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.name.id_for_label }}" class="form-label">Skill Name *</label>
-                            {{ form.name }}
-                            {% if form.name.errors %}
-                                <div class="text-danger">{{ form.name.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.category.id_for_label }}" class="form-label">Category *</label>
-                            {{ form.category }}
-                            <small class="form-text text-muted">Choose the category that best fits this skill</small>
-                            {% if form.category.errors %}
-                                <div class="text-danger">{{ form.category.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'resume_update' resume.id %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Skill</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="page-wrap">
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb-row">
+    <a href="{% url 'resume_list' %}">Resumes</a>
+    <i class="bi bi-chevron-right"></i>
+    <a href="{% url 'resume_detail' resume.id %}">{{ resume.title|truncatechars:30 }}</a>
+    <i class="bi bi-chevron-right"></i>
+    <span>{{ action }} Skill</span>
+  </div>
+
+  <div class="form-card">
+
+    <!-- Header -->
+    <div class="form-card-header">
+      <div class="form-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+      <div class="form-title">{{ action }} Skill</div>
+      <div class="form-sub">Adding to <strong>{{ resume.title }}</strong> — skills are the #1 ATS keyword source</div>
     </div>
+
+    <!-- Body -->
+    <div class="form-body">
+      <form method="post" id="skillForm">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="error-banner">
+          <i class="bi bi-exclamation-triangle-fill" style="flex-shrink:0;margin-top:1px"></i>
+          <div>{{ form.non_field_errors }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Skill Name -->
+        <div class="field-group">
+          <div class="field-label">Skill Name <span class="req">*</span></div>
+          <input type="text" name="name" id="id_name"
+                 class="f-input {% if form.name.errors %}error{% endif %}"
+                 placeholder="e.g. Python, React, AWS, Leadership"
+                 value="{{ form.name.value|default:'' }}"
+                 autocomplete="off" autofocus>
+          {% if form.name.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.name.errors.0 }}</div>
+          {% endif %}
+          <div class="field-hint"><i class="bi bi-info-circle"></i> Be specific — "React.js" beats "JavaScript frameworks"</div>
+        </div>
+
+        <!-- Category chips -->
+        <div class="field-group">
+          <div class="field-label">Category <span class="req">*</span></div>
+          <div class="chip-grid" id="categoryChips">
+            <div class="chip {% if form.category.value == 'Languages' %}active{% endif %}"
+                 data-val="Languages" onclick="selectChip(this)">
+              <i class="bi bi-code-slash"></i> Languages
+            </div>
+            <div class="chip {% if form.category.value == 'Frameworks' %}active{% endif %}"
+                 data-val="Frameworks" onclick="selectChip(this)">
+              <i class="bi bi-layers"></i> Frameworks
+            </div>
+            <div class="chip {% if form.category.value == 'Tools' %}active{% endif %}"
+                 data-val="Tools" onclick="selectChip(this)">
+              <i class="bi bi-tools"></i> Tools
+            </div>
+            <div class="chip {% if form.category.value == 'Databases' %}active{% endif %}"
+                 data-val="Databases" onclick="selectChip(this)">
+              <i class="bi bi-database"></i> Databases
+            </div>
+            <div class="chip {% if form.category.value == 'Cloud' %}active{% endif %}"
+                 data-val="Cloud" onclick="selectChip(this)">
+              <i class="bi bi-cloud"></i> Cloud
+            </div>
+            <div class="chip {% if form.category.value == 'Soft Skills' %}active{% endif %}"
+                 data-val="Soft Skills" onclick="selectChip(this)">
+              <i class="bi bi-people"></i> Soft Skills
+            </div>
+            <div class="chip {% if form.category.value == 'Other' or not form.category.value %}active{% endif %}"
+                 data-val="Other" onclick="selectChip(this)">
+              <i class="bi bi-three-dots"></i> Other
+            </div>
+          </div>
+          {{ form.category }}
+          {% if form.category.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i> {{ form.category.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Proficiency -->
+        <div class="field-group">
+          <div class="field-label">Proficiency Level</div>
+          <div class="prof-grid">
+            <div class="prof-card {% if form.proficiency_level.value == 'beginner' %}active{% endif %}"
+                 data-val="beginner" onclick="selectProf(this)">
+              <div class="prof-icon">🌱</div>
+              <div class="prof-label">Beginner</div>
+              <div class="prof-desc">Learning</div>
+            </div>
+            <div class="prof-card {% if form.proficiency_level.value == 'intermediate' or not form.proficiency_level.value %}active{% endif %}"
+                 data-val="intermediate" onclick="selectProf(this)">
+              <div class="prof-icon">⚡</div>
+              <div class="prof-label">Intermediate</div>
+              <div class="prof-desc">Working knowledge</div>
+            </div>
+            <div class="prof-card {% if form.proficiency_level.value == 'advanced' %}active{% endif %}"
+                 data-val="advanced" onclick="selectProf(this)">
+              <div class="prof-icon">🚀</div>
+              <div class="prof-label">Advanced</div>
+              <div class="prof-desc">Strong command</div>
+            </div>
+            <div class="prof-card {% if form.proficiency_level.value == 'expert' %}active{% endif %}"
+                 data-val="expert" onclick="selectProf(this)">
+              <div class="prof-icon">🏆</div>
+              <div class="prof-label">Expert</div>
+              <div class="prof-desc">Deep mastery</div>
+            </div>
+          </div>
+          {{ form.proficiency_level }}
+        </div>
+
+        <!-- Years of experience -->
+        <div class="field-group">
+          <div class="field-label">Years of Experience</div>
+          <div class="stepper-wrap">
+            <button type="button" class="stepper-btn" onclick="stepYears(-1)">−</button>
+            <input type="number" name="years_of_experience" id="id_years_of_experience"
+                   class="stepper-input" min="0" max="50"
+                   value="{{ form.years_of_experience.value|default:'' }}"
+                   placeholder="0" oninput="updatePreview()">
+            <button type="button" class="stepper-btn" onclick="stepYears(1)">+</button>
+          </div>
+          <div class="field-hint"><i class="bi bi-info-circle"></i> Optional — only include if it strengthens your case</div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="preview-wrap">
+          <div class="preview-label"><i class="bi bi-eye"></i> Live Preview</div>
+          <div id="previewTag">
+            <span class="preview-empty">Start typing to see your skill tag…</span>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="form-footer">
+      <a href="{% url 'resume_update' resume.id %}" class="btn-cancel">
+        <i class="bi bi-arrow-left"></i> Cancel
+      </a>
+      <button type="submit" form="skillForm" class="btn-save">
+        <i class="bi bi-check-lg"></i>
+        {% if action == 'Edit' %}Update Skill{% else %}Add Skill{% endif %}
+      </button>
+    </div>
+
+  </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Category chips ──────────────────────────────────────────────────────────
+function selectChip(el) {
+  document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('id_category').value = el.dataset.val;
+  updatePreview();
+}
+
+// ── Proficiency cards ───────────────────────────────────────────────────────
+function selectProf(el) {
+  document.querySelectorAll('.prof-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('id_proficiency_level').value = el.dataset.val;
+  updatePreview();
+}
+
+// ── Years stepper ───────────────────────────────────────────────────────────
+function stepYears(delta) {
+  const inp = document.getElementById('id_years_of_experience');
+  const cur = parseInt(inp.value) || 0;
+  inp.value = Math.max(0, Math.min(50, cur + delta));
+  updatePreview();
+}
+
+// ── Live preview ────────────────────────────────────────────────────────────
+const PROF_EMOJI = { beginner:'🌱', intermediate:'⚡', advanced:'🚀', expert:'🏆' };
+
+function updatePreview() {
+  const name  = document.getElementById('id_name').value.trim();
+  const prof  = document.getElementById('id_proficiency_level').value || 'intermediate';
+  const years = document.getElementById('id_years_of_experience').value;
+  const wrap  = document.getElementById('previewTag');
+
+  if (!name) {
+    wrap.innerHTML = '<span class="preview-empty">Start typing to see your skill tag…</span>';
+    return;
+  }
+
+  let html = `<span class="preview-tag">
+    ${PROF_EMOJI[prof] || '⚡'} ${name}
+    <span class="preview-level">${prof}${years ? ' · ' + years + 'y' : ''}</span>
+  </span>`;
+  wrap.innerHTML = html;
+}
+
+// ── Init ────────────────────────────────────────────────────────────────────
+document.getElementById('id_name').addEventListener('input', updatePreview);
+updatePreview();
+
+// Ensure hidden selects have correct initial values
+const initCat = document.querySelector('#categoryChips .chip.active');
+if (initCat) document.getElementById('id_category').value = initCat.dataset.val;
+const initProf = document.querySelector('.prof-card.active');
+if (initProf) document.getElementById('id_proficiency_level').value = initProf.dataset.val;
+</script>
 {% endblock %}

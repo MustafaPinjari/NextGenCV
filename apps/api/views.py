@@ -22,6 +22,12 @@ from rest_framework import viewsets, status, generics
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
+
+
+class AIFeatureThrottle(UserRateThrottle):
+    """20 AI calls per hour per user — prevents API key drain attacks."""
+    scope = 'ai_features'
 
 from apps.resumes.models import Resume, ResumeAnalysis, ResumeVersion
 from apps.tracker.models import JobApplication, CoverLetter, InterviewPrepSession
@@ -75,7 +81,8 @@ class ResumeViewSet(viewsets.ModelViewSet):
 
     # ── ATS Analysis ──────────────────────────────────────────────────────────
 
-    @action(detail=True, methods=['post'], url_path='analyse')
+    @action(detail=True, methods=['post'], url_path='analyse',
+            throttle_classes=[AIFeatureThrottle])
     def analyse(self, request, pk=None):
         """
         Trigger ATS analysis for a resume.
@@ -132,7 +139,8 @@ class ResumeViewSet(viewsets.ModelViewSet):
 
     # ── AI Optimisation ───────────────────────────────────────────────────────
 
-    @action(detail=True, methods=['post'], url_path='optimise')
+    @action(detail=True, methods=['post'], url_path='optimise',
+            throttle_classes=[AIFeatureThrottle])
     def optimise(self, request, pk=None):
         """
         Trigger AI-powered resume optimisation.
@@ -197,7 +205,8 @@ class ResumeViewSet(viewsets.ModelViewSet):
 
     # ── Rejection Analysis ────────────────────────────────────────────────────
 
-    @action(detail=True, methods=['post'], url_path='rejection-analysis')
+    @action(detail=True, methods=['post'], url_path='rejection-analysis',
+            throttle_classes=[AIFeatureThrottle])
     def rejection_analysis(self, request, pk=None):
         """
         AI-powered analysis of why a resume may have been rejected.
@@ -261,7 +270,8 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
                 app.ats_score_at_apply = latest.final_score
                 app.save(update_fields=['ats_score_at_apply'])
 
-    @action(detail=True, methods=['post'], url_path='cover-letter')
+    @action(detail=True, methods=['post'], url_path='cover-letter',
+            throttle_classes=[AIFeatureThrottle])
     def cover_letter(self, request, pk=None):
         """Generate or retrieve a cover letter for this application."""
         app = self.get_object()
@@ -293,7 +303,8 @@ class JobApplicationViewSet(viewsets.ModelViewSet):
         data['ai_powered'] = result['ai_powered']
         return Response(data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post'], url_path='interview-prep')
+    @action(detail=True, methods=['post'], url_path='interview-prep',
+            throttle_classes=[AIFeatureThrottle])
     def interview_prep(self, request, pk=None):
         """Generate interview questions for this application."""
         app = self.get_object()

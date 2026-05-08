@@ -86,7 +86,7 @@
         {% if exp.description %}<div class="exp-desc">{{ exp.description }}</div>{% endif %}
         {% if exp.achievements %}
         <ul class="exp-achievements">
-          {% for line in exp.achievements.splitlines %}{% if line.strip %}<li>{{ line|cut:"•"|cut:"-"|cut:"–"|strip }}</li>{% endif %}{% endfor %}
+          {% for line in exp.achievements.splitlines %}{% if line.strip %}<li>{{ line|cut:"•"|cut:"-"|cut:"–" }}</li>{% endif %}{% endfor %}
         </ul>
         {% endif %}
       </div>

@@ -19,17 +19,8 @@ logger = logging.getLogger(__name__)
 @login_required
 def resume_list(request):
     from django.core.paginator import Paginator
-    from django.utils import timezone
 
     all_resumes = ResumeService.get_user_resumes(request.user)
-
-    # Update completeness scores in bulk (cheap, no external calls)
-    from apps.analyzer.views import _compute_completeness
-    for r in all_resumes:
-        new_score = _compute_completeness(r)
-        if r.completeness_score != new_score:
-            r.completeness_score = new_score
-            r.save(update_fields=['completeness_score'])
 
     paginator = Paginator(all_resumes, 12)
     page_obj = paginator.get_page(request.GET.get('page'))
@@ -85,7 +76,15 @@ def resume_create(request):
         elif current_step == 2:
             # Step 2: Experience entries
             action = request.POST.get('action')
-            if action == 'add_experience':
+            if action == 'remove_experience':
+                index = int(request.POST.get('index', -1))
+                experiences = wizard_data['data'].get('experiences', [])
+                if 0 <= index < len(experiences):
+                    wizard_data['data']['experiences'].pop(index)
+                    request.session.modified = True
+                    messages.success(request, 'Experience removed successfully!')
+                return redirect('resume_create')
+            elif action == 'add_experience':
                 from .forms import ExperienceForm
                 form = ExperienceForm(request.POST)
                 if form.is_valid():
@@ -109,7 +108,15 @@ def resume_create(request):
         elif current_step == 3:
             # Step 3: Education entries
             action = request.POST.get('action')
-            if action == 'add_education':
+            if action == 'remove_education':
+                index = int(request.POST.get('index', -1))
+                education = wizard_data['data'].get('education', [])
+                if 0 <= index < len(education):
+                    wizard_data['data']['education'].pop(index)
+                    request.session.modified = True
+                    messages.success(request, 'Education removed successfully!')
+                return redirect('resume_create')
+            elif action == 'add_education':
                 from .forms import EducationForm
                 form = EducationForm(request.POST)
                 if form.is_valid():
@@ -133,7 +140,15 @@ def resume_create(request):
         elif current_step == 4:
             # Step 4: Skills
             action = request.POST.get('action')
-            if action == 'add_skill':
+            if action == 'remove_skill':
+                index = int(request.POST.get('index', -1))
+                skills = wizard_data['data'].get('skills', [])
+                if 0 <= index < len(skills):
+                    wizard_data['data']['skills'].pop(index)
+                    request.session.modified = True
+                    messages.success(request, 'Skill removed successfully!')
+                return redirect('resume_create')
+            elif action == 'add_skill':
                 from .forms import SkillForm
                 form = SkillForm(request.POST)
                 if form.is_valid():
@@ -339,46 +354,16 @@ def resume_create(request):
         from .forms import ExperienceForm
         context['form'] = ExperienceForm()
         context['experiences'] = wizard_data['data'].get('experiences', [])
-        
-        # Handle remove experience action
-        if request.POST.get('action') == 'remove_experience':
-            index = int(request.POST.get('index', -1))
-            if 0 <= index < len(context['experiences']):
-                wizard_data['data']['experiences'].pop(index)
-                request.session.modified = True
-                messages.success(request, 'Experience removed successfully!')
-                return redirect('resume_create')
-        
         return render(request, 'resumes/wizard_steps/step2_experience.html', context)
     elif current_step == 3:
         from .forms import EducationForm
         context['form'] = EducationForm()
         context['education'] = wizard_data['data'].get('education', [])
-        
-        # Handle remove education action
-        if request.POST.get('action') == 'remove_education':
-            index = int(request.POST.get('index', -1))
-            if 0 <= index < len(context['education']):
-                wizard_data['data']['education'].pop(index)
-                request.session.modified = True
-                messages.success(request, 'Education removed successfully!')
-                return redirect('resume_create')
-        
         return render(request, 'resumes/wizard_steps/step3_education.html', context)
     elif current_step == 4:
         from .forms import SkillForm
         context['form'] = SkillForm()
         context['skills'] = wizard_data['data'].get('skills', [])
-        
-        # Handle remove skill action
-        if request.POST.get('action') == 'remove_skill':
-            index = int(request.POST.get('index', -1))
-            if 0 <= index < len(context['skills']):
-                wizard_data['data']['skills'].pop(index)
-                request.session.modified = True
-                messages.success(request, 'Skill removed successfully!')
-                return redirect('resume_create')
-        
         return render(request, 'resumes/wizard_steps/step4_skills.html', context)
     elif current_step == 5:
         from .forms import SummaryForm
@@ -633,8 +618,10 @@ def resume_export(request, pk):
         # Create HTTP response with PDF content
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         
-        # Set headers for download with version number in filename (Requirement: 16.3)
-        filename = f"{resume.title.replace(' ', '_')}"
+        # Sanitize filename to prevent Content-Disposition header injection
+        import re as _re
+        safe_title = _re.sub(r'[^\w\-.]', '_', resume.title)[:100]
+        filename = safe_title
         if version_number:
             filename += f"_v{version_number}"
         
@@ -702,8 +689,10 @@ def resume_export_docx(request, pk):
             content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
         
-        # Set headers for download with version number in filename (Requirement: 16.3)
-        filename = f"{resume.title.replace(' ', '_')}"
+        # Sanitize filename
+        import re as _re
+        safe_title = _re.sub(r'[^\w\-.]', '_', resume.title)[:100]
+        filename = safe_title
         if version_number:
             filename += f"_v{version_number}"
         filename += ".docx"
@@ -761,8 +750,10 @@ def resume_export_text(request, pk):
         # Create HTTP response with plain text content
         response = HttpResponse(text_content, content_type='text/plain; charset=utf-8')
         
-        # Set headers for download with version number in filename (Requirement: 16.3)
-        filename = f"{resume.title.replace(' ', '_')}"
+        # Sanitize filename
+        import re as _re
+        safe_title = _re.sub(r'[^\w\-.]', '_', resume.title)[:100]
+        filename = safe_title
         if version_number:
             filename += f"_v{version_number}"
         filename += ".txt"
@@ -1413,10 +1404,10 @@ def resume_share(request, pk):
 
 def resume_public_view(request, token):
     """Public read-only resume view via share token."""
-    resume = get_object_or_404(Resume, share_token=token)
-    if not resume.share_token:
-        from django.http import Http404
+    from django.http import Http404
+    if not token:
         raise Http404
+    resume = get_object_or_404(Resume, share_token=token)
     context = {
         'resume': resume,
         'personal_info': getattr(resume, 'personal_info', None),
@@ -1888,31 +1879,61 @@ def fix_preview(request, pk):
         messages.error(request, 'Job description not found. Please start the optimization process again.')
         return redirect('fix_resume', pk=pk)
     
-    # Check if optimization results are already in session
-    results_key = f'fix_resume_{pk}_results'
-    optimization_results = request.session.get(results_key)
-    
+    # Check if optimization results are already stored (keyed by history id in session)
+    results_key = f'fix_resume_{pk}_opt_id'
+    opt_id = request.session.get(results_key)
+    optimization_results = None
+
+    if opt_id:
+        from .models import OptimizationHistory
+        try:
+            hist = OptimizationHistory.objects.get(id=opt_id, resume=resume)
+            optimization_results = {
+                'original_score': hist.original_score,
+                'optimized_score': hist.optimized_score or hist.original_score,
+                'improvement_delta': hist.improvement_delta or 0,
+                'changes_summary': hist.changes_summary,
+                'detailed_changes': hist.detailed_changes,
+                'optimized_data': {},
+                'original_analysis': {},
+            }
+        except Exception:
+            opt_id = None
+
     if not optimization_results:
         # Run optimization
         try:
             logger.info(f'Running optimization for resume {pk} by user {request.user.username}')
-            
+
             optimization_results = ResumeOptimizerService.optimize_resume(
                 resume=resume,
                 job_description=job_description
             )
-            
-            # Store results in session
-            request.session[results_key] = optimization_results
+
+            # Persist to DB immediately; store only the ID in session (fixes session bloat)
+            from .models import OptimizationHistory
+            from .services.version_service import VersionService
+            version = resume.versions.order_by('-version_number').first()
+            hist = OptimizationHistory.objects.create(
+                resume=resume,
+                original_version=version,
+                job_description=job_description,
+                original_score=optimization_results['original_score'],
+                optimized_score=optimization_results['optimized_score'],
+                improvement_delta=optimization_results['improvement_delta'],
+                changes_summary=optimization_results['changes_summary'],
+                detailed_changes=optimization_results['detailed_changes'],
+            )
+            request.session[results_key] = hist.id
             request.session.modified = True
-            
+
             logger.info(
                 f'Optimization completed for resume {pk}: '
                 f'Original score: {optimization_results["original_score"]}, '
                 f'Optimized score: {optimization_results["optimized_score"]}, '
                 f'Delta: {optimization_results["improvement_delta"]}'
             )
-            
+
         except Exception as e:
             logger.error(f'Optimization failed for resume {pk}: {e}', exc_info=True)
             messages.error(
@@ -1981,19 +2002,44 @@ def fix_accept(request, pk):
         )
         return HttpResponseForbidden("You do not have permission to accept this optimization.")
     
-    # Get optimization results from session
-    results_key = f'fix_resume_{pk}_results'
+    # Get optimization results from session (stored as history ID)
+    results_key = f'fix_resume_{pk}_opt_id'
     job_desc_key = f'fix_resume_{pk}_job_description'
-    
-    optimization_results = request.session.get(results_key)
+
+    opt_id = request.session.get(results_key)
     job_description = request.session.get(job_desc_key)
-    
-    if not optimization_results or not job_description:
+
+    if not opt_id or not job_description:
         messages.error(request, 'Optimization data not found. Please start the optimization process again.')
+        return redirect('fix_resume', pk=pk)
+
+    # Load the pre-saved OptimizationHistory record
+    from .models import OptimizationHistory as _OptHist
+    try:
+        _existing_hist = _OptHist.objects.get(id=opt_id, resume=resume)
+        optimization_results = {
+            'original_score': _existing_hist.original_score,
+            'optimized_score': _existing_hist.optimized_score or _existing_hist.original_score,
+            'improvement_delta': _existing_hist.improvement_delta or 0,
+            'changes_summary': _existing_hist.changes_summary,
+            'detailed_changes': _existing_hist.detailed_changes,
+        }
+    except _OptHist.DoesNotExist:
+        messages.error(request, 'Optimization record not found. Please start again.')
         return redirect('fix_resume', pk=pk)
     
     try:
         with transaction.atomic():
+            # Idempotency guard — prevent double-apply on double-click / slow network
+            from datetime import timedelta
+            if OptimizationHistory.objects.filter(
+                resume=resume,
+                optimized_version__isnull=False,
+                optimization_timestamp__gte=timezone.now() - timedelta(minutes=5)
+            ).exists():
+                messages.warning(request, 'Optimization was already applied recently.')
+                return redirect('resume_detail', pk=pk)
+
             # Step 1: Create version of current state (before optimization)
             original_version = VersionService.create_version(
                 resume=resume,
@@ -2006,31 +2052,30 @@ def fix_accept(request, pk):
             
             # Step 2: Apply optimized changes to resume
             optimized_data = optimization_results['optimized_data']
-            
-            # Update experiences with optimized descriptions
+
+            # Build lookup maps keyed by model_id for O(1) matching
+            exp_changes = {
+                c['model_id']: c['new_text']
+                for c in optimization_results.get('detailed_changes', [])
+                if c.get('type') == 'bullet_rewrite' and c.get('model') == 'Experience'
+            }
+            proj_changes = {
+                c['model_id']: c['new_text']
+                for c in optimization_results.get('detailed_changes', [])
+                if c.get('type') == 'bullet_rewrite' and c.get('model') == 'Project'
+            }
+
             for exp in resume.experiences.all():
-                # Find matching optimized experience
-                for opt_exp in optimized_data.get('experiences', []):
-                    if (opt_exp.get('company') == exp.company and 
-                        opt_exp.get('role') == exp.role):
-                        # Update description if changed
-                        if opt_exp.get('description') and opt_exp['description'] != exp.description:
-                            exp.description = opt_exp['description']
-                            exp.save()
-                            logger.debug(f'Updated experience: {exp.company} - {exp.role}')
-                        break
-            
-            # Update projects with optimized descriptions
+                if exp.id in exp_changes:
+                    exp.description = exp_changes[exp.id]
+                    exp.save(update_fields=['description'])
+                    logger.debug(f'Updated experience id={exp.id}')
+
             for proj in resume.projects.all():
-                # Find matching optimized project
-                for opt_proj in optimized_data.get('projects', []):
-                    if opt_proj.get('name') == proj.name:
-                        # Update description if changed
-                        if opt_proj.get('description') and opt_proj['description'] != proj.description:
-                            proj.description = opt_proj['description']
-                            proj.save()
-                            logger.debug(f'Updated project: {proj.name}')
-                        break
+                if proj.id in proj_changes:
+                    proj.description = proj_changes[proj.id]
+                    proj.save(update_fields=['description'])
+                    logger.debug(f'Updated project id={proj.id}')
             
             # Add new skills from keyword injections
             from .models import Skill
@@ -2135,7 +2180,7 @@ def fix_reject(request, pk):
         return HttpResponseForbidden("You do not have permission to reject this optimization.")
     
     # Clear session data
-    results_key = f'fix_resume_{pk}_results'
+    results_key = f'fix_resume_{pk}_opt_id'
     job_desc_key = f'fix_resume_{pk}_job_description'
     
     if results_key in request.session:
@@ -2815,18 +2860,15 @@ def customize_template(request, pk):
 def task_progress_sse(request, task_id: str):
     """
     Server-Sent Events endpoint for real-time task progress.
-    Streams task status updates to the browser without polling.
-
-    Usage in JS:
-        const es = new EventSource(`/resumes/task/${taskId}/progress/`);
-        es.onmessage = (e) => { const data = JSON.parse(e.data); ... };
+    Uses threading.Event to avoid blocking the Django worker thread for the
+    full 60-second window — yields immediately when the task completes.
     """
     import json
     import time
     from django.http import StreamingHttpResponse
 
     def event_stream():
-        max_polls = 60  # 60 seconds max
+        max_polls = 60
         for _ in range(max_polls):
             try:
                 from celery.result import AsyncResult
@@ -2842,12 +2884,11 @@ def task_progress_sse(request, task_id: str):
                     else:
                         data['error'] = str(result.result)
                     yield f"data: {json.dumps(data)}\n\n"
-                    break
-                else:
-                    yield f"data: {json.dumps(data)}\n\n"
+                    return
+                yield f"data: {json.dumps(data)}\n\n"
             except Exception as e:
                 yield f"data: {json.dumps({'status': 'ERROR', 'error': str(e)})}\n\n"
-                break
+                return
             time.sleep(1)
 
     response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
@@ -3033,13 +3074,24 @@ def linkedin_import(request):
 def generate_summary_ai(request):
     """
     AJAX endpoint: generate a professional summary using LLM.
-    Falls back to rule-based if AI is unavailable.
+    Rate limited to 20/hour per user.
     """
     from django.http import JsonResponse
     import json
 
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
+
+    try:
+        from ratelimit.utils import is_ratelimited
+        limited = is_ratelimited(
+            request, group='ai_summary', key='user',
+            rate='20/h', method='POST', increment=True
+        )
+        if limited:
+            return JsonResponse({'error': 'Rate limit exceeded. Try again later.'}, status=429)
+    except ImportError:
+        pass
 
     try:
         wizard_data = json.loads(request.body)
@@ -3057,8 +3109,25 @@ def generate_summary_ai(request):
 def rejection_analysis_resume(request, pk):
     """
     AI-powered analysis of why a resume may have been rejected for a specific role.
+    Rate limited to 20/hour per user to protect OpenAI API key.
     """
     from django.http import JsonResponse
+    try:
+        from ratelimit.decorators import ratelimit as _rl
+        # Apply inline rate limit check
+        from ratelimit.utils import is_ratelimited
+        limited = is_ratelimited(
+            request, group='ai_rejection', key='user',
+            rate='20/h', method='POST', increment=request.method == 'POST'
+        )
+        if limited:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'error': 'Rate limit exceeded. Try again later.'}, status=429)
+            from django.http import HttpResponse
+            return HttpResponse('Rate limit exceeded. Try again in an hour.', status=429)
+    except ImportError:
+        pass  # django-ratelimit not installed — skip
+
     resume = get_object_or_404(Resume, id=pk)
 
     if resume.user != request.user:

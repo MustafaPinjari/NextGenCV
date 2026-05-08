@@ -278,23 +278,16 @@ def dashboard(request):
         if analyses.count() >= 1:
             show_charts = True
             
-            # Score trend data
             score_labels = [a.analysis_timestamp.strftime('%m/%d') for a in analyses[:10]]
             score_values = [float(a.final_score) for a in analyses[:10]]
             
-            # Keyword match data (example categories)
             chart_data = {
                 'score_trend': {
                     'labels': score_labels,
                     'scores': score_values
-                },
-                'keyword_match': {
-                    'labels': ['Technical Skills', 'Soft Skills', 'Experience', 'Education', 'Achievements'],
-                    'data': [75, 60, 85, 90, 70]  # Example data
                 }
             }
             
-            # Serialize to JSON for template
             chart_data_json = json.dumps(chart_data)
     
     # Add info message if no resumes exist
