@@ -215,43 +215,61 @@ def settings(request):
 
 @login_required
 def dashboard(request):
-    """User dashboard view"""
-    # Get user's resumes (will be implemented when resume app is ready)
+    """User dashboard view — enriched with tracker stats and score breakdown."""
     from apps.resumes.services import ResumeService
     from apps.analytics.services.analytics_service import AnalyticsService
+    from apps.resumes.models import ResumeAnalysis
+    from apps.tracker.models import JobApplication
     from django.utils import timezone
-    from datetime import timedelta
+    from django.db.models import Avg, Count, Q
     import json
-    
+
     resumes = ResumeService.get_user_resumes(request.user)
-    
-    # Calculate resume health for the first resume (or average if multiple)
+
+    # ── Resume health & ATS score ─────────────────────────────────────────────
     resume_health = None
     average_score = None
-    health_dashoffset = 439.8  # Full circle (no progress)
-    
+    score_breakdown = None
+
     if resumes.exists():
-        # Calculate health for the most recent resume
         latest_resume = resumes.first()
         resume_health = AnalyticsService.calculate_resume_health(latest_resume)
-        
-        # Calculate stroke-dashoffset for circular progress
-        # circumference = 2 * PI * radius = 2 * 3.14159 * 70 = 439.8
-        circumference = 439.8
-        health_dashoffset = circumference - (resume_health / 100) * circumference
-        
-        # Get average score from analyses
-        from apps.resumes.models import ResumeAnalysis
-        analyses = ResumeAnalysis.objects.filter(resume__user=request.user)
-        if analyses.exists():
-            from django.db.models import Avg
-            avg_score = analyses.aggregate(Avg('final_score'))['final_score__avg']
-            average_score = round(avg_score, 1) if avg_score else None
-    
-    # Get real activity log
+
+        analyses_qs = ResumeAnalysis.objects.filter(resume__user=request.user)
+        if analyses_qs.exists():
+            agg = analyses_qs.aggregate(Avg('final_score'))
+            average_score = round(agg['final_score__avg'], 1) if agg['final_score__avg'] else None
+
+            # Latest analysis breakdown for radar/bar chart
+            latest_analysis = analyses_qs.order_by('-analysis_timestamp').first()
+            if latest_analysis:
+                score_breakdown = {
+                    'keyword_match': round(latest_analysis.keyword_match_score, 1),
+                    'skill_relevance': round(latest_analysis.skill_relevance_score, 1),
+                    'section_completeness': round(latest_analysis.section_completeness_score, 1),
+                    'experience_impact': round(latest_analysis.experience_impact_score, 1),
+                    'quantification': round(latest_analysis.quantification_score, 1),
+                    'action_verbs': round(latest_analysis.action_verb_score, 1),
+                }
+
+    # ── Job tracker stats ─────────────────────────────────────────────────────
+    apps_qs = JobApplication.objects.filter(user=request.user)
+    tracker_stats = {
+        'total': apps_qs.count(),
+        'applied': apps_qs.filter(status__in=['applied', 'interview', 'offer', 'rejected']).count(),
+        'interviews': apps_qs.filter(status__in=['interview', 'offer']).count(),
+        'offers': apps_qs.filter(status='offer').count(),
+    }
+    tracker_stats['callback_rate'] = (
+        round(tracker_stats['interviews'] / tracker_stats['applied'] * 100, 1)
+        if tracker_stats['applied'] else 0
+    )
+    recent_apps = list(apps_qs.select_related('resume').order_by('-updated_at')[:4].values(
+        'id', 'company', 'role', 'status', 'updated_at', 'ats_score_at_apply'
+    ))
+
+    # ── Activity log ──────────────────────────────────────────────────────────
     from apps.authentication.models import ActivityLog
-    recent_activities_qs = ActivityLog.objects.filter(user=request.user)[:10]
-    recent_activities = []
     icon_map = {
         'resume_created': 'created', 'resume_updated': 'updated',
         'resume_analyzed': 'analyzed', 'resume_deleted': 'delete',
@@ -260,50 +278,48 @@ def dashboard(request):
         'version_restored': 'updated', 'cover_letter_generated': 'updated',
         'application_created': 'created', 'application_updated': 'updated',
     }
-    for act in recent_activities_qs:
-        recent_activities.append({
+    recent_activities = [
+        {
             'type': icon_map.get(act.action, 'updated'),
             'description': act.description,
             'timestamp': act.created_at,
-        })
-    
-    # Prepare chart data if user has analyses
+            'action': act.action,
+        }
+        for act in ActivityLog.objects.filter(user=request.user)[:8]
+    ]
+
+    # ── Score trend chart ─────────────────────────────────────────────────────
     show_charts = False
     chart_data_json = None
-    
+
     if resumes.exists():
-        from apps.resumes.models import ResumeAnalysis
-        analyses = ResumeAnalysis.objects.filter(resume__user=request.user).order_by('analysis_timestamp')
-        
+        analyses = ResumeAnalysis.objects.filter(
+            resume__user=request.user
+        ).order_by('analysis_timestamp')[:12]
+
         if analyses.count() >= 1:
             show_charts = True
-            
-            score_labels = [a.analysis_timestamp.strftime('%m/%d') for a in analyses[:10]]
-            score_values = [float(a.final_score) for a in analyses[:10]]
-            
-            chart_data = {
+            chart_data_json = json.dumps({
                 'score_trend': {
-                    'labels': score_labels,
-                    'scores': score_values
-                }
-            }
-            
-            chart_data_json = json.dumps(chart_data)
-    
-    # Add info message if no resumes exist
-    if not resumes.exists():
-        messages.info(request, 'Welcome! Get started by creating your first resume.')
-    
+                    'labels': [a.analysis_timestamp.strftime('%b %d') for a in analyses],
+                    'scores': [float(a.final_score) for a in analyses],
+                },
+                'breakdown': score_breakdown or {},
+            })
+
     context = {
         'user': request.user,
         'resumes': resumes,
         'resume_health': resume_health,
-        'health_dashoffset': health_dashoffset,
         'average_score': average_score,
+        'score_breakdown': score_breakdown,
+        'tracker_stats': tracker_stats,
+        'recent_apps': recent_apps,
         'recent_activities': recent_activities,
         'show_charts': show_charts,
         'chart_data_json': chart_data_json,
         'current_date': timezone.now(),
+        'is_new_user': not resumes.exists(),
     }
     return render(request, 'authentication/dashboard_new.html', context)
 

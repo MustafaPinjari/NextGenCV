@@ -94,6 +94,15 @@ body {
   flex-shrink: 0;
 }
 
+.sidebar__logo-img {
+  height: 44px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+  max-width: 160px;
+}
+
 .sidebar__logo-text {
   font-size: .95rem;
   font-weight: 800;
@@ -106,6 +115,10 @@ body {
   opacity: 0;
   width: 0;
   overflow: hidden;
+}
+
+.sidebar--collapsed .sidebar__logo-img {
+  height: 28px;
 }
 
 .sidebar__toggle {

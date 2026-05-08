@@ -51,6 +51,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem;
 }
 .auth-brand-name{font-size:1.1rem;font-weight:800;color:var(--text)}
+.auth-brand-logo{height:80px;width:auto;display:block;object-fit:contain;max-width:220px}
 
 .auth-left-body{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
 .auth-left-tag{
@@ -173,8 +174,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:1
   <div class="auth-left">
     <div class="auth-left-orb"></div>
     <a href="{% url 'landing' %}" class="auth-brand">
-      <div class="auth-brand-icon"><i class="bi bi-file-earmark-text"></i></div>
-      <span class="auth-brand-name">NextGenCV</span>
+      <img src="{% static 'images/logo.png' %}" alt="NextGenCV" class="auth-brand-logo">
     </a>
 
     <div class="auth-left-body">

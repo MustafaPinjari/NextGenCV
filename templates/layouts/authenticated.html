@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NextGenCV{% endblock %}</title>
-    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     
     <!-- Design System CSS -->
     <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
@@ -24,10 +24,7 @@
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
         <div class="sidebar__header">
                 <a href="{% url 'dashboard' %}" class="sidebar__logo">
-                <span class="sidebar__logo-icon">
-                    <i class="bi bi-file-earmark-text"></i>
-                </span>
-                <span class="sidebar__logo-text">NextGenCV</span>
+                <img src="{% static 'images/logo.png' %}" alt="NextGenCV" class="sidebar__logo-img">
             </a>
             <button class="sidebar__toggle" id="sidebarToggle" aria-label="Toggle sidebar" aria-expanded="true" aria-controls="sidebar">
                 <i class="bi bi-chevron-left"></i>

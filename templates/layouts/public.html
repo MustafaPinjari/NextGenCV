@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}NextGenCV - AI-Powered Resume Builder{% endblock %}</title>
-    <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     
     <!-- Design System CSS -->
     <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
@@ -23,10 +23,7 @@
     <nav class="public-nav" id="publicNav" role="navigation" aria-label="Main navigation">
         <div class="public-nav__container">
             <a href="{% url 'landing' %}" class="public-nav__logo">
-                <span class="public-nav__logo-icon">
-                    <i class="bi bi-file-earmark-text"></i>
-                </span>
-                <span class="public-nav__logo-text">NextGenCV</span>
+                <img src="{% static 'images/logo.png' %}" alt="NextGenCV" class="public-nav__logo-img">
             </a>
 
             <!-- Desktop Navigation -->
@@ -114,10 +111,7 @@
                 <!-- Brand Column -->
                 <div class="public-footer__column public-footer__column--brand">
                     <div class="public-footer__logo">
-                        <span class="public-footer__logo-icon">
-                            <i class="bi bi-file-earmark-text"></i>
-                        </span>
-                        <span class="public-footer__logo-text">NextGenCV</span>
+                        <img src="{% static 'images/logo.png' %}" alt="NextGenCV" class="public-footer__logo-img">
                     </div>
                     <p class="public-footer__tagline">
                         AI-powered resume builder that helps you land your dream job.

@@ -32,7 +32,8 @@
 .public-nav__container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: var(--spacing-3) var(--spacing-4);
+    padding: 0 var(--spacing-4);
+    height: 68px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -43,12 +44,10 @@
 .public-nav__logo {
     display: flex;
     align-items: center;
-    gap: var(--spacing-2);
     text-decoration: none;
-    color: var(--color-text-primary);
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    font-family: var(--font-display);
+    height: 68px;
+    overflow: hidden;
+    flex-shrink: 0;
     transition: opacity var(--duration-fast) var(--easing-default);
 }
 
@@ -59,6 +58,16 @@
 .public-nav__logo-icon {
     font-size: var(--font-size-2xl);
     color: var(--color-primary-solid);
+}
+
+.public-nav__logo-img {
+    height: 100%;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    object-position: left center;
+    max-width: 200px;
+    padding: 10px 0;
 }
 
 /* Desktop Menu */
@@ -304,6 +313,14 @@
     color: var(--color-primary-solid);
 }
 
+.public-footer__logo-img {
+    height: 52px;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    max-width: 200px;
+}
+
 .public-footer__tagline {
     color: var(--color-text-secondary);
     font-size: var(--font-size-sm);
@@ -515,7 +532,12 @@
 /* Mobile */
 @media (max-width: 768px) {
     .public-nav__container {
-        padding: var(--spacing-2) var(--spacing-3);
+        padding: 0 var(--spacing-3);
+        height: 60px;
+    }
+    
+    .public-nav__logo {
+        height: 60px;
     }
     
     .public-nav__actions {

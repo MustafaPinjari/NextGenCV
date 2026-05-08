@@ -2457,7 +2457,7 @@ select:focus {
   top: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: 80px;
   background: transparent;
   border-bottom: 1px solid transparent;
   display: flex;
@@ -2477,6 +2477,7 @@ select:focus {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -2491,15 +2492,28 @@ select:focus {
   font-size: 1.25rem;
   font-weight: 700;
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  height: 80px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .public-nav__logo:hover {
   color: #0066ff;
+  opacity: 0.85;
 }
 
 .public-nav__logo-icon {
   font-size: 1.5rem;
   color: #0066ff;
+}
+
+.public-nav__logo-img {
+  height: 150px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  object-position: left center;
+  max-width: 240px;
 }
 
 .public-nav__logo-text {
@@ -2715,6 +2729,14 @@ select:focus {
 .public-footer__logo-icon {
   font-size: 1.5rem;
   color: #0066ff;
+}
+
+.public-footer__logo-img {
+  height: 52px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+  max-width: 200px;
 }
 
 .public-footer__logo-text {
