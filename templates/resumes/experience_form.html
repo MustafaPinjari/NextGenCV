@@ -1,76 +1,69 @@
-{% extends 'base.html' %}
-
-{% block title %}{{ action }} Experience - {{ resume.title }}{% endblock %}
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}{{ action }} Experience — {{ resume.title }}{% endblock %}
+{% block extra_css %}<style>
+*{box-sizing:border-box}
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.main-content{background:var(--bg)!important}.content-wrapper{background:transparent!important}
+.ef-wrap{padding:32px;max-width:760px;margin:0 auto}
+.ef-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:28px;flex-wrap:wrap}
+.ef-hdr h1{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin:0 0 4px}
+.ef-hdr p{font-size:.8rem;color:var(--text3);margin:0}
+.btn-back{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r8);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s}
+.btn-back:hover{border-color:var(--primary);color:var(--primary-light)}
+.ef-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r20);padding:28px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.form-group{display:flex;flex-direction:column;gap:6px}
+.form-group.full{grid-column:1/-1}
+label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+.label-req::after{content:' *';color:var(--red)}
+input,textarea,select{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 13px;color:var(--text);font-family:var(--font);font-size:.88rem;transition:border-color .15s;width:100%}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
+.field-hint{font-size:.72rem;color:var(--text3);margin-top:2px}
+.field-error{font-size:.75rem;color:var(--red);margin-top:3px}
+.divider{display:flex;align-items:center;gap:10px;margin:22px 0 18px;font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.form-errors{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);border-radius:var(--r8);padding:12px 16px;margin-bottom:20px;font-size:.83rem;color:var(--red)}
+.form-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.opt-badge{font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:99px;background:rgba(139,146,158,.1);color:var(--text3);border:1px solid var(--border2);margin-left:6px}
+@media(max-width:640px){.ef-wrap{padding:20px}.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:1}}
+</style>{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-8 offset-md-2">
-            <div class="card">
-                <div class="card-header">
-                    <h3>{{ action }} Experience - {{ resume.title }}</h3>
-                </div>
-                <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-                        
-                        {% if form.non_field_errors %}
-                            <div class="alert alert-danger">
-                                {{ form.non_field_errors }}
-                            </div>
-                        {% endif %}
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.company.id_for_label }}" class="form-label">Company *</label>
-                            {{ form.company }}
-                            {% if form.company.errors %}
-                                <div class="text-danger">{{ form.company.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.role.id_for_label }}" class="form-label">Role *</label>
-                            {{ form.role }}
-                            {% if form.role.errors %}
-                                <div class="text-danger">{{ form.role.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.start_date.id_for_label }}" class="form-label">Start Date *</label>
-                                {{ form.start_date }}
-                                {% if form.start_date.errors %}
-                                    <div class="text-danger">{{ form.start_date.errors }}</div>
-                                {% endif %}
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="{{ form.end_date.id_for_label }}" class="form-label">End Date</label>
-                                {{ form.end_date }}
-                                <small class="form-text text-muted">Leave blank if current position</small>
-                                {% if form.end_date.errors %}
-                                    <div class="text-danger">{{ form.end_date.errors }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="{{ form.description.id_for_label }}" class="form-label">Description *</label>
-                            {{ form.description }}
-                            {% if form.description.errors %}
-                                <div class="text-danger">{{ form.description.errors }}</div>
-                            {% endif %}
-                        </div>
-                        
-                        <div class="d-flex justify-content-between">
-                            <a href="{% url 'resume_update' resume.id %}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Save Experience</button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
+<div class="ef-wrap">
+  <div class="ef-hdr">
+    <div>
+      <h1><i class="bi bi-briefcase" style="color:var(--primary-light)"></i> {{ action }} Experience</h1>
+      <p><i class="bi bi-file-earmark-text"></i> {{ resume.title }}</p>
     </div>
+    <a href="{% url 'resume_update' resume.id %}" class="btn-back"><i class="bi bi-arrow-left"></i> Back to Resume</a>
+  </div>
+  <div class="ef-card">
+    {% if form.non_field_errors %}<div class="form-errors"><i class="bi bi-exclamation-circle"></i> {% for e in form.non_field_errors %}{{ e }}{% endfor %}</div>{% endif %}
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="form-grid">
+        <div class="form-group"><label class="label-req">Company</label>{{ form.company }}{% if form.company.errors %}<div class="field-error">{{ form.company.errors.0 }}</div>{% endif %}</div>
+        <div class="form-group"><label class="label-req">Job Title / Role</label>{{ form.role }}{% if form.role.errors %}<div class="field-error">{{ form.role.errors.0 }}</div>{% endif %}</div>
+        <div class="form-group"><label>Location <span class="opt-badge">Optional</span></label>{{ form.location }}</div>
+        <div class="form-group"></div>
+        <div class="form-group"><label class="label-req">Start Date</label>{{ form.start_date }}{% if form.start_date.errors %}<div class="field-error">{{ form.start_date.errors.0 }}</div>{% endif %}</div>
+        <div class="form-group"><label>End Date <span class="opt-badge">Optional</span></label>{{ form.end_date }}<span class="field-hint">Leave blank if current position</span></div>
+        <div class="form-group full"><label>Description <span class="opt-badge">Optional</span></label>{{ form.description }}<span class="field-hint">Brief overview of your role and responsibilities</span></div>
+        <div class="form-group full"><label>Achievements <span class="opt-badge">Optional</span></label>{{ form.achievements }}<span class="field-hint">One achievement per line — start with action verbs and include metrics</span></div>
+      </div>
+      <div class="form-actions">
+        <a href="{% url 'resume_update' resume.id %}" class="btn btn-ghost"><i class="bi bi-x-lg"></i> Cancel</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Save Experience</button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

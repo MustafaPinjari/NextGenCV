@@ -1,35 +1,57 @@
-{% extends "base.html" %}
-{% block title %}Resend Verification Email — NextGenCV{% endblock %}
+{% extends 'layouts/public.html' %}
+{% block title %}Resend Verification — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<style>
+*{box-sizing:border-box}
+:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--red:#f87171;--green:#10b981;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.rv-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px}
+.rv-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r20);padding:36px;width:100%;max-width:440px}
+.rv-icon{font-size:2.5rem;color:var(--primary-light);margin-bottom:16px;display:block;text-align:center}
+.rv-title{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px;text-align:center}
+.rv-sub{font-size:.85rem;color:var(--text2);margin-bottom:24px;text-align:center;line-height:1.6}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+input{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:11px 14px;color:var(--text);font-family:var(--font);font-size:.9rem;width:100%;transition:border-color .15s}
+input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+input::placeholder{color:var(--text3)}
+.btn-submit{width:100%;padding:12px;border-radius:var(--r8);background:linear-gradient(135deg,var(--primary),#8b5cf6);border:none;color:#fff;font-size:.9rem;font-weight:700;font-family:var(--font);cursor:pointer;transition:opacity .2s;margin-top:4px}
+.btn-submit:hover{opacity:.9}
+.rv-footer{text-align:center;margin-top:18px;font-size:.82rem;color:var(--text3)}
+.rv-footer a{color:var(--primary-light);text-decoration:none}
+.rv-footer a:hover{text-decoration:underline}
+.alert{padding:12px 14px;border-radius:var(--r8);margin-bottom:16px;font-size:.83rem;display:flex;align-items:flex-start;gap:8px}
+.alert-success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green)}
+.alert-error{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
+.alert-info{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);color:var(--primary-light)}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container py-5" style="max-width: 480px;">
-  <div class="card bg-dark border-secondary">
-    <div class="card-body p-4">
-      <h2 class="mb-1 fw-bold">Resend Verification</h2>
-      <p class="text-muted mb-4">Enter your email address and we'll send a new verification link.</p>
+<div class="rv-wrap">
+  <div class="rv-card">
+    <i class="bi bi-envelope-check rv-icon"></i>
+    <div class="rv-title">Resend Verification</div>
+    <div class="rv-sub">Enter your email address and we'll send a new verification link.</div>
 
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}"><i class="bi bi-info-circle"></i> {{ message }}</div>
+      {% endfor %}
+    {% endif %}
 
-      <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-          <label for="email" class="form-label">Email address</label>
-          <input type="email" class="form-control" id="email" name="email" required
-                 placeholder="you@example.com" autofocus>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Send Verification Link</button>
-      </form>
-
-      <div class="mt-3 text-center">
-        <a href="{% url 'login' %}" class="text-muted small">Back to login</a>
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" name="email" required placeholder="you@example.com" autofocus>
       </div>
+      <button type="submit" class="btn-submit"><i class="bi bi-send"></i> Send Verification Link</button>
+    </form>
+
+    <div class="rv-footer">
+      <a href="{% url 'login' %}"><i class="bi bi-arrow-left"></i> Back to login</a>
     </div>
   </div>
 </div>

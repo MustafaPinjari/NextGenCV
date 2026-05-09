@@ -1,163 +1,140 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
 {% load static %}
 
-{% block title %}Optimization History - {{ resume.title }}{% endblock %}
+{% block title %}Optimization History — {{ resume.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+*{box-sizing:border-box}:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}.main-content{background:var(--bg)!important}.content-wrapper{background:transparent!important}
+.oh-wrap{padding:32px;max-width:900px;margin:0 auto}
+.oh-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.oh-hdr h2{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin:0 0 4px}
+.oh-hdr p{font-size:.8rem;color:var(--text3);margin:0}
+.btn-back{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--r8);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s}
+.btn-back:hover{border-color:var(--primary);color:var(--primary-light)}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:16px;text-align:center}
+.stat-val{font-size:1.8rem;font-weight:900;letter-spacing:-.04em;color:var(--primary-light)}
+.stat-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.oh-list{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);overflow:hidden}
+.oh-list-hdr{padding:16px 20px;border-bottom:1px solid var(--border);font-size:.9rem;font-weight:700}
+.oh-item{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);text-decoration:none;transition:background .15s}
+.oh-item:last-child{border-bottom:none}
+.oh-item:hover{background:rgba(99,102,241,.04)}
+.oh-item-left{flex:1;min-width:0}
+.oh-date{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.oh-jd{font-size:.78rem;color:var(--text3);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:500px}
+.oh-badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:3px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:99px}
+.badge-primary{background:rgba(99,102,241,.15);color:var(--primary-light)}
+.badge-info{background:rgba(6,182,212,.12);color:#06b6d4}
+.badge-success{background:rgba(16,185,129,.12);color:var(--green)}
+.oh-scores{text-align:right;flex-shrink:0}
+.score-row{display:flex;align-items:center;gap:8px;justify-content:flex-end;margin-bottom:6px;font-size:.82rem}
+.score-pill{padding:3px 10px;border-radius:99px;font-weight:700;font-size:.75rem}
+.score-old{background:var(--surface2);color:var(--text3)}
+.score-new{background:rgba(16,185,129,.12);color:var(--green)}
+.score-delta{background:rgba(16,185,129,.12);color:var(--green);padding:3px 9px;border-radius:99px;font-size:.72rem;font-weight:700}
+.empty{text-align:center;padding:60px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r20)}
+.empty i{font-size:3rem;color:var(--text3);display:block;margin-bottom:14px;opacity:.5}
+.empty h4{font-size:1rem;font-weight:700;margin-bottom:8px}
+.empty p{font-size:.83rem;color:var(--text3);margin-bottom:18px}
+.btn-primary{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r8);background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff;font-size:.85rem;font-weight:600;text-decoration:none;border:none;cursor:pointer;font-family:var(--font)}
+.btn-primary:hover{opacity:.9;color:#fff}
+.pagination{display:flex;gap:6px;justify-content:center;margin-top:20px}
+.page-btn{padding:7px 14px;border-radius:var(--r8);background:var(--surface2);border:1px solid var(--border2);color:var(--text2);font-size:.82rem;text-decoration:none;transition:all .15s}
+.page-btn:hover,.page-btn.active{background:rgba(99,102,241,.12);border-color:var(--primary);color:var(--primary-light)}
+@media(max-width:700px){.oh-wrap{padding:20px}.stats-row{grid-template-columns:1fr}.oh-item{flex-direction:column}.oh-scores{text-align:left}}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="oh-wrap">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="oh-hdr">
         <div>
-            <h2>Optimization History</h2>
-            <p class="text-muted">{{ resume.title }}</p>
+            <h2><i class="bi bi-clock-history" style="color:var(--primary-light)"></i> Optimization History</h2>
+            <p><i class="bi bi-file-earmark-text"></i> {{ resume.title }}</p>
         </div>
-        <a href="{% url 'resume_detail' resume.id %}" class="btn btn-outline-secondary">
+        <a href="{% url 'resume_detail' resume.id %}" class="btn-back">
             <i class="bi bi-arrow-left"></i> Back to Resume
         </a>
     </div>
 
     <!-- Summary Stats -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    <h3 class="mb-0">{{ total_optimizations }}</h3>
-                    <p class="text-muted mb-0">Total Optimizations</p>
-                </div>
-            </div>
+    <div class="stats-row">
+        <div class="stat">
+            <div class="stat-val">{{ total_optimizations }}</div>
+            <div class="stat-lbl">Total Optimizations</div>
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    {% if optimization_data %}
-                        <h3 class="mb-0 text-success">+{{ optimization_data.0.improvement_delta|floatformat:1 }}</h3>
-                        <p class="text-muted mb-0">Latest Improvement</p>
-                    {% else %}
-                        <h3 class="mb-0">-</h3>
-                        <p class="text-muted mb-0">No optimizations yet</p>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="stat">
+            {% if optimization_data %}
+                <div class="stat-val" style="color:var(--green)">+{{ optimization_data.0.improvement_delta|floatformat:1 }}</div>
+                <div class="stat-lbl">Latest Improvement</div>
+            {% else %}
+                <div class="stat-val" style="color:var(--text3)">—</div>
+                <div class="stat-lbl">No optimizations yet</div>
+            {% endif %}
         </div>
-        <div class="col-md-4">
-            <div class="card">
-                <div class="card-body text-center">
-                    {% if optimization_data %}
-                        <h3 class="mb-0">{{ optimization_data.0.optimized_score|floatformat:1 }}</h3>
-                        <p class="text-muted mb-0">Current Score</p>
-                    {% else %}
-                        <h3 class="mb-0">-</h3>
-                        <p class="text-muted mb-0">No score available</p>
-                    {% endif %}
-                </div>
-            </div>
+        <div class="stat">
+            {% if optimization_data %}
+                <div class="stat-val">{{ optimization_data.0.optimized_score|floatformat:1 }}</div>
+                <div class="stat-lbl">Current Score</div>
+            {% else %}
+                <div class="stat-val" style="color:var(--text3)">—</div>
+                <div class="stat-lbl">No score available</div>
+            {% endif %}
         </div>
     </div>
 
     <!-- Optimization History List -->
     {% if optimization_data %}
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Optimization Sessions</h5>
-            </div>
-            <div class="list-group list-group-flush">
+        <div class="oh-list">
+            <div class="oh-list-hdr">Optimization Sessions</div>
                 {% for opt in optimization_data %}
-                    <a href="{% url 'optimization_history_detail' resume.id opt.id %}" 
-                       class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between align-items-start">
-                            <div class="flex-grow-1">
-                                <div class="d-flex align-items-center mb-2">
-                                    <i class="bi bi-calendar3 me-2 text-muted"></i>
-                                    <strong>{{ opt.created_at|date:"F d, Y" }}</strong>
-                                    <span class="ms-2 text-muted">{{ opt.created_at|date:"g:i A" }}</span>
-                                </div>
-                                
-                                <div class="mb-2">
-                                    <small class="text-muted">Job Description:</small>
-                                    <p class="mb-0 text-truncate">{{ opt.job_description_snippet }}</p>
-                                </div>
-                                
-                                <div class="d-flex gap-3">
-                                    <span class="badge bg-primary">
-                                        {{ opt.changes_summary.total_changes }} changes
-                                    </span>
-                                    {% if opt.changes_summary.bullet_rewrites > 0 %}
-                                        <span class="badge bg-info">
-                                            {{ opt.changes_summary.bullet_rewrites }} bullet rewrites
-                                        </span>
-                                    {% endif %}
-                                    {% if opt.changes_summary.keyword_injections > 0 %}
-                                        <span class="badge bg-success">
-                                            {{ opt.changes_summary.keyword_injections }} keywords added
-                                        </span>
-                                    {% endif %}
-                                </div>
+                    <a href="{% url 'optimization_history_detail' resume.id opt.id %}" class="oh-item">
+                        <div class="oh-item-left">
+                            <div class="oh-date"><i class="bi bi-calendar3"></i> {{ opt.created_at|date:"F d, Y" }} <span style="color:var(--text3);font-weight:400">{{ opt.created_at|date:"g:i A" }}</span></div>
+                            <div class="oh-jd">{{ opt.job_description_snippet }}</div>
+                            <div class="oh-badges">
+                                <span class="badge badge-primary">{{ opt.changes_summary.total_changes }} changes</span>
+                                {% if opt.changes_summary.bullet_rewrites > 0 %}<span class="badge badge-info">{{ opt.changes_summary.bullet_rewrites }} bullet rewrites</span>{% endif %}
+                                {% if opt.changes_summary.keyword_injections > 0 %}<span class="badge badge-success">{{ opt.changes_summary.keyword_injections }} keywords added</span>{% endif %}
                             </div>
-                            
-                            <div class="text-end ms-3">
-                                <div class="mb-2">
-                                    <span class="text-muted small">Score Change</span>
-                                </div>
-                                <div class="d-flex align-items-center">
-                                    <span class="badge bg-secondary me-2">{{ opt.original_score|floatformat:1 }}</span>
-                                    <i class="bi bi-arrow-right text-muted"></i>
-                                    <span class="badge bg-success ms-2">{{ opt.optimized_score|floatformat:1 }}</span>
-                                </div>
-                                <div class="mt-1">
-                                    <span class="badge bg-success">
-                                        <i class="bi bi-arrow-up"></i> +{{ opt.improvement_delta|floatformat:1 }}
-                                    </span>
-                                </div>
+                        </div>
+                        <div class="oh-scores">
+                            <div class="score-row">
+                                <span class="score-pill score-old">{{ opt.original_score|floatformat:1 }}</span>
+                                <i class="bi bi-arrow-right" style="color:var(--text3);font-size:.75rem"></i>
+                                <span class="score-pill score-new">{{ opt.optimized_score|floatformat:1 }}</span>
                             </div>
+                            <span class="score-delta"><i class="bi bi-arrow-up"></i> +{{ opt.improvement_delta|floatformat:1 }}</span>
                         </div>
                     </a>
                 {% endfor %}
-            </div>
         </div>
 
         <!-- Pagination -->
         {% if page_obj.has_other_pages %}
-            <nav aria-label="Optimization history pagination" class="mt-4">
-                <ul class="pagination justify-content-center">
-                    {% if page_obj.has_previous %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page=1">First</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
-                        </li>
-                    {% endif %}
-
-                    <li class="page-item active">
-                        <span class="page-link">
-                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-                        </span>
-                    </li>
-
-                    {% if page_obj.has_next %}
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </nav>
+            <div class="pagination">
+                {% if page_obj.has_previous %}
+                    <a class="page-btn" href="?page=1">First</a>
+                    <a class="page-btn" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                {% endif %}
+                <span class="page-btn active">{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+                {% if page_obj.has_next %}
+                    <a class="page-btn" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    <a class="page-btn" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                {% endif %}
+            </div>
         {% endif %}
     {% else %}
-        <!-- Empty State -->
-        <div class="card">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-clock-history display-1 text-muted mb-3"></i>
-                <h4>No Optimization History</h4>
-                <p class="text-muted">
-                    You haven't optimized this resume yet. Use the "Fix My Resume" feature to improve your resume's ATS score.
-                </p>
-                <a href="{% url 'fix_resume' resume.id %}" class="btn btn-primary mt-3">
-                    <i class="bi bi-magic"></i> Optimize Resume
-                </a>
-            </div>
+        <div class="empty">
+            <i class="bi bi-clock-history"></i>
+            <h4>No Optimization History</h4>
+            <p>You haven't optimized this resume yet. Use "Fix My Resume" to improve your ATS score.</p>
+            <a href="{% url 'fix_resume' resume.id %}" class="btn-primary"><i class="bi bi-magic"></i> Optimize Resume</a>
         </div>
     {% endif %}
 </div>

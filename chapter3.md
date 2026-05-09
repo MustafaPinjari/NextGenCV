@@ -1382,3 +1382,518 @@ The class diagram below shows all major service classes in NextGenCV, their attr
 ---
 
 ✅ Section 3.5 complete. Type 'next' for the next section.
+
+---
+
+## 3.6 Use Case Diagram
+
+Three actors interact with NextGenCV: **Guest** (unauthenticated visitor), **Registered User** (authenticated), and **Admin** (Django superuser). Use cases are grouped by module. Include (`<<include>>`) and extend (`<<extend>>`) relationships are shown where relevant.
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════════════╗
+║                          NextGenCV — Use Case Diagram                                        ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════╝
+
+  ACTORS
+  ──────
+  [Guest]            Unauthenticated visitor
+  [Registered User]  Logged-in account holder
+  [Admin]            Django superuser / staff
+
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Authentication                                                                      │
+│                                                                                              │
+│  [Guest] ──────────────────────────────► ( Register Account )                               │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Send Verification Email )                         │
+│                                                                                              │
+│  [Guest] ──────────────────────────────► ( Login )                                          │
+│                                                  │                                           │
+│                                          <<extend>>                                          │
+│                                                  ▼                                           │
+│                                          ( Two-Factor / Email Verify )                       │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Verify Email Address )                           │
+│  [Registered User] ────────────────────► ( Resend Verification Email )                      │
+│  [Registered User] ────────────────────► ( Logout )                                         │
+│  [Registered User] ────────────────────► ( Reset Password )                                 │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Receive Reset Email )                             │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Dashboard )                                 │
+│  [Registered User] ────────────────────► ( Edit Profile )                                   │
+│  [Registered User] ────────────────────► ( Change Settings )                                │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Resume Management                                                                   │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Resume List )                               │
+│  [Registered User] ────────────────────► ( Create Resume via Wizard )                       │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Step 1: Personal Info )                           │
+│                                          ( Step 2: Experience )                              │
+│                                          ( Step 3: Education )                               │
+│                                          ( Step 4: Skills )                                  │
+│                                          ( Step 5: Summary )                                 │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Resume Detail )                             │
+│  [Registered User] ────────────────────► ( Edit Resume )                                    │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Add / Edit / Delete Experience )                  │
+│                                          ( Add / Edit / Delete Education )                   │
+│                                          ( Add / Edit / Delete Skill )                       │
+│                                          ( Add / Edit / Delete Project )                     │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Delete Resume )                                  │
+│  [Registered User] ────────────────────► ( Duplicate Resume )                               │
+│  [Registered User] ────────────────────► ( Export Resume as PDF )                           │
+│                                                  │                                           │
+│                                          <<extend>>                                          │
+│                                                  ▼                                           │
+│                                          ( Export Specific Version as PDF )                  │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Export Resume as DOCX )                          │
+│  [Registered User] ────────────────────► ( Export Resume as Plain Text )                    │
+│  [Registered User] ────────────────────► ( Upload PDF Resume )                              │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Review Parsed Data )                              │
+│                                          ( Confirm Import to Resume )                        │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Share Resume via Public Link )                   │
+│  [Guest]           ────────────────────► ( View Public Resume )                             │
+│  [Registered User] ────────────────────► ( Customise Template )                             │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Select Colour Scheme )                            │
+│                                          ( Select Font Family )                              │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: ATS Analysis                                                                        │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Analyse Resume vs Job Description )              │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Extract Keywords via spaCy )                      │
+│                                          ( Calculate 6-Factor Score )                        │
+│                                          ( Generate Keyword Suggestions )                    │
+│                                          ( Save Analysis to DB )                             │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Simulate ATS Systems )                           │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Simulate Taleo )                                  │
+│                                          ( Simulate Workday )                                │
+│                                          ( Simulate Greenhouse )                             │
+│                                          ( Simulate Lever )                                  │
+│                                          ( Simulate iCIMS )                                  │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Beat the ATS )                                   │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Get Battle Plan )                                 │
+│                                          ( Simulate Score After Adding Keywords )            │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: AI Optimisation (Fix My Resume)                                                     │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Start AI Optimisation )                          │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Rewrite Bullet Points via GPT-4o-mini )          │
+│                                          ( Suggest Quantifications )                         │
+│                                          ( Standardise Formatting )                          │
+│                                          ( Calculate Improvement Delta )                     │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Preview Optimised Changes )                      │
+│  [Registered User] ────────────────────► ( Accept All Changes )                             │
+│  [Registered User] ────────────────────► ( Reject All Changes )                             │
+│  [Registered User] ────────────────────► ( Accept / Reject Individual Changes )             │
+│                                                  │                                           │
+│                                          <<extend>>                                          │
+│                                                  ▼                                           │
+│                                          ( Save Optimisation History Record )                │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Version Control                                                                     │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Version History )                           │
+│  [Registered User] ────────────────────► ( View Version Detail / Snapshot )                 │
+│  [Registered User] ────────────────────► ( Compare Two Versions )                           │
+│  [Registered User] ────────────────────► ( Restore Previous Version )                       │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Create New Version Snapshot )                     │
+│                                          ( Update Resume Current Version Number )            │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Optimisation History )                      │
+│  [Registered User] ────────────────────► ( View Optimisation Detail )                       │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Analytics                                                                           │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Analytics Dashboard )                       │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Calculate Resume Health Scores )                  │
+│                                          ( Display Score Trend Chart )                       │
+│                                          ( Show Top Missing Keywords )                       │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Score Trends )                              │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Calculate Moving Average )                        │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Improvement Report )                        │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Generate Personalised Recommendations )           │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Job Tracker                                                                         │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Applications List )                         │
+│  [Registered User] ────────────────────► ( Add Job Application )                            │
+│                                                  │                                           │
+│                                          <<extend>>                                          │
+│                                                  ▼                                           │
+│                                          ( Scrape Job from URL )                             │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Application Detail )                        │
+│  [Registered User] ────────────────────► ( Edit Application )                               │
+│  [Registered User] ────────────────────► ( Delete Application )                             │
+│  [Registered User] ────────────────────► ( Update Application Status )                      │
+│                                                  │                                           │
+│                                          (status: saved → applied → interview                │
+│                                           → offer / rejected / withdrawn)                   │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( View Outcome Dashboard )                         │
+│  [Registered User] ────────────────────► ( View Rejection Analysis )                        │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: AI Tools (GPT-4o-mini powered)                                                      │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Generate Cover Letter )                          │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Call LLMService.generate_cover_letter() )        │
+│                                          ( Link to Job Application )                         │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Generate Interview Prep Questions )              │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Call LLMService.generate_interview_questions() ) │
+│                                          ( Save InterviewPrepSession )                       │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Run Skill Gap Analysis )                         │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Call LLMService.analyse_skill_gap() )            │
+│                                          ( Save SkillGapAnalysis )                           │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Generate Follow-up Email )                       │
+│  [Registered User] ────────────────────► ( Analyse Rejection )                              │
+│  [Registered User] ────────────────────► ( View Salary Intelligence )                       │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Template Gallery                                                                    │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Browse Template Gallery )                        │
+│  [Registered User] ────────────────────► ( Preview Template )                               │
+│  [Registered User] ────────────────────► ( Select Template for Resume )                     │
+│  [Registered User] ────────────────────► ( Customise Template )                             │
+│                                                  │                                           │
+│                                          <<include>>                                         │
+│                                                  ▼                                           │
+│                                          ( Preview Customisation Live )                      │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: REST API (api/v1/)                                                                  │
+│                                                                                              │
+│  [Registered User] ────────────────────► ( Obtain JWT Token )                               │
+│  [Registered User] ────────────────────► ( Refresh JWT Token )                              │
+│  [Registered User] ────────────────────► ( Get Current User Profile )                       │
+│  [Registered User] ────────────────────► ( CRUD Resumes via API )                           │
+│  [Registered User] ────────────────────► ( CRUD Job Applications via API )                  │
+│  [Registered User] ────────────────────► ( Poll Async Task Status )                         │
+│  [Registered User] ────────────────────► ( Get Outcome Analytics )                          │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────────────────────┐
+│  MODULE: Admin Panel (/admin/)                                                               │
+│                                                                                              │
+│  [Admin] ──────────────────────────────► ( Manage Users )                                   │
+│  [Admin] ──────────────────────────────► ( Manage Resumes )                                 │
+│  [Admin] ──────────────────────────────► ( Manage Resume Templates )                        │
+│  [Admin] ──────────────────────────────► ( View Activity Logs )                             │
+│  [Admin] ──────────────────────────────► ( Manage Job Applications )                        │
+│  [Admin] ──────────────────────────────► ( View Analysis Records )                          │
+│  [Admin] ──────────────────────────────► ( Manage Optimisation History )                    │
+└─────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+  ACTOR SUMMARY
+  ─────────────
+  ┌──────────────────┬──────────────────────────────────────────────────────────────────┐
+  │ Actor            │ Accessible Modules                                               │
+  ├──────────────────┼──────────────────────────────────────────────────────────────────┤
+  │ Guest            │ Register, Login, Password Reset, View Public Resume              │
+  ├──────────────────┼──────────────────────────────────────────────────────────────────┤
+  │ Registered User  │ All modules: Auth, Resume Mgmt, ATS Analysis, AI Optimisation,  │
+  │                  │ Version Control, Analytics, Job Tracker, AI Tools,               │
+  │                  │ Template Gallery, REST API                                       │
+  ├──────────────────┼──────────────────────────────────────────────────────────────────┤
+  │ Admin            │ All Registered User capabilities + Django Admin panel            │
+  └──────────────────┴──────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+✅ Section 3.6 complete. Type 'next' for the next section.
+
+---
+
+## 3.7 Website Map Diagram
+
+The site map below shows every URL route in NextGenCV, organised hierarchically by module. Routes are grouped under their URL prefix as defined in `config/urls.py`. Authentication-required routes are marked `[auth]`. Admin-only routes are marked `[admin]`.
+
+```
+╔══════════════════════════════════════════════════════════════════════════════════════════╗
+║                          NextGenCV — Full Website Map                                    ║
+╚══════════════════════════════════════════════════════════════════════════════════════════╝
+
+/  (Landing Page)
+│
+├── robots.txt                          Static robots file
+├── help/                               Documentation / Help Centre
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── auth/                               ◄── Authentication Module
+│   ├── register/                       Register new account
+│   ├── verify-email/<token>/           Verify email address (one-time link)
+│   ├── resend-verification/            Resend verification email  [auth]
+│   ├── login/                          Login page
+│   ├── logout/                         Logout (POST)
+│   ├── dashboard/                      User dashboard             [auth]
+│   ├── profile/                        View / edit profile        [auth]
+│   ├── settings/                       Account settings           [auth]
+│   ├── password-reset/                 Request password reset
+│   ├── password-reset/done/            Password reset email sent
+│   ├── password-reset/<uidb64>/<token>/  Set new password
+│   └── password-reset/complete/        Password reset complete
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── resumes/                            ◄── Resume Management Module
+│   ├── (list)                          Resume list / dashboard    [auth]
+│   ├── create/                         Multi-step creation wizard [auth]
+│   │   ├── Step 1 — Personal Info
+│   │   ├── Step 2 — Experience
+│   │   ├── Step 3 — Education
+│   │   ├── Step 4 — Skills
+│   │   └── Step 5 — Summary & Finish
+│   ├── generate-summary/               AI summary generation (AJAX) [auth]
+│   ├── linkedin-import/                Import from LinkedIn        [auth]
+│   ├── batch-export/                   Batch export multiple PDFs  [auth]
+│   ├── batch-analysis/                 Batch ATS analysis          [auth]
+│   ├── upload/                         Upload existing PDF resume  [auth]
+│   ├── upload/<id>/review/             Review parsed PDF data      [auth]
+│   ├── upload/<id>/confirm/            Confirm import to resume    [auth]
+│   ├── upload/<id>/file/               Serve uploaded file (secure)[auth]
+│   ├── upload/<id>/download/           Download uploaded file      [auth]
+│   ├── upload-async/                   Async PDF upload (Celery)   [auth]
+│   ├── task/<task_id>/progress/        SSE task progress stream    [auth]
+│   ├── public/<token>/                 Public resume view (no auth)
+│   │
+│   └── <id>/                           ◄── Per-Resume Routes
+│       ├── (detail)                    Resume detail / preview     [auth]
+│       ├── edit/                       Edit resume                 [auth]
+│       ├── delete/                     Delete resume (confirm)     [auth]
+│       ├── duplicate/                  Duplicate resume            [auth]
+│       ├── share/                      Generate / manage share link[auth]
+│       │
+│       ├── export/                     Export as PDF               [auth]
+│       ├── export/docx/                Export as DOCX              [auth]
+│       ├── export/text/                Export as plain text        [auth]
+│       │
+│       ├── ats-simulate/               ATS system simulation       [auth]
+│       ├── rejection-analysis/         AI rejection analysis       [auth]
+│       ├── keywords/                   Keyword suggestions         [auth]
+│       ├── keywords/add/               Add suggested keyword       [auth]
+│       ├── customize/                  Template customisation      [auth]
+│       │
+│       ├── fix/                        ◄── AI Optimisation (Fix My Resume)
+│       │   ├── (start)                 Start optimisation          [auth]
+│       │   ├── preview/                Preview proposed changes    [auth]
+│       │   ├── accept/                 Accept all / selected changes[auth]
+│       │   └── reject/                 Reject all / selected changes[auth]
+│       ├── fix-async/                  Async optimisation (Celery) [auth]
+│       │
+│       ├── versions/                   ◄── Version Control
+│       │   ├── (list)                  Version history list        [auth]
+│       │   ├── compare/                Compare two versions        [auth]
+│       │   └── <version_id>/           Version detail / snapshot   [auth]
+│       │       └── restore/            Restore this version        [auth]
+│       │
+│       ├── optimizations/              ◄── Optimisation History
+│       │   ├── (list)                  Optimisation history list   [auth]
+│       │   └── <optimization_id>/      Optimisation detail         [auth]
+│       │
+│       ├── experience/                 ◄── Experience CRUD
+│       │   ├── add/                    Add experience entry        [auth]
+│       │   └── <exp_id>/
+│       │       ├── edit/               Edit experience entry       [auth]
+│       │       └── delete/             Delete experience entry     [auth]
+│       │
+│       ├── education/                  ◄── Education CRUD
+│       │   ├── add/                    Add education entry         [auth]
+│       │   └── <edu_id>/
+│       │       ├── edit/               Edit education entry        [auth]
+│       │       └── delete/             Delete education entry      [auth]
+│       │
+│       ├── skill/                      ◄── Skill CRUD
+│       │   ├── add/                    Add skill                   [auth]
+│       │   └── <skill_id>/
+│       │       ├── edit/               Edit skill                  [auth]
+│       │       └── delete/             Delete skill                [auth]
+│       │
+│       └── project/                    ◄── Project CRUD
+│           ├── add/                    Add project                 [auth]
+│           └── <project_id>/
+│               ├── edit/               Edit project                [auth]
+│               └── delete/             Delete project              [auth]
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── analyzer/                           ◄── ATS Analyser Module
+│   ├── <resume_id>/analyze/            Run ATS analysis            [auth]
+│   └── <resume_id>/beat-the-ats/       Beat the ATS battle plan    [auth]
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── analytics/                          ◄── Analytics Module
+│   ├── dashboard/                      Analytics dashboard         [auth]
+│   ├── trends/                         Score trends chart          [auth]
+│   └── improvement-report/             Improvement report          [auth]
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── templates/                          ◄── Template Gallery Module
+│   ├── gallery/                        Browse all templates        [auth]
+│   ├── preview/<template_id>/          Preview a template          [auth]
+│   ├── select/<template_id>/<resume_id>/  Apply template to resume [auth]
+│   ├── customize/<resume_id>/          Customise template          [auth]
+│   └── customize/<resume_id>/preview/  Live customisation preview  [auth]
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── tracker/                            ◄── Job Tracker Module
+│   ├── (list)                          Applications list           [auth]
+│   ├── create/                         Add new application         [auth]
+│   ├── scrape/                         Scrape job from URL         [auth]
+│   ├── outcomes/                       Outcome analytics dashboard [auth]
+│   ├── skill-gap/                      Skill gap analysis          [auth]
+│   ├── salary/                         Salary intelligence         [auth]
+│   ├── rejections/                     Rejection analysis          [auth]
+│   │
+│   └── <id>/                           ◄── Per-Application Routes
+│       ├── (detail)                    Application detail          [auth]
+│       ├── edit/                       Edit application            [auth]
+│       ├── delete/                     Delete application          [auth]
+│       ├── cover-letter/               Generate cover letter (AI)  [auth]
+│       ├── interview-prep/             Generate interview questions (AI) [auth]
+│       └── followup/                   Generate follow-up email (AI) [auth]
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── api/v1/                             ◄── REST API (DRF + JWT)
+│   ├── auth/
+│   │   ├── token/                      POST — obtain JWT token pair
+│   │   ├── token/refresh/              POST — refresh access token
+│   │   └── token/verify/               POST — verify token validity
+│   │
+│   ├── me/                             GET  — current user profile [auth]
+│   ├── tasks/<task_id>/                GET  — async task status    [auth]
+│   ├── outcomes/                       GET  — outcome analytics    [auth]
+│   │
+│   ├── resumes/                        ◄── Resume ViewSet (CRUD)
+│   │   ├── (list)                      GET  — list resumes         [auth]
+│   │   ├── (create)                    POST — create resume        [auth]
+│   │   └── <id>/
+│   │       ├── (retrieve)              GET  — resume detail        [auth]
+│   │       ├── (update)                PUT/PATCH — update resume   [auth]
+│   │       └── (destroy)               DELETE — delete resume      [auth]
+│   │
+│   └── applications/                   ◄── JobApplication ViewSet (CRUD)
+│       ├── (list)                      GET  — list applications    [auth]
+│       ├── (create)                    POST — create application   [auth]
+│       └── <id>/
+│           ├── (retrieve)              GET  — application detail   [auth]
+│           ├── (update)                PUT/PATCH — update          [auth]
+│           └── (destroy)               DELETE — delete             [auth]
+│
+├── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+│
+├── admin/                              ◄── Django Admin Panel     [admin]
+│   ├── auth/user/                      Manage users
+│   ├── resumes/resume/                 Manage resumes
+│   ├── resumes/resumeanalysis/         View analysis records
+│   ├── resumes/optimizationhistory/    View optimisation history
+│   ├── resumes/resumeversion/          View version snapshots
+│   ├── resumes/uploadedresume/         View uploaded PDFs
+│   ├── templates_mgmt/resumetemplate/  Manage resume templates
+│   ├── tracker/jobapplication/         Manage job applications
+│   ├── tracker/coverletter/            View cover letters
+│   ├── authentication/activitylog/     View activity logs
+│   └── authentication/savedjobdescription/  View saved JDs
+│
+└── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ── ──
+
+
+  LEGEND
+  ──────
+  [auth]   Route requires authenticated session (login_required)
+  [admin]  Route requires is_staff = True or is_superuser = True
+  (list)   URL is the prefix itself with no additional segment
+  <id>     Integer primary key path parameter
+  <token>  String token path parameter
+  SSE      Server-Sent Events (real-time streaming)
+  AJAX     Endpoint called via XMLHttpRequest / fetch
+  CRUD     Create, Read, Update, Delete operations
+```
+
+---
+
+✅ Section 3.7 complete. Chapter 3: Analysis & Design is now fully written to `chapter3.md`.

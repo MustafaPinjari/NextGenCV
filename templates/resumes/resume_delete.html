@@ -1,51 +1,44 @@
-{% extends 'base.html' %}
-
-{% block title %}Delete Resume - ATS Resume Builder{% endblock %}
-
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}Delete Resume — NextGenCV{% endblock %}
+{% block extra_css %}<style>
+*{box-sizing:border-box}:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--red:#f87171;--amber:#f59e0b;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}.main-content{background:var(--bg)!important}.content-wrapper{background:transparent!important}
+.del-wrap{padding:32px;max-width:540px;margin:0 auto}
+.del-card{background:var(--surface);border:1px solid rgba(248,113,113,.3);border-radius:var(--r20);padding:32px;text-align:center}
+.del-icon{font-size:3rem;color:var(--red);margin-bottom:16px;opacity:.8}
+.del-title{font-size:1.2rem;font-weight:800;margin-bottom:8px}
+.del-sub{font-size:.85rem;color:var(--text2);margin-bottom:20px}
+.del-item{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2);border-radius:var(--r12);padding:16px 18px;margin-bottom:16px;text-align:left}
+.del-item h4{font-size:1rem;font-weight:700;margin-bottom:8px}
+.del-item-meta{font-size:.78rem;color:var(--text3);display:flex;flex-direction:column;gap:3px}
+.del-notice{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:var(--r8);padding:12px 14px;margin-bottom:20px;font-size:.8rem;color:var(--amber);text-align:left}
+.del-warn{font-size:.8rem;color:var(--red);margin-bottom:20px}
+.del-actions{display:flex;gap:10px;justify-content:center}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-danger{background:rgba(248,113,113,.15);color:var(--red);border:1px solid rgba(248,113,113,.3)}.btn-danger:hover{background:rgba(248,113,113,.25)}
+@media(max-width:600px){.del-wrap{padding:20px}}
+</style>{% endblock %}
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card border-danger">
-            <div class="card-header bg-danger text-white">
-                <h4 class="mb-0">Confirm Deletion</h4>
-            </div>
-            <div class="card-body">
-                <div class="alert alert-warning">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    <strong>Warning:</strong> This action cannot be undone!
-                </div>
-                
-                <p>Are you sure you want to delete the following resume?</p>
-                
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ resume.title }}</h5>
-                        <p class="card-text text-muted">
-                            <small>
-                                <strong>Template:</strong> {{ resume.template|title }}<br>
-                                <strong>Created:</strong> {{ resume.created_at|date:"M d, Y" }}<br>
-                                <strong>Last Updated:</strong> {{ resume.updated_at|date:"M d, Y g:i A" }}
-                            </small>
-                        </p>
-                    </div>
-                </div>
-                
-                <p class="text-muted">
-                    <small>
-                        This will permanently delete the resume and all associated data including:
-                        personal information, work experience, education, skills, and projects.
-                    </small>
-                </p>
-                
-                <form method="post">
-                    {% csrf_token %}
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'resume_list' %}" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-danger">Delete Resume</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="del-wrap">
+  <div class="del-card">
+    <div class="del-icon"><i class="bi bi-file-earmark-x"></i></div>
+    <div class="del-title">Delete Resume?</div>
+    <div class="del-sub">This action is permanent and cannot be undone.</div>
+    <div class="del-item">
+      <h4>{{ resume.title }}</h4>
+      <div class="del-item-meta">
+        <span><i class="bi bi-palette"></i> Template: {{ resume.template|title }}</span>
+        <span><i class="bi bi-calendar3"></i> Created: {{ resume.created_at|date:"M d, Y" }}</span>
+        <span><i class="bi bi-clock"></i> Updated: {{ resume.updated_at|date:"M d, Y g:i A" }}</span>
+      </div>
     </div>
+    <div class="del-notice"><i class="bi bi-exclamation-triangle"></i> This will permanently delete all associated data — personal info, experience, education, skills, projects, and all version history.</div>
+    <div class="del-actions">
+      <a href="{% url 'resume_list' %}" class="btn btn-ghost"><i class="bi bi-x-lg"></i> Cancel</a>
+      <form method="post" style="display:inline">{% csrf_token %}<button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i> Delete Resume</button></form>
+    </div>
+  </div>
 </div>
 {% endblock %}

@@ -1,16 +1,18 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
 
-{% block title %}Score Trends - Analytics - ATS Resume Builder{% endblock %}
+{% block title %}Score Trends — Analytics — NextGenCV{% endblock %}
 
 {% block extra_css %}
 <style>
+*{box-sizing:border-box}:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}.main-content{background:var(--bg)!important}.content-wrapper{background:transparent!important}
 .trends-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, rgba(99,102,241,.2) 0%, rgba(139,92,246,.15) 100%);
+    border: 1px solid rgba(99,102,241,.3);
+    color: var(--text);
+    border-radius: var(--r16);
+    padding: 24px;
+    margin-bottom: 24px;
 }
 
 .stats-summary {
@@ -21,7 +23,8 @@
 }
 
 .stat-box {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -46,7 +49,7 @@
 }
 
 .stat-box-label {
-    color: #6c757d;
+    color: var(--text3);
     font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -71,7 +74,8 @@
 }
 
 .chart-container {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -79,10 +83,10 @@
 }
 
 .chart-title {
-    font-size: 1.3rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     margin-bottom: 20px;
-    color: #495057;
+    color: var(--text);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -113,7 +117,8 @@
 }
 
 .analysis-timeline {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -145,14 +150,14 @@
 }
 
 .timeline-content {
-    background-color: #f8f9fa;
+    background-color: var(--surface2);
     border-radius: 8px;
     padding: 15px;
     transition: background-color 0.2s;
 }
 
 .timeline-content:hover {
-    background-color: #e9ecef;
+    background-color: rgba(99,102,241,.06);
 }
 
 .timeline-header {
@@ -164,12 +169,12 @@
 
 .timeline-resume-title {
     font-weight: 600;
-    color: #495057;
+    color: var(--text);
 }
 
 .timeline-timestamp {
     font-size: 0.85rem;
-    color: #6c757d;
+    color: var(--text3);
 }
 
 .timeline-score {
@@ -193,30 +198,30 @@
 }
 
 .component-score-label {
-    color: #6c757d;
+    color: var(--text3);
 }
 
 .component-score-value {
     font-weight: 600;
-    color: #495057;
+    color: var(--text);
 }
 
 .moving-average-info {
-    background-color: #e7f3ff;
-    border-left: 4px solid #0066cc;
+    background-color: rgba(99,102,241,.08);
+    border-left: 4px solid var(--primary);
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 20px;
 }
 
 .moving-average-info h6 {
-    color: #0066cc;
+    color: var(--primary-light);
     margin-bottom: 10px;
 }
 
 .moving-average-info p {
     margin-bottom: 0;
-    color: #495057;
+    color: var(--text2);
     font-size: 0.9rem;
 }
 
@@ -251,9 +256,9 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r20);
 }
 
 .empty-state-icon {
@@ -265,12 +270,12 @@
 .empty-state-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #495057;
+    color: var(--text);
     margin-bottom: 10px;
 }
 
 .empty-state-text {
-    color: #6c757d;
+    color: var(--text2);
     margin-bottom: 20px;
 }
 

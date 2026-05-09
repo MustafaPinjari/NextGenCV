@@ -1,20 +1,23 @@
-{% extends 'base.html' %}
+{% extends 'layouts/authenticated.html' %}
 
-{% block title %}Improvement Report - Analytics - ATS Resume Builder{% endblock %}
+{% block title %}Improvement Report — Analytics — NextGenCV{% endblock %}
 
 {% block extra_css %}
 <style>
+*{box-sizing:border-box}:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;--primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;--r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}.main-content{background:var(--bg)!important}.content-wrapper{background:transparent!important}
 .report-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 10px;
-    padding: 30px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, rgba(99,102,241,.2) 0%, rgba(139,92,246,.15) 100%);
+    border: 1px solid rgba(99,102,241,.3);
+    color: var(--text);
+    border-radius: var(--r16);
+    padding: 24px;
+    margin-bottom: 24px;
 }
 
 .status-banner {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     margin-bottom: 30px;
@@ -62,7 +65,8 @@
 }
 
 .summary-card {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -81,13 +85,14 @@
 }
 
 .summary-card-label {
-    color: #6c757d;
+    color: var(--text3);
     font-size: 0.9rem;
     text-transform: uppercase;
 }
 
 .recommendations-section {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -95,10 +100,10 @@
 }
 
 .section-title {
-    font-size: 1.3rem;
-    font-weight: 600;
+    font-size: 1.1rem;
+    font-weight: 700;
     margin-bottom: 20px;
-    color: #495057;
+    color: var(--text);
     display: flex;
     align-items: center;
 }
@@ -110,29 +115,29 @@
 .recommendation-item {
     padding: 15px;
     margin-bottom: 12px;
-    border-radius: 8px;
+    border-radius: var(--r8);
     border-left: 4px solid;
-    background-color: #f8f9fa;
+    background-color: var(--surface2);
     transition: background-color 0.2s;
 }
 
 .recommendation-item:hover {
-    background-color: #e9ecef;
+    background-color: rgba(99,102,241,.06);
 }
 
 .recommendation-item.high-priority {
-    border-left-color: #dc3545;
-    background-color: #fff5f5;
+    border-left-color: var(--red);
+    background-color: rgba(248,113,113,.06);
 }
 
 .recommendation-item.medium-priority {
-    border-left-color: #ffc107;
-    background-color: #fffbf0;
+    border-left-color: var(--amber);
+    background-color: rgba(245,158,11,.06);
 }
 
 .recommendation-item.low-priority {
-    border-left-color: #17a2b8;
-    background-color: #f0f9ff;
+    border-left-color: var(--primary-light);
+    background-color: rgba(99,102,241,.06);
 }
 
 .priority-badge {
@@ -161,7 +166,8 @@
 }
 
 .optimization-history-table {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -179,19 +185,22 @@
 }
 
 .optimization-table thead {
-    background-color: #667eea;
-    color: white;
+    background-color: rgba(99,102,241,.15);
+    color: var(--primary-light);
 }
 
 .optimization-table th {
     border: none;
     font-weight: 600;
     padding: 15px;
+    border-bottom: 1px solid var(--border);
 }
 
 .optimization-table td {
     padding: 15px;
     vertical-align: middle;
+    color: var(--text2);
+    border-bottom: 1px solid var(--border);
 }
 
 .optimization-table tbody tr {
@@ -199,7 +208,7 @@
 }
 
 .optimization-table tbody tr:hover {
-    background-color: #f8f9fa;
+    background-color: rgba(99,102,241,.04);
 }
 
 .score-badge {
@@ -255,7 +264,8 @@
 }
 
 .resume-details-section {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -263,11 +273,12 @@
 }
 
 .resume-card {
-    background-color: #f8f9fa;
-    border-radius: 8px;
+    background-color: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--r12);
     padding: 20px;
     margin-bottom: 15px;
-    border-left: 4px solid #667eea;
+    border-left: 4px solid var(--primary);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
@@ -284,20 +295,20 @@
 }
 
 .resume-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #495057;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
     margin-bottom: 5px;
 }
 
 .resume-meta {
     font-size: 0.85rem;
-    color: #6c757d;
+    color: var(--text3);
 }
 
 .resume-health-bar {
-    height: 10px;
-    background-color: #e9ecef;
+    height: 8px;
+    background-color: var(--border2);
     border-radius: 5px;
     overflow: hidden;
     margin: 10px 0;
@@ -340,7 +351,8 @@
 }
 
 .keywords-section {
-    background-color: white;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 10px;
     padding: 25px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -377,8 +389,9 @@
 }
 
 .export-section {
-    background-color: #f8f9fa;
-    border-radius: 10px;
+    background-color: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--r16);
     padding: 20px;
     text-align: center;
     margin-bottom: 30px;
@@ -387,9 +400,9 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background-color: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r20);
 }
 
 .empty-state-icon {
@@ -401,12 +414,12 @@
 .empty-state-title {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #495057;
+    color: var(--text);
     margin-bottom: 10px;
 }
 
 .empty-state-text {
-    color: #6c757d;
+    color: var(--text2);
     margin-bottom: 20px;
 }
 
