@@ -4,56 +4,90 @@
 
 {% block extra_css %}
 <style>
-:root{--bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+*{box-sizing:border-box}
+:root{
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
   --primary:#6366f1;--primary-light:#818cf8;--green:#10b981;--amber:#f59e0b;--red:#f87171;--cyan:#06b6d4;
   --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;--font:'Inter',-apple-system,sans-serif;
-  --r8:8px;--r12:12px;--r16:16px;--r20:20px;}
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;
+}
 body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.main-content{background:var(--bg)!important}
+.content-wrapper{background:transparent!important}
+
 .wrap{padding:32px;max-width:1000px;margin:0 auto}
 .page-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
 .page-title{font-size:1.5rem;font-weight:800;letter-spacing:-.03em}
 .page-sub{font-size:.85rem;color:var(--text3);margin-top:4px}
-/* Stats bar */
+
+/* Stats */
 .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
 .stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:16px;text-align:center}
 .stat-val{font-size:1.8rem;font-weight:900;letter-spacing:-.04em;color:var(--primary-light)}
 .stat-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+
 /* Alert */
 .alert{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:var(--r8);margin-bottom:20px;font-size:.85rem}
 .alert-warn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
 .alert-ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:var(--green)}
 .alert-info{background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.25);color:var(--primary-light)}
+
 /* Cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:24px;margin-bottom:18px}
 .card-title{font-size:1rem;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
 .card-title i{color:var(--primary-light)}
-/* Form */
+.card-title .count{font-size:.72rem;font-weight:500;color:var(--text3);margin-left:auto}
+
+/* Form elements */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-group{display:flex;flex-direction:column;gap:5px}
 .form-group.full{grid-column:1/-1}
-label{font-size:.75rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
-input,select,textarea{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:9px 13px;color:var(--text);font-family:var(--font);font-size:.88rem;transition:border-color .15s;width:100%;box-sizing:border-box}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary)}
+label{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+input,select,textarea{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);
+  padding:9px 13px;color:var(--text);font-family:var(--font);font-size:.88rem;
+  transition:border-color .15s;width:100%;
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,.1)}
+input::placeholder,textarea::placeholder{color:var(--text3)}
 select option{background:var(--surface2)}
-/* Experience blocks */
-.exp-block{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r12);padding:18px;margin-bottom:14px}
-.exp-header{font-size:.9rem;font-weight:700;color:var(--text);margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.exp-meta{font-size:.78rem;color:var(--text3);margin-bottom:12px;display:flex;gap:14px;flex-wrap:wrap}
-.exp-meta span{display:flex;align-items:center;gap:4px}
-.achievements-text{font-size:.82rem;color:var(--text2);line-height:1.7;white-space:pre-wrap;background:rgba(99,102,241,.05);border:1px solid rgba(99,102,241,.1);border-radius:var(--r8);padding:10px 12px;margin-top:8px}
+
+/* Entry blocks */
+.entry-block{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r12);padding:18px;margin-bottom:14px;position:relative}
+.entry-block-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.entry-num{font-size:.72rem;font-weight:700;color:var(--text3);background:rgba(99,102,241,.1);padding:3px 9px;border-radius:99px}
+.entry-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.entry-grid .full{grid-column:1/-1}
+
 /* Skills */
-.skills-wrap{display:flex;flex-wrap:wrap;gap:8px}
-.skill-tag{background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);color:var(--primary-light);padding:4px 12px;border-radius:99px;font-size:.8rem;font-weight:500}
-.skill-tag .cat{opacity:.6;font-size:.72rem;margin-left:4px}
+.skills-edit-wrap{display:flex;flex-direction:column;gap:10px}
+.skill-row{display:grid;grid-template-columns:1fr 160px;gap:10px;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:10px 12px}
+.skill-row input{background:transparent;border:none;padding:0;font-size:.88rem}
+.skill-row input:focus{box-shadow:none;border:none}
+.skill-row select{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r8);padding:5px 8px;font-size:.78rem}
+.add-skill-row{display:grid;grid-template-columns:1fr 160px auto;gap:10px;align-items:center;margin-top:6px}
+
 /* Buttons */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:var(--r8);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;border:none;transition:all .18s}
 .btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
 .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
 .btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
 .btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-sm{padding:6px 12px;font-size:.78rem}
+.btn-add{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25);padding:7px 14px;font-size:.8rem;font-weight:600;border-radius:var(--r8);cursor:pointer;font-family:var(--font);display:inline-flex;align-items:center;gap:5px;transition:all .18s}
+.btn-add:hover{background:rgba(16,185,129,.18)}
+.btn-remove{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.2);padding:5px 10px;font-size:.75rem;border-radius:var(--r8);cursor:pointer;font-family:var(--font);transition:all .18s}
+.btn-remove:hover{background:rgba(248,113,113,.18)}
+
 .form-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px}
 .empty-section{color:var(--text3);font-size:.85rem;padding:12px 0;font-style:italic}
-@media(max-width:700px){.form-grid{grid-template-columns:1fr}.stats-bar{grid-template-columns:repeat(2,1fr)}.wrap{padding:16px}}
+
+@media(max-width:700px){
+  .form-grid,.entry-grid,.add-skill-row{grid-template-columns:1fr}
+  .stats-bar{grid-template-columns:repeat(2,1fr)}
+  .wrap{padding:16px}
+  .skill-row{grid-template-columns:1fr}
+}
 </style>
 {% endblock %}
 
@@ -61,10 +95,10 @@ select option{background:var(--surface2)}
 <div class="wrap">
   <div class="page-hdr">
     <div>
-      <div class="page-title">Review Parsed Resume</div>
-      <div class="page-sub">Edit any fields before importing — all changes are saved</div>
+      <div class="page-title"><i class="bi bi-file-earmark-check" style="color:var(--primary-light)"></i> Review Parsed Resume</div>
+      <div class="page-sub">Edit any field before importing — everything is saved exactly as shown</div>
     </div>
-    <a href="{% url 'pdf_upload' %}" class="btn btn-ghost"><i class="bi bi-arrow-left"></i> Upload Different File</a>
+    <a href="{% url 'pdf_upload' %}" class="btn btn-ghost btn-sm"><i class="bi bi-arrow-left"></i> Upload Different File</a>
   </div>
 
   <!-- Stats -->
@@ -75,16 +109,15 @@ select option{background:var(--surface2)}
     <div class="stat"><div class="stat-val">{{ skills|length }}</div><div class="stat-lbl">Skills</div></div>
   </div>
 
-  <!-- Confidence alert -->
   {% if confidence < 0.7 %}
-  <div class="alert alert-warn"><i class="bi bi-exclamation-triangle"></i> Low parsing confidence ({{ confidence_percent }}%). Please review all fields carefully — some may be missing or incorrect.</div>
+  <div class="alert alert-warn"><i class="bi bi-exclamation-triangle"></i> Low parsing confidence ({{ confidence_percent }}%). Please review all fields carefully.</div>
   {% elif confidence < 0.85 %}
-  <div class="alert alert-info"><i class="bi bi-info-circle"></i> Medium confidence ({{ confidence_percent }}%). Most fields were extracted correctly. Review before importing.</div>
+  <div class="alert alert-info"><i class="bi bi-info-circle"></i> Medium confidence ({{ confidence_percent }}%). Most fields look correct — review before importing.</div>
   {% else %}
-  <div class="alert alert-ok"><i class="bi bi-check-circle"></i> High confidence ({{ confidence_percent }}%). Your resume was parsed successfully!</div>
+  <div class="alert alert-ok"><i class="bi bi-check-circle"></i> High confidence ({{ confidence_percent }}%). Resume parsed successfully!</div>
   {% endif %}
 
-  <form method="post" action="{% url 'pdf_import_confirm' uploaded_resume.id %}">
+  <form method="post" action="{% url 'pdf_import_confirm' uploaded_resume.id %}" id="importForm">
     {% csrf_token %}
 
     <!-- ── Personal Information ── -->
@@ -115,83 +148,142 @@ select option{background:var(--surface2)}
           <label>GitHub / Website</label>
           <input type="url" name="github" value="{{ personal_info.website|default:'' }}" placeholder="https://github.com/...">
         </div>
-        {% if summary %}
         <div class="form-group full">
           <label>Professional Summary</label>
-          <textarea name="summary" rows="3">{{ summary }}</textarea>
+          <textarea name="summary" rows="3" placeholder="Brief professional summary...">{{ summary|default:'' }}</textarea>
         </div>
-        {% endif %}
       </div>
     </div>
 
-    <!-- ── Work Experience (read-only preview, editable after import) ── -->
+    <!-- ── Work Experience ── -->
     <div class="card">
-      <div class="card-title"><i class="bi bi-briefcase"></i> Work Experience
-        <span style="font-size:.75rem;font-weight:400;color:var(--text3);margin-left:auto">{{ experiences|length }} found · editable after import</span>
+      <div class="card-title">
+        <i class="bi bi-briefcase"></i> Work Experience
+        <span class="count" id="expCount">{{ experiences|length }} found</span>
       </div>
-      {% if experiences %}
+      <div id="expContainer">
         {% for exp in experiences %}
-        <div class="exp-block">
-          <div class="exp-header">
-            <i class="bi bi-building" style="color:var(--cyan)"></i>
-            {{ exp.title|default:"Unknown Role" }}
-            {% if exp.company %}<span style="color:var(--text3);font-weight:400">@ {{ exp.company }}</span>{% endif %}
+        <div class="entry-block" id="exp-{{ forloop.counter0 }}">
+          <div class="entry-block-hdr">
+            <span class="entry-num">Experience {{ forloop.counter }}</span>
+            <button type="button" class="btn-remove" onclick="removeEntry(this, 'exp')"><i class="bi bi-trash"></i> Remove</button>
           </div>
-          <div class="exp-meta">
-            {% if exp.start_date or exp.end_date %}
-            <span><i class="bi bi-calendar3"></i> {{ exp.start_date|default:"?" }} — {{ exp.end_date|default:"Present" }}</span>
-            {% endif %}
-            {% if exp.location %}<span><i class="bi bi-geo-alt"></i> {{ exp.location }}</span>{% endif %}
+          <div class="entry-grid">
+            <div class="form-group">
+              <label>Job Title</label>
+              <input type="text" name="exp_title[]" value="{{ exp.title|default:'' }}" placeholder="e.g. Software Engineer">
+            </div>
+            <div class="form-group">
+              <label>Company</label>
+              <input type="text" name="exp_company[]" value="{{ exp.company|default:'' }}" placeholder="Company Name">
+            </div>
+            <div class="form-group">
+              <label>Start Date</label>
+              <input type="text" name="exp_start[]" value="{{ exp.start_date|default:'' }}" placeholder="e.g. Jan 2021">
+            </div>
+            <div class="form-group">
+              <label>End Date</label>
+              <input type="text" name="exp_end[]" value="{{ exp.end_date|default:'' }}" placeholder="e.g. Dec 2023 or Present">
+            </div>
+            <div class="form-group full">
+              <label>Description</label>
+              <textarea name="exp_description[]" rows="2" placeholder="Brief role overview...">{{ exp.description|default:'' }}</textarea>
+            </div>
+            <div class="form-group full">
+              <label>Achievements / Bullet Points</label>
+              <textarea name="exp_achievements[]" rows="4" placeholder="• Led team of 5 engineers&#10;• Improved performance by 40%&#10;• Deployed to 10,000+ users">{{ exp.achievements|default:'' }}</textarea>
+            </div>
           </div>
-          {% if exp.description %}
-          <div style="font-size:.83rem;color:var(--text2);line-height:1.6;margin-bottom:8px">{{ exp.description }}</div>
-          {% endif %}
-          {% if exp.achievements %}
-          <div class="achievements-text">{{ exp.achievements }}</div>
-          {% endif %}
         </div>
+        {% empty %}
+        <div class="empty-section" id="expEmpty"><i class="bi bi-info-circle"></i> No work experience detected.</div>
         {% endfor %}
-      {% else %}
-        <div class="empty-section"><i class="bi bi-info-circle"></i> No work experience detected. You can add it after importing.</div>
-      {% endif %}
+      </div>
+      <button type="button" class="btn-add" onclick="addExperience()"><i class="bi bi-plus-circle"></i> Add Experience</button>
     </div>
 
     <!-- ── Education ── -->
     <div class="card">
-      <div class="card-title"><i class="bi bi-mortarboard"></i> Education
-        <span style="font-size:.75rem;font-weight:400;color:var(--text3);margin-left:auto">{{ education|length }} found · editable after import</span>
+      <div class="card-title">
+        <i class="bi bi-mortarboard"></i> Education
+        <span class="count" id="eduCount">{{ education|length }} found</span>
       </div>
-      {% if education %}
+      <div id="eduContainer">
         {% for edu in education %}
-        <div class="exp-block">
-          <div class="exp-header"><i class="bi bi-building" style="color:var(--amber)"></i> {{ edu.degree|default:"Degree" }}</div>
-          <div class="exp-meta">
-            {% if edu.institution %}<span><i class="bi bi-bank"></i> {{ edu.institution }}</span>{% endif %}
-            {% if edu.field_of_study %}<span><i class="bi bi-book"></i> {{ edu.field_of_study }}</span>{% endif %}
-            {% if edu.graduation_date %}<span><i class="bi bi-calendar3"></i> {{ edu.graduation_date }}</span>{% endif %}
-            {% if edu.gpa %}<span><i class="bi bi-star"></i> GPA {{ edu.gpa }}</span>{% endif %}
+        <div class="entry-block" id="edu-{{ forloop.counter0 }}">
+          <div class="entry-block-hdr">
+            <span class="entry-num">Education {{ forloop.counter }}</span>
+            <button type="button" class="btn-remove" onclick="removeEntry(this, 'edu')"><i class="bi bi-trash"></i> Remove</button>
+          </div>
+          <div class="entry-grid">
+            <div class="form-group full">
+              <label>Institution *</label>
+              <input type="text" name="edu_institution[]" value="{{ edu.institution|default:'' }}" placeholder="University / College Name">
+            </div>
+            <div class="form-group">
+              <label>Degree</label>
+              <input type="text" name="edu_degree[]" value="{{ edu.degree|default:'' }}" placeholder="e.g. Bachelor of Science">
+            </div>
+            <div class="form-group">
+              <label>Field of Study</label>
+              <input type="text" name="edu_field[]" value="{{ edu.field_of_study|default:'' }}" placeholder="e.g. Computer Science">
+            </div>
+            <div class="form-group">
+              <label>Graduation Year</label>
+              <input type="text" name="edu_grad_year[]" value="{{ edu.graduation_date|default:'' }}" placeholder="e.g. 2022">
+            </div>
+            <div class="form-group">
+              <label>GPA (optional)</label>
+              <input type="text" name="edu_gpa[]" value="{{ edu.gpa|default:'' }}" placeholder="e.g. 3.8">
+            </div>
           </div>
         </div>
+        {% empty %}
+        <div class="empty-section" id="eduEmpty"><i class="bi bi-info-circle"></i> No education detected.</div>
         {% endfor %}
-      {% else %}
-        <div class="empty-section"><i class="bi bi-info-circle"></i> No education detected. You can add it after importing.</div>
-      {% endif %}
+      </div>
+      <button type="button" class="btn-add" onclick="addEducation()"><i class="bi bi-plus-circle"></i> Add Education</button>
     </div>
 
     <!-- ── Skills ── -->
     <div class="card">
-      <div class="card-title"><i class="bi bi-lightning-charge"></i> Skills
-        <span style="font-size:.75rem;font-weight:400;color:var(--text3);margin-left:auto">{{ skills|length }} found · editable after import</span>
+      <div class="card-title">
+        <i class="bi bi-lightning-charge"></i> Skills
+        <span class="count" id="skillCount">{{ skills|length }} found</span>
       </div>
-      {% if skills %}
-        <div class="skills-wrap">
-          {% for skill in skills %}
-          <span class="skill-tag">{{ skill.name }}{% if skill.category %}<span class="cat">· {{ skill.category }}</span>{% endif %}</span>
-          {% endfor %}
+      <div class="skills-edit-wrap" id="skillContainer">
+        {% for skill in skills %}
+        <div class="skill-row">
+          <input type="text" name="skill_name[]" value="{{ skill.name }}" placeholder="Skill name">
+          <select name="skill_category[]">
+            <option value="">Category…</option>
+            {% with cat=skill.category %}
+            <option value="Languages" {% if cat == 'Languages' %}selected{% endif %}>Languages</option>
+            <option value="Frameworks" {% if cat == 'Frameworks' %}selected{% endif %}>Frameworks</option>
+            <option value="Tools" {% if cat == 'Tools' %}selected{% endif %}>Tools</option>
+            <option value="Databases" {% if cat == 'Databases' %}selected{% endif %}>Databases</option>
+            <option value="Cloud" {% if cat == 'Cloud' %}selected{% endif %}>Cloud</option>
+            <option value="Soft Skills" {% if cat == 'Soft Skills' %}selected{% endif %}>Soft Skills</option>
+            <option value="Other" {% if not cat or cat == 'Other' %}selected{% endif %}>Other</option>
+            {% endwith %}
+          </select>
+          <button type="button" class="btn-remove" onclick="this.closest('.skill-row').remove(); updateSkillCount()"><i class="bi bi-x"></i></button>
         </div>
-      {% else %}
-        <div class="empty-section"><i class="bi bi-info-circle"></i> No skills detected. You can add them after importing.</div>
-      {% endif %}
+        {% endfor %}
+      </div>
+      <div class="add-skill-row" style="margin-top:12px">
+        <input type="text" id="newSkillName" placeholder="Add a skill…">
+        <select id="newSkillCat">
+          <option value="Other">Other</option>
+          <option value="Languages">Languages</option>
+          <option value="Frameworks">Frameworks</option>
+          <option value="Tools">Tools</option>
+          <option value="Databases">Databases</option>
+          <option value="Cloud">Cloud</option>
+          <option value="Soft Skills">Soft Skills</option>
+        </select>
+        <button type="button" class="btn-add" onclick="addSkill()"><i class="bi bi-plus"></i> Add</button>
+      </div>
     </div>
 
     <!-- ── Resume Settings ── -->
@@ -218,8 +310,98 @@ select option{background:var(--surface2)}
     <div class="form-actions">
       <button type="submit" class="btn btn-primary"><i class="bi bi-check-circle"></i> Confirm & Import Resume</button>
       <a href="{% url 'pdf_upload' %}" class="btn btn-ghost"><i class="bi bi-x"></i> Cancel</a>
-      <span style="font-size:.78rem;color:var(--text3)">Personal info edits above will be saved. Experience/education/skills can be edited after import.</span>
     </div>
   </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let expCount = {{ experiences|length }};
+let eduCount = {{ education|length }};
+
+function updateSkillCount() {
+  const n = document.querySelectorAll('#skillContainer .skill-row').length;
+  document.getElementById('skillCount').textContent = n + ' found';
+}
+
+function removeEntry(btn, type) {
+  btn.closest('.entry-block').remove();
+  if (type === 'exp') {
+    expCount--;
+    document.getElementById('expCount').textContent = expCount + ' found';
+  } else {
+    eduCount--;
+    document.getElementById('eduCount').textContent = eduCount + ' found';
+  }
+}
+
+function addExperience() {
+  document.getElementById('expEmpty')?.remove();
+  expCount++;
+  document.getElementById('expCount').textContent = expCount + ' found';
+  const html = `<div class="entry-block">
+    <div class="entry-block-hdr">
+      <span class="entry-num">Experience ${expCount}</span>
+      <button type="button" class="btn-remove" onclick="removeEntry(this,'exp')"><i class="bi bi-trash"></i> Remove</button>
+    </div>
+    <div class="entry-grid">
+      <div class="form-group"><label>Job Title</label><input type="text" name="exp_title[]" placeholder="e.g. Software Engineer"></div>
+      <div class="form-group"><label>Company</label><input type="text" name="exp_company[]" placeholder="Company Name"></div>
+      <div class="form-group"><label>Start Date</label><input type="text" name="exp_start[]" placeholder="e.g. Jan 2021"></div>
+      <div class="form-group"><label>End Date</label><input type="text" name="exp_end[]" placeholder="e.g. Present"></div>
+      <div class="form-group full"><label>Description</label><textarea name="exp_description[]" rows="2" placeholder="Brief role overview..."></textarea></div>
+      <div class="form-group full"><label>Achievements / Bullet Points</label><textarea name="exp_achievements[]" rows="4" placeholder="• Achievement 1&#10;• Achievement 2"></textarea></div>
+    </div>
+  </div>`;
+  document.getElementById('expContainer').insertAdjacentHTML('beforeend', html);
+}
+
+function addEducation() {
+  document.getElementById('eduEmpty')?.remove();
+  eduCount++;
+  document.getElementById('eduCount').textContent = eduCount + ' found';
+  const html = `<div class="entry-block">
+    <div class="entry-block-hdr">
+      <span class="entry-num">Education ${eduCount}</span>
+      <button type="button" class="btn-remove" onclick="removeEntry(this,'edu')"><i class="bi bi-trash"></i> Remove</button>
+    </div>
+    <div class="entry-grid">
+      <div class="form-group full"><label>Institution *</label><input type="text" name="edu_institution[]" placeholder="University / College Name"></div>
+      <div class="form-group"><label>Degree</label><input type="text" name="edu_degree[]" placeholder="e.g. Bachelor of Science"></div>
+      <div class="form-group"><label>Field of Study</label><input type="text" name="edu_field[]" placeholder="e.g. Computer Science"></div>
+      <div class="form-group"><label>Graduation Year</label><input type="text" name="edu_grad_year[]" placeholder="e.g. 2022"></div>
+      <div class="form-group"><label>GPA (optional)</label><input type="text" name="edu_gpa[]" placeholder="e.g. 3.8"></div>
+    </div>
+  </div>`;
+  document.getElementById('eduContainer').insertAdjacentHTML('beforeend', html);
+}
+
+function addSkill() {
+  const name = document.getElementById('newSkillName').value.trim();
+  if (!name) return;
+  const cat = document.getElementById('newSkillCat').value;
+  const html = `<div class="skill-row">
+    <input type="text" name="skill_name[]" value="${name.replace(/"/g,'&quot;')}">
+    <select name="skill_category[]">
+      <option value="Languages">Languages</option>
+      <option value="Frameworks">Frameworks</option>
+      <option value="Tools">Tools</option>
+      <option value="Databases">Databases</option>
+      <option value="Cloud">Cloud</option>
+      <option value="Soft Skills">Soft Skills</option>
+      <option value="Other" ${cat==='Other'?'selected':''}>Other</option>
+    </select>
+    <button type="button" class="btn-remove" onclick="this.closest('.skill-row').remove();updateSkillCount()"><i class="bi bi-x"></i></button>
+  </div>`;
+  document.getElementById('skillContainer').insertAdjacentHTML('beforeend', html);
+  document.getElementById('newSkillName').value = '';
+  updateSkillCount();
+}
+
+// Allow Enter key to add skill
+document.getElementById('newSkillName')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addSkill(); }
+});
+</script>
 {% endblock %}

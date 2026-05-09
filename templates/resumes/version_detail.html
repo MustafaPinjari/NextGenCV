@@ -1,349 +1,269 @@
-{% extends 'base.html' %}
-
-{% block title %}Version {{ version.version_number }} - {{ resume.title }} - ATS Resume Builder{% endblock %}
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}v{{ version.version_number }} — {{ resume.title }}{% endblock %}
 
 {% block extra_css %}
 <style>
-    .version-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .metadata-card {
-        background: #f8f9fa;
-        border-left: 4px solid #0d6efd;
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    
-    .read-only-badge {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        z-index: 1000;
-        background: rgba(255, 193, 7, 0.95);
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-    }
-    
-    .section-header {
-        border-bottom: 2px solid #0d6efd;
-        padding-bottom: 0.5rem;
-        margin-bottom: 1rem;
-    }
-    
-    .score-display {
-        font-size: 3rem;
-        font-weight: 700;
-    }
-    
-    .score-good {
-        color: #198754;
-    }
-    
-    .score-medium {
-        color: #ffc107;
-    }
-    
-    .score-poor {
-        color: #dc3545;
-    }
-    
-    @media (max-width: 768px) {
-        .read-only-badge {
-            position: static;
-            margin-bottom: 1rem;
-        }
-        
-        .version-header {
-            padding: 1rem;
-        }
-        
-        .score-display {
-            font-size: 2rem;
-        }
-    }
+*{box-sizing:border-box}
+:root{
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--accent:#06b6d4;--green:#10b981;
+  --amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;
+}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.main-content{background:var(--bg)!important}
+.content-wrapper{background:transparent!important}
+
+.vd-wrap{padding:32px;max-width:1000px;margin:0 auto}
+
+/* Top bar */
+.vd-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.vd-topbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r8);font-size:.8rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;transition:all .18s;border:none}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-warn{background:rgba(245,158,11,.1);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.btn-warn:hover{background:rgba(245,158,11,.18)}
+.readonly-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:99px;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);color:var(--amber);font-size:.75rem;font-weight:700}
+
+/* Meta strip */
+.meta-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.meta-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px}
+.meta-cell-lbl{font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.meta-cell-val{font-size:.9rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.score-good{color:var(--green)}
+.score-mid{color:var(--amber)}
+.score-low{color:var(--red)}
+
+.v-badge{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:99px}
+.badge-current{background:rgba(99,102,241,.15);color:var(--primary-light)}
+.badge-optimized{background:rgba(16,185,129,.12);color:var(--green)}
+.badge-restored{background:rgba(245,158,11,.12);color:var(--amber)}
+.badge-manual{background:rgba(139,146,158,.1);color:var(--text3)}
+
+/* Notes */
+.v-notes{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--primary);border-radius:var(--r12);padding:14px 16px;margin-bottom:24px;font-size:.82rem;color:var(--text2);font-style:italic}
+
+/* Resume preview card */
+.resume-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r20);overflow:hidden;margin-bottom:24px}
+.resume-card-hdr{padding:16px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text3)}
+.resume-body{padding:32px 40px}
+
+/* Resume content styles */
+.r-name{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:6px}
+.r-contact{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--text2);margin-bottom:4px}
+.r-contact a{color:var(--primary-light);text-decoration:none}
+.r-contact a:hover{text-decoration:underline}
+.r-divider{height:1px;background:var(--border);margin:20px 0}
+.r-section-title{font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--primary-light);margin-bottom:14px}
+.r-exp-item{margin-bottom:18px}
+.r-exp-hdr{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px}
+.r-exp-role{font-size:.95rem;font-weight:700}
+.r-exp-company{font-size:.82rem;color:var(--text2)}
+.r-exp-date{font-size:.72rem;color:var(--text3);white-space:nowrap;flex-shrink:0;padding:3px 8px;background:var(--surface2);border-radius:99px;border:1px solid var(--border)}
+.r-exp-desc{font-size:.8rem;color:var(--text2);line-height:1.6;margin-top:6px}
+.r-edu-item{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
+.r-edu-deg{font-size:.9rem;font-weight:700}
+.r-edu-inst{font-size:.78rem;color:var(--text2)}
+.r-skills-wrap{display:flex;flex-wrap:wrap;gap:8px}
+.r-skill-tag{padding:4px 12px;border-radius:99px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);color:var(--primary-light);font-size:.75rem;font-weight:600}
+.r-proj-item{margin-bottom:14px}
+.r-proj-name{font-size:.9rem;font-weight:700;margin-bottom:3px}
+.r-proj-desc{font-size:.78rem;color:var(--text2);line-height:1.5}
+.r-proj-tech{font-size:.72rem;color:var(--text3);margin-top:4px}
+.r-empty{text-align:center;padding:40px;color:var(--text3);font-size:.85rem}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r20);padding:28px;max-width:420px;width:90%;box-shadow:0 24px 80px rgba(0,0,0,.5)}
+.modal-title{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.modal-sub{font-size:.82rem;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+
+@media(max-width:768px){
+  .vd-wrap{padding:20px}
+  .meta-strip{grid-template-columns:1fr 1fr}
+  .resume-body{padding:20px}
+  .r-exp-hdr{flex-direction:column}
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Read-Only Badge -->
-        <div class="read-only-badge">
-            <i class="bi bi-lock-fill"></i>
-            <strong>Read-Only View</strong> - Historical Version
-        </div>
+<div class="vd-wrap">
 
-        <!-- Version Header -->
-        <div class="version-header">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h2 class="mb-2">
-                        <i class="bi bi-clock-history"></i> Version {{ version.version_number }}
-                    </h2>
-                    <h4 class="mb-0">{{ resume.title }}</h4>
-                </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    {% if is_current_version %}
-                    <span class="badge bg-light text-dark fs-5">
-                        <i class="bi bi-check-circle-fill text-success"></i> Current Version
-                    </span>
-                    {% else %}
-                    <span class="badge bg-light text-dark fs-5">
-                        <i class="bi bi-archive"></i> Historical Version
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <!-- Metadata Card -->
-        <div class="metadata-card">
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="mb-2 mb-md-0">
-                        <div class="text-muted small">Created</div>
-                        <div class="fw-bold">
-                            <i class="bi bi-calendar"></i> {{ version.created_at|date:"M d, Y" }}
-                        </div>
-                        <div class="text-muted small">{{ version.created_at|date:"g:i A" }}</div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-2 mb-md-0">
-                        <div class="text-muted small">Modification Type</div>
-                        <div class="fw-bold">
-                            {% if version.modification_type == 'optimized' %}
-                            <span class="badge bg-success">
-                                <i class="bi bi-stars"></i> Optimized
-                            </span>
-                            {% elif version.modification_type == 'restored' %}
-                            <span class="badge bg-warning">
-                                <i class="bi bi-arrow-counterclockwise"></i> Restored
-                            </span>
-                            {% elif version.modification_type == 'manual' %}
-                            <span class="badge bg-secondary">
-                                <i class="bi bi-pencil"></i> Manual Edit
-                            </span>
-                            {% else %}
-                            <span class="badge bg-info">
-                                <i class="bi bi-file-earmark"></i> {{ version.modification_type|title }}
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="mb-2 mb-md-0">
-                        <div class="text-muted small">ATS Score</div>
-                        {% if version.ats_score %}
-                        <div class="fw-bold {% if version.ats_score >= 80 %}text-success{% elif version.ats_score >= 60 %}text-warning{% else %}text-danger{% endif %}">
-                            <i class="bi bi-graph-up"></i> {{ version.ats_score|floatformat:1 }}%
-                        </div>
-                        {% else %}
-                        <div class="text-muted">Not analyzed</div>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div>
-                        <div class="text-muted small">Version Number</div>
-                        <div class="fw-bold">
-                            <i class="bi bi-hash"></i> {{ version.version_number }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            {% if version.user_notes %}
-            <div class="mt-3 pt-3 border-top">
-                <div class="text-muted small">Notes</div>
-                <div class="fst-italic">
-                    <i class="bi bi-chat-left-text"></i> {{ version.user_notes }}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{% url 'version_list' resume.id %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Version History
-            </a>
-            
-            <div class="btn-group">
-                {% if not is_current_version %}
-                <form method="post" action="{% url 'version_restore' resume.id version.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.');">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-warning">
-                        <i class="bi bi-arrow-counterclockwise"></i> Restore This Version
-                    </button>
-                </form>
-                {% endif %}
-                <a href="{% url 'resume_detail' resume.id %}" class="btn btn-primary">
-                    <i class="bi bi-file-earmark-text"></i> View Current Resume
-                </a>
-            </div>
-        </div>
-
-        <!-- Resume Content (Read-Only) -->
-        <div class="card shadow">
-            <div class="card-body p-4 p-md-5">
-                <!-- Personal Information -->
-                {% if personal_info %}
-                <div class="text-center mb-4 pb-4 border-bottom">
-                    <h3 class="mb-2">{{ personal_info.full_name|default:"[Name Not Set]" }}</h3>
-                    <p class="text-muted mb-1">
-                        {% if personal_info.email %}
-                            <i class="bi bi-envelope"></i> {{ personal_info.email }}
-                        {% endif %}
-                        {% if personal_info.phone %}
-                            {% if personal_info.email %} | {% endif %}
-                            <i class="bi bi-telephone"></i> {{ personal_info.phone }}
-                        {% endif %}
-                    </p>
-                    {% if personal_info.location %}
-                    <p class="text-muted mb-1">
-                        <i class="bi bi-geo-alt"></i> {{ personal_info.location }}
-                    </p>
-                    {% endif %}
-                    <p class="mb-0">
-                        {% if personal_info.linkedin %}
-                            <a href="{{ personal_info.linkedin }}" target="_blank" class="text-decoration-none me-3">
-                                <i class="bi bi-linkedin"></i> LinkedIn
-                            </a>
-                        {% endif %}
-                        {% if personal_info.github %}
-                            <a href="{{ personal_info.github }}" target="_blank" class="text-decoration-none">
-                                <i class="bi bi-github"></i> GitHub
-                            </a>
-                        {% endif %}
-                    </p>
-                </div>
-                {% endif %}
-                
-                <!-- Work Experience -->
-                {% if experiences %}
-                <div class="mb-4">
-                    <h4 class="section-header">
-                        <i class="bi bi-briefcase"></i> Work Experience
-                    </h4>
-                    {% for exp in experiences %}
-                    <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <div>
-                                <h5 class="mb-1">{{ exp.role }}</h5>
-                                <h6 class="text-muted mb-0">{{ exp.company }}</h6>
-                            </div>
-                            <span class="badge bg-secondary">
-                                {{ exp.start_date }} - {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}
-                            </span>
-                        </div>
-                        <div class="text-muted">{{ exp.description|linebreaks }}</div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Education -->
-                {% if education %}
-                <div class="mb-4">
-                    <h4 class="section-header">
-                        <i class="bi bi-mortarboard"></i> Education
-                    </h4>
-                    {% for edu in education %}
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between align-items-start mb-1">
-                            <div>
-                                <h5 class="mb-1">{{ edu.degree }} in {{ edu.field }}</h5>
-                                <h6 class="text-muted mb-0">{{ edu.institution }}</h6>
-                            </div>
-                            <span class="badge bg-secondary">
-                                {{ edu.start_year }} - {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}
-                            </span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Skills -->
-                {% if skills %}
-                <div class="mb-4">
-                    <h4 class="section-header">
-                        <i class="bi bi-gear"></i> Skills
-                    </h4>
-                    {% regroup skills by category as skills_by_category %}
-                    {% for category in skills_by_category %}
-                        <div class="mb-3">
-                            <strong class="text-primary">{{ category.grouper }}:</strong>
-                            <div class="mt-2">
-                                {% for skill in category.list %}
-                                    <span class="badge bg-light text-dark border me-1 mb-1">{{ skill.name }}</span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Projects -->
-                {% if projects %}
-                <div class="mb-4">
-                    <h4 class="section-header">
-                        <i class="bi bi-code-square"></i> Projects
-                    </h4>
-                    {% for proj in projects %}
-                    <div class="mb-3">
-                        <h5 class="mb-1">
-                            {{ proj.name }}
-                            {% if proj.url %}
-                                <a href="{{ proj.url }}" target="_blank" class="text-decoration-none">
-                                    <i class="bi bi-box-arrow-up-right"></i>
-                                </a>
-                            {% endif %}
-                        </h5>
-                        <p class="mb-1">{{ proj.description }}</p>
-                        {% if proj.technologies %}
-                        <p class="text-muted mb-0">
-                            <small><strong>Technologies:</strong> {{ proj.technologies }}</small>
-                        </p>
-                        {% endif %}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endif %}
-                
-                <!-- Empty State -->
-                {% if not personal_info and not experiences and not education and not skills and not projects %}
-                <div class="text-center py-5">
-                    <i class="bi bi-file-earmark-x text-muted" style="font-size: 4rem;"></i>
-                    <p class="text-muted mt-3">This version has no content.</p>
-                </div>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Bottom Actions -->
-        <div class="mt-4 d-flex justify-content-between">
-            <a href="{% url 'version_list' resume.id %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Version History
-            </a>
-            
-            {% if not is_current_version %}
-            <form method="post" action="{% url 'version_restore' resume.id version.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this version? This will create a new version based on this historical state.');">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-warning">
-                    <i class="bi bi-arrow-counterclockwise"></i> Restore This Version
-                </button>
-            </form>
-            {% endif %}
-        </div>
+  <!-- Top bar -->
+  <div class="vd-topbar">
+    <div class="vd-topbar-left">
+      <a href="{% url 'version_list' resume.id %}" class="btn-sm btn-ghost">
+        <i class="bi bi-arrow-left"></i> History
+      </a>
+      <span class="readonly-pill"><i class="bi bi-lock-fill"></i> Read-Only · v{{ version.version_number }}</span>
     </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      {% if not is_current_version %}
+      <button class="btn-sm btn-warn" id="openRestoreModal">
+        <i class="bi bi-arrow-counterclockwise"></i> Restore This Version
+      </button>
+      {% endif %}
+      <a href="{% url 'resume_detail' resume.id %}" class="btn-sm btn-primary">
+        <i class="bi bi-file-earmark-text"></i> Current Resume
+      </a>
+    </div>
+  </div>
+
+  <!-- Meta strip -->
+  <div class="meta-strip">
+    <div class="meta-cell">
+      <div class="meta-cell-lbl">Version</div>
+      <div class="meta-cell-val"><i class="bi bi-hash" style="color:var(--primary-light)"></i> {{ version.version_number }}</div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-cell-lbl">Created</div>
+      <div class="meta-cell-val" style="font-size:.8rem"><i class="bi bi-calendar3" style="color:var(--accent)"></i> {{ version.created_at|date:"M d, Y · g:i A" }}</div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-cell-lbl">Type</div>
+      <div class="meta-cell-val">
+        {% if version.modification_type == 'optimized' %}
+          <span class="v-badge badge-optimized"><i class="bi bi-stars"></i> AI Optimized</span>
+        {% elif version.modification_type == 'restored' %}
+          <span class="v-badge badge-restored"><i class="bi bi-arrow-counterclockwise"></i> Restored</span>
+        {% else %}
+          <span class="v-badge badge-manual"><i class="bi bi-pencil"></i> Manual</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="meta-cell">
+      <div class="meta-cell-lbl">ATS Score</div>
+      <div class="meta-cell-val">
+        {% if version.ats_score %}
+          <span class="{% if version.ats_score >= 75 %}score-good{% elif version.ats_score >= 50 %}score-mid{% else %}score-low{% endif %}" style="font-size:1.2rem;font-weight:900">
+            {{ version.ats_score|floatformat:1 }}
+          </span>
+          <span style="font-size:.75rem;color:var(--text3)">/100</span>
+        {% else %}
+          <span style="color:var(--text3)">—</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if version.user_notes %}
+  <div class="v-notes"><i class="bi bi-chat-left-text"></i> {{ version.user_notes }}</div>
+  {% endif %}
+
+  <!-- Resume Preview -->
+  <div class="resume-card">
+    <div class="resume-card-hdr">
+      <i class="bi bi-file-earmark-text" style="color:var(--primary-light)"></i>
+      Resume snapshot — {{ resume.title }}
+    </div>
+    <div class="resume-body">
+
+      {% if personal_info %}
+      <div style="margin-bottom:20px">
+        <div class="r-name">{{ personal_info.full_name|default:"—" }}</div>
+        <div class="r-contact">
+          {% if personal_info.email %}<span><i class="bi bi-envelope"></i> {{ personal_info.email }}</span>{% endif %}
+          {% if personal_info.phone %}<span><i class="bi bi-telephone"></i> {{ personal_info.phone }}</span>{% endif %}
+          {% if personal_info.location %}<span><i class="bi bi-geo-alt"></i> {{ personal_info.location }}</span>{% endif %}
+          {% if personal_info.linkedin %}<a href="{{ personal_info.linkedin }}" target="_blank"><i class="bi bi-linkedin"></i> LinkedIn</a>{% endif %}
+          {% if personal_info.github %}<a href="{{ personal_info.github }}" target="_blank"><i class="bi bi-github"></i> GitHub</a>{% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if experiences %}
+      <div class="r-divider"></div>
+      <div class="r-section-title"><i class="bi bi-briefcase"></i> Experience</div>
+      {% for exp in experiences %}
+      <div class="r-exp-item">
+        <div class="r-exp-hdr">
+          <div>
+            <div class="r-exp-role">{{ exp.role }}</div>
+            <div class="r-exp-company">{{ exp.company }}</div>
+          </div>
+          <span class="r-exp-date">{{ exp.start_date }} — {% if exp.end_date %}{{ exp.end_date }}{% else %}Present{% endif %}</span>
+        </div>
+        {% if exp.description %}<div class="r-exp-desc">{{ exp.description|linebreaksbr }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if education %}
+      <div class="r-divider"></div>
+      <div class="r-section-title"><i class="bi bi-mortarboard"></i> Education</div>
+      {% for edu in education %}
+      <div class="r-edu-item">
+        <div>
+          <div class="r-edu-deg">{{ edu.degree }}{% if edu.field %} in {{ edu.field }}{% endif %}</div>
+          <div class="r-edu-inst">{{ edu.institution }}</div>
+        </div>
+        <span class="r-exp-date">{{ edu.start_year }} — {% if edu.end_year %}{{ edu.end_year }}{% else %}Present{% endif %}</span>
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if skills %}
+      <div class="r-divider"></div>
+      <div class="r-section-title"><i class="bi bi-gear"></i> Skills</div>
+      <div class="r-skills-wrap">
+        {% for skill in skills %}<span class="r-skill-tag">{{ skill.name }}</span>{% endfor %}
+      </div>
+      {% endif %}
+
+      {% if projects %}
+      <div class="r-divider"></div>
+      <div class="r-section-title"><i class="bi bi-code-square"></i> Projects</div>
+      {% for proj in projects %}
+      <div class="r-proj-item">
+        <div class="r-proj-name">{{ proj.name }}{% if proj.url %} <a href="{{ proj.url }}" target="_blank" style="color:var(--primary-light);font-size:.75rem"><i class="bi bi-box-arrow-up-right"></i></a>{% endif %}</div>
+        {% if proj.description %}<div class="r-proj-desc">{{ proj.description }}</div>{% endif %}
+        {% if proj.technologies %}<div class="r-proj-tech"><i class="bi bi-tools"></i> {{ proj.technologies }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      {% endif %}
+
+      {% if not personal_info and not experiences and not education and not skills and not projects %}
+      <div class="r-empty"><i class="bi bi-file-earmark-x" style="font-size:2.5rem;display:block;margin-bottom:10px;opacity:.4"></i>This version has no content.</div>
+      {% endif %}
+
+    </div>
+  </div>
+
 </div>
+
+<!-- Restore Modal -->
+<div class="modal-overlay" id="restoreModal">
+  <div class="modal-box">
+    <div class="modal-title"><i class="bi bi-arrow-counterclockwise" style="color:var(--amber)"></i> Restore Version {{ version.version_number }}?</div>
+    <div class="modal-sub">This will create a new version based on this historical state. Your current version will be preserved in history — nothing is lost.</div>
+    <div class="modal-actions">
+      <button class="btn-sm btn-ghost" id="modalCancel">Cancel</button>
+      {% if not is_current_version %}
+      <form method="post" action="{% url 'version_restore' resume.id version.id %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-sm btn-warn"><i class="bi bi-arrow-counterclockwise"></i> Restore</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const modal = document.getElementById('restoreModal');
+  document.getElementById('openRestoreModal')?.addEventListener('click', () => modal.classList.add('open'));
+  document.getElementById('modalCancel')?.addEventListener('click', () => modal.classList.remove('open'));
+  modal?.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
+});
+</script>
 {% endblock %}

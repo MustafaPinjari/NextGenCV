@@ -337,13 +337,12 @@ class SectionParserService:
                     if field_m:
                         edu['field_of_study'] = field_m.group(1).strip()
 
-            # Institution — line that doesn't contain degree keywords and isn't a date
+            # Institution — first line that doesn't contain degree keywords and isn't a date
             for line in lines:
-                if not degree_re.search(line) and not DATE_PATTERN.search(line) and not gpa_m:
-                    candidate = re.sub(r'\b(university|college|institute|school)\b', '', line, flags=re.IGNORECASE).strip()
-                    if len(candidate) > 3 and not re.match(r'^[\d\s]+$', candidate):
-                        edu['institution'] = line.strip()
-                        break
+                clean = re.sub(DATE_PATTERN, '', line).strip()
+                if not degree_re.search(clean) and len(clean) > 3 and not re.match(r'^[\d\s,]+$', clean):
+                    edu['institution'] = clean
+                    break
 
             if edu['institution'] or edu['degree']:
                 education.append(edu)

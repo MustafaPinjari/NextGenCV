@@ -1645,6 +1645,30 @@ def pdf_import_confirm(request, upload_id):
     try:
         # Get parsed data (may have been edited by user in review page)
         parsed_data = uploaded_resume.parsed_data or {}
+        experiences = parsed_data.get('experiences', [])
+        education = parsed_data.get('education', [])
+        skills = parsed_data.get('skills', [])
+
+        from datetime import datetime as _dt
+
+        def _parse_date(s):
+            if not s:
+                return None
+            s = str(s).strip()
+            if s.lower() in ('present', 'current', 'now'):
+                return None
+            for fmt in ('%B %Y', '%b %Y', '%b. %Y', '%m/%Y', '%Y'):
+                try:
+                    return _dt.strptime(s, fmt).date()
+                except ValueError:
+                    continue
+            ym = re.search(r'(\d{4})', s)
+            if ym:
+                try:
+                    return _dt(int(ym.group(1)), 1, 1).date()
+                except Exception:
+                    pass
+            return None
         
         # Prepare resume data for creation
         resume_data = {
@@ -1670,37 +1694,42 @@ def pdf_import_confirm(request, upload_id):
             'github': github if github else None,
         }
         
-        # Add experiences if available
-        from datetime import datetime as _dt
+        # Add experiences from POST (user-edited inline fields)
+        exp_titles = request.POST.getlist('exp_title[]')
+        exp_companies = request.POST.getlist('exp_company[]')
+        exp_starts = request.POST.getlist('exp_start[]')
+        exp_ends = request.POST.getlist('exp_end[]')
+        exp_descriptions = request.POST.getlist('exp_description[]')
+        exp_achievements = request.POST.getlist('exp_achievements[]')
 
-        def _parse_date(s):
-            if not s:
-                return None
-            s = str(s).strip()
-            if s.lower() in ('present', 'current', 'now'):
-                return None
-            for fmt in ('%B %Y', '%b %Y', '%b. %Y', '%m/%Y', '%Y'):
-                try:
-                    return _dt.strptime(s, fmt).date()
-                except ValueError:
+        if exp_titles:
+            resume_data['experiences'] = []
+            for i, title in enumerate(exp_titles):
+                title = title.strip()
+                company = exp_companies[i].strip() if i < len(exp_companies) else ''
+                if not title and not company:
                     continue
-            ym = re.search(r'(\d{4})', s)
-            if ym:
-                try:
-                    return _dt(int(ym.group(1)), 1, 1).date()
-                except Exception:
-                    pass
-            return None
-
-        experiences = parsed_data.get('experiences', [])
-        if experiences:
+                start_raw = exp_starts[i].strip() if i < len(exp_starts) else ''
+                end_raw = exp_ends[i].strip() if i < len(exp_ends) else ''
+                start_date = _parse_date(start_raw)
+                end_date = _parse_date(end_raw) if end_raw.lower() not in ('present', 'current', 'now', '') else None
+                if not start_date:
+                    start_date = _dt.today().date()
+                resume_data['experiences'].append({
+                    'company': company or 'Unknown Company',
+                    'role': title or 'Unknown Role',
+                    'start_date': start_date,
+                    'end_date': end_date,
+                    'description': exp_descriptions[i].strip() if i < len(exp_descriptions) else '',
+                    'achievements': exp_achievements[i].strip() if i < len(exp_achievements) else '',
+                })
+        elif experiences:  # fallback to parsed_data if no POST arrays
             resume_data['experiences'] = []
             for exp in experiences:
                 start_date = _parse_date(exp.get('start_date'))
                 end_date = _parse_date(exp.get('end_date'))
                 if not start_date:
                     start_date = _dt.today().date()
-
                 resume_data['experiences'].append({
                     'company': exp.get('company') or 'Unknown Company',
                     'role': exp.get('title') or exp.get('role') or 'Unknown Role',
@@ -1708,12 +1737,39 @@ def pdf_import_confirm(request, upload_id):
                     'end_date': end_date,
                     'description': exp.get('description', ''),
                     'achievements': exp.get('achievements', ''),
-                    'location': exp.get('location', ''),
                 })
-        
-        # Add education if available
-        education = parsed_data.get('education', [])
-        if education:
+
+        # Add education from POST (user-edited inline fields)
+        edu_institutions = request.POST.getlist('edu_institution[]')
+        edu_degrees = request.POST.getlist('edu_degree[]')
+        edu_fields = request.POST.getlist('edu_field[]')
+        edu_grad_years = request.POST.getlist('edu_grad_year[]')
+        edu_gpas = request.POST.getlist('edu_gpa[]')
+
+        if edu_institutions:
+            resume_data['education'] = []
+            for i, institution in enumerate(edu_institutions):
+                institution = institution.strip()
+                if not institution:
+                    continue
+                grad_raw = edu_grad_years[i].strip() if i < len(edu_grad_years) else ''
+                year = None
+                if grad_raw:
+                    try:
+                        year = int(re.search(r'\d{4}', grad_raw).group(0))
+                    except Exception:
+                        year = _dt.today().year
+                if not year:
+                    year = _dt.today().year
+                gpa_raw = edu_gpas[i].strip() if i < len(edu_gpas) else ''
+                resume_data['education'].append({
+                    'institution': institution,
+                    'degree': edu_degrees[i].strip() if i < len(edu_degrees) else 'Unknown Degree',
+                    'field': edu_fields[i].strip() if i < len(edu_fields) else '',
+                    'start_year': year - 4,
+                    'end_year': year,
+                })
+        elif education:  # fallback to parsed_data
             resume_data['education'] = []
             for edu in education:
                 year = None
@@ -1722,21 +1778,32 @@ def pdf_import_confirm(request, upload_id):
                         year = int(re.search(r'\d{4}', edu['graduation_date']).group(0))
                     except Exception:
                         year = _dt.today().year
-
                 if not year:
                     year = _dt.today().year
-                
                 resume_data['education'].append({
                     'institution': edu.get('institution', 'Unknown Institution'),
                     'degree': edu.get('degree', 'Unknown Degree'),
-                    'field': edu.get('field_of_study', ''),  # Allow empty field
-                    'start_year': year - 4,  # Assume 4-year program
+                    'field': edu.get('field_of_study', ''),
+                    'start_year': year - 4,
                     'end_year': year,
                 })
-        
-        # Add skills if available
-        skills = parsed_data.get('skills', [])
-        if skills:
+
+        # Add skills from POST (user-edited inline fields)
+        skill_names = request.POST.getlist('skill_name[]')
+        skill_categories = request.POST.getlist('skill_category[]')
+
+        if skill_names:
+            resume_data['skills'] = []
+            for i, name in enumerate(skill_names):
+                name = name.strip()
+                if not name:
+                    continue
+                cat = skill_categories[i].strip() if i < len(skill_categories) else 'Other'
+                resume_data['skills'].append({
+                    'name': name,
+                    'category': cat or 'Other',
+                })
+        elif skills:  # fallback to parsed_data
             resume_data['skills'] = []
             for skill in skills:
                 resume_data['skills'].append({
@@ -2023,6 +2090,7 @@ def fix_accept(request, pk):
             'improvement_delta': _existing_hist.improvement_delta or 0,
             'changes_summary': _existing_hist.changes_summary,
             'detailed_changes': _existing_hist.detailed_changes,
+            'optimized_data': {},
         }
     except _OptHist.DoesNotExist:
         messages.error(request, 'Optimization record not found. Please start again.')
@@ -2669,13 +2737,19 @@ def version_compare(request, pk):
     
     # Generate diff using VersionService
     diff = VersionService.compare_versions(version1, version2)
-    
+
+    # Add summary counts
+    additions = sum(1 for c in diff['changes'] if c.get('type') == 'added')
+    deletions = sum(1 for c in diff['changes'] if c.get('type') == 'deleted')
+    modifications = sum(1 for c in diff['changes'] if c.get('type') == 'modified')
+    diff['summary'] = {'additions': additions, 'deletions': deletions, 'modifications': modifications}
+
     logger.info(
         f'Comparing versions {version1.version_number} and {version2.version_number} '
         f'for resume {pk} by user {request.user.username}: '
         f'{len(diff["changes"])} changes found'
     )
-    
+
     # Organize changes by section for easier display
     changes_by_section = {}
     for change in diff['changes']:

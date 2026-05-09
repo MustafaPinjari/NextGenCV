@@ -1,481 +1,358 @@
-{% extends 'base.html' %}
-
-{% block title %}Compare Versions - {{ resume.title }} - ATS Resume Builder{% endblock %}
+{% extends 'layouts/authenticated.html' %}
+{% load static %}
+{% block title %}Compare v{{ version1.version_number }} vs v{{ version2.version_number }} — {{ resume.title }}{% endblock %}
 
 {% block extra_css %}
 <style>
-    .comparison-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        margin-bottom: 2rem;
-    }
-    
-    .version-column {
-        border: 2px solid #dee2e6;
-        border-radius: 0.5rem;
-        padding: 1.5rem;
-        background: #fff;
-    }
-    
-    .version-column.older {
-        border-color: #6c757d;
-    }
-    
-    .version-column.newer {
-        border-color: #0d6efd;
-    }
-    
-    .diff-added {
-        background-color: #d1e7dd;
-        border-left: 4px solid #198754;
-        padding: 0.5rem;
-        margin: 0.5rem 0;
-    }
-    
-    .diff-removed {
-        background-color: #f8d7da;
-        border-left: 4px solid #dc3545;
-        padding: 0.5rem;
-        margin: 0.5rem 0;
-    }
-    
-    .diff-modified {
-        background-color: #fff3cd;
-        border-left: 4px solid #ffc107;
-        padding: 0.5rem;
-        margin: 0.5rem 0;
-    }
-    
-    .diff-unchanged {
-        opacity: 0.6;
-    }
-    
-    .section-nav {
-        position: sticky;
-        top: 80px;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        max-height: calc(100vh - 100px);
-        overflow-y: auto;
-    }
-    
-    .section-nav-item {
-        display: block;
-        padding: 0.5rem 1rem;
-        color: #495057;
-        text-decoration: none;
-        border-radius: 0.25rem;
-        transition: all 0.2s;
-    }
-    
-    .section-nav-item:hover {
-        background: #f8f9fa;
-        color: #0d6efd;
-    }
-    
-    .section-nav-item.active {
-        background: #0d6efd;
-        color: white;
-    }
-    
-    .change-badge {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.5rem;
-    }
-    
-    .stats-card {
-        background: #f8f9fa;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        text-align: center;
-    }
-    
-    .stats-number {
-        font-size: 2rem;
-        font-weight: 700;
-    }
-    
-    .score-delta {
-        font-size: 1.5rem;
-        font-weight: 700;
-    }
-    
-    .score-improved {
-        color: #198754;
-    }
-    
-    .score-declined {
-        color: #dc3545;
-    }
-    
-    .score-unchanged {
-        color: #6c757d;
-    }
-    
-    @media (max-width: 992px) {
-        .section-nav {
-            position: static;
-            margin-bottom: 1rem;
-        }
-        
-        .version-column {
-            margin-bottom: 1rem;
-        }
-    }
+*{box-sizing:border-box}
+:root{
+  --bg:#030712;--surface:#0d1117;--surface2:#161b22;--border:#21262d;--border2:#30363d;
+  --primary:#6366f1;--primary-light:#818cf8;--accent:#06b6d4;--green:#10b981;
+  --amber:#f59e0b;--red:#f87171;--text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --font:'Inter',-apple-system,sans-serif;
+  --r8:8px;--r12:12px;--r16:16px;--r20:20px;
+}
+body{font-family:var(--font)!important;background:var(--bg)!important;color:var(--text)!important}
+.main-content{background:var(--bg)!important}
+.content-wrapper{background:transparent!important}
+
+.vc-wrap{padding:32px;max-width:1300px;margin:0 auto}
+
+/* Header */
+.vc-hdr{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.vc-hdr h1{font-size:1.4rem;font-weight:800;letter-spacing:-.03em;margin:0}
+.vc-hdr p{font-size:.78rem;color:var(--text3);margin:4px 0 0}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:var(--r8);font-size:.8rem;font-weight:600;font-family:var(--font);cursor:pointer;text-decoration:none;transition:all .18s;border:none}
+.btn-ghost{background:var(--surface2);color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{border-color:var(--primary);color:var(--primary-light)}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#8b5cf6);color:#fff}
+.btn-primary:hover{opacity:.9}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px;text-align:center}
+.stat-cell-lbl{font-size:.68rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.stat-cell-val{font-size:1.6rem;font-weight:900;letter-spacing:-.04em}
+
+/* Score comparison banner */
+.score-banner{background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-around;gap:16px;flex-wrap:wrap}
+.score-side{text-align:center}
+.score-side-lbl{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.score-side-num{font-size:2rem;font-weight:900;letter-spacing:-.04em}
+.score-arrow{font-size:1.5rem;color:var(--text3)}
+.score-delta-wrap{text-align:center}
+.score-delta{font-size:1.4rem;font-weight:900}
+.delta-up{color:var(--green)}
+.delta-down{color:var(--red)}
+.delta-same{color:var(--text3)}
+.score-good{color:var(--green)}
+.score-mid{color:var(--amber)}
+.score-low{color:var(--red)}
+
+/* Layout */
+.vc-layout{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:start}
+
+/* Sticky nav */
+.section-nav{position:sticky;top:80px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r16);padding:16px;max-height:calc(100vh - 100px);overflow-y:auto}
+.section-nav h6{font-size:.72rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.nav-item{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:var(--r8);font-size:.8rem;color:var(--text2);text-decoration:none;transition:all .15s;margin-bottom:2px}
+.nav-item:hover{background:rgba(99,102,241,.08);color:var(--text)}
+.nav-item.active{background:rgba(99,102,241,.12);color:var(--primary-light)}
+.nav-count{font-size:.68rem;font-weight:700;padding:2px 7px;border-radius:99px;background:rgba(99,102,241,.15);color:var(--primary-light)}
+
+/* Version headers */
+.v-headers{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.v-header-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r12);padding:14px 16px}
+.v-header-card.older{border-left:3px solid var(--text3)}
+.v-header-card.newer{border-left:3px solid var(--primary)}
+.v-header-title{font-size:.9rem;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.v-header-meta{font-size:.75rem;color:var(--text3)}
+.v-badge{display:inline-flex;align-items:center;gap:3px;font-size:.65rem;font-weight:700;padding:2px 8px;border-radius:99px}
+.badge-older{background:rgba(139,146,158,.1);color:var(--text3)}
+.badge-newer{background:rgba(99,102,241,.15);color:var(--primary-light)}
+.badge-optimized{background:rgba(16,185,129,.12);color:var(--green)}
+.badge-restored{background:rgba(245,158,11,.12);color:var(--amber)}
+.badge-manual{background:rgba(139,146,158,.1);color:var(--text3)}
+
+/* Diff sections */
+.diff-section{margin-bottom:28px}
+.diff-section-title{font-size:.8rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--primary-light);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.diff-section-title .count{font-size:.7rem;padding:2px 8px;border-radius:99px;background:rgba(99,102,241,.15);color:var(--primary-light)}
+
+.diff-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.diff-cell{border-radius:var(--r12);padding:12px 14px;font-size:.8rem;line-height:1.6}
+.diff-cell-lbl{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.diff-cell-content{color:var(--text2)}
+
+.diff-added{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2)}
+.diff-added .diff-cell-lbl{color:var(--green)}
+.diff-removed{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.2)}
+.diff-removed .diff-cell-lbl{color:var(--red)}
+.diff-modified{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2)}
+.diff-modified .diff-cell-lbl{color:var(--amber)}
+.diff-empty{background:var(--surface2);border:1px solid var(--border);opacity:.5}
+.diff-empty .diff-cell-content{color:var(--text3);font-style:italic}
+
+.change-tag{font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:99px}
+.tag-added{background:rgba(16,185,129,.15);color:var(--green)}
+.tag-removed{background:rgba(248,113,113,.15);color:var(--red)}
+.tag-modified{background:rgba(245,158,11,.15);color:var(--amber)}
+
+/* No changes */
+.no-changes{text-align:center;padding:60px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r20)}
+.no-changes-icon{font-size:3rem;color:var(--green);margin-bottom:14px;opacity:.7}
+
+@media(max-width:1024px){
+  .vc-layout{grid-template-columns:1fr}
+  .section-nav{position:static;display:flex;flex-wrap:wrap;gap:6px;padding:12px}
+  .section-nav h6{width:100%;margin-bottom:4px}
+}
+@media(max-width:768px){
+  .vc-wrap{padding:20px}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .diff-row{grid-template-columns:1fr}
+  .v-headers{grid-template-columns:1fr}
+  .score-banner{flex-direction:column}
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <!-- Comparison Header -->
-        <div class="comparison-header">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h2 class="mb-2">
-                        <i class="bi bi-arrow-left-right"></i> Version Comparison
-                    </h2>
-                    <h4 class="mb-0">{{ resume.title }}</h4>
-                </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <a href="{% url 'version_list' resume.id %}" class="btn btn-light">
-                        <i class="bi bi-arrow-left"></i> Back to History
-                    </a>
-                </div>
-            </div>
-        </div>
+<div class="vc-wrap">
 
-        <!-- Comparison Stats -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="text-muted small mb-1">Total Changes</div>
-                    <div class="stats-number text-primary">{{ total_changes }}</div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="text-muted small mb-1">Additions</div>
-                    <div class="stats-number text-success">
-                        {{ diff.summary.additions|default:0 }}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="text-muted small mb-1">Deletions</div>
-                    <div class="stats-number text-danger">
-                        {{ diff.summary.deletions|default:0 }}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stats-card">
-                    <div class="text-muted small mb-1">Modifications</div>
-                    <div class="stats-number text-warning">
-                        {{ diff.summary.modifications|default:0 }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Score Comparison -->
-        {% if version1.ats_score and version2.ats_score %}
-        <div class="alert {% if version2.ats_score > version1.ats_score %}alert-success{% elif version2.ats_score < version1.ats_score %}alert-danger{% else %}alert-info{% endif %} mb-4">
-            <div class="row align-items-center">
-                <div class="col-md-4 text-center">
-                    <div class="text-muted small">Version {{ version1.version_number }} Score</div>
-                    <div class="score-delta">{{ version1.ats_score|floatformat:1 }}%</div>
-                </div>
-                <div class="col-md-4 text-center">
-                    <i class="bi bi-arrow-right" style="font-size: 2rem;"></i>
-                    <div class="score-delta {% if version2.ats_score > version1.ats_score %}score-improved{% elif version2.ats_score < version1.ats_score %}score-declined{% else %}score-unchanged{% endif %}">
-                        {% if version2.ats_score > version1.ats_score %}
-                            <i class="bi bi-arrow-up-circle-fill"></i> +{{ version2.ats_score|floatformat:1|add:"-"|add:version1.ats_score|floatformat:1 }}%
-                        {% elif version2.ats_score < version1.ats_score %}
-                            <i class="bi bi-arrow-down-circle-fill"></i> {{ version2.ats_score|floatformat:1|add:"-"|add:version1.ats_score|floatformat:1 }}%
-                        {% else %}
-                            <i class="bi bi-dash-circle-fill"></i> No Change
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="col-md-4 text-center">
-                    <div class="text-muted small">Version {{ version2.version_number }} Score</div>
-                    <div class="score-delta">{{ version2.ats_score|floatformat:1 }}%</div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="row">
-            <!-- Section Navigation -->
-            <div class="col-lg-3">
-                <div class="section-nav">
-                    <h6 class="mb-3">Jump to Section</h6>
-                    {% for section, changes in changes_by_section.items %}
-                    <a href="#section-{{ section }}" class="section-nav-item">
-                        {{ section|title }}
-                        <span class="badge bg-primary change-badge float-end">
-                            {{ changes|length }}
-                        </span>
-                    </a>
-                    {% endfor %}
-                    
-                    {% if not changes_by_section %}
-                    <p class="text-muted small mb-0">No changes detected</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Side-by-Side Comparison -->
-            <div class="col-lg-9">
-                <!-- Version Headers -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <div class="version-column older">
-                            <h5 class="mb-2">
-                                <i class="bi bi-clock-history"></i> Version {{ version1.version_number }}
-                                <span class="badge bg-secondary ms-2">Older</span>
-                            </h5>
-                            <p class="text-muted mb-1 small">
-                                <i class="bi bi-calendar"></i> {{ version1.created_at|date:"M d, Y g:i A" }}
-                            </p>
-                            <p class="mb-0 small">
-                                <span class="badge bg-secondary">{{ version1.modification_type|title }}</span>
-                                {% if version1.ats_score %}
-                                <span class="badge bg-info ms-1">Score: {{ version1.ats_score|floatformat:1 }}%</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="version-column newer">
-                            <h5 class="mb-2">
-                                <i class="bi bi-clock-history"></i> Version {{ version2.version_number }}
-                                <span class="badge bg-primary ms-2">Newer</span>
-                            </h5>
-                            <p class="text-muted mb-1 small">
-                                <i class="bi bi-calendar"></i> {{ version2.created_at|date:"M d, Y g:i A" }}
-                            </p>
-                            <p class="mb-0 small">
-                                <span class="badge bg-secondary">{{ version2.modification_type|title }}</span>
-                                {% if version2.ats_score %}
-                                <span class="badge bg-info ms-1">Score: {{ version2.ats_score|floatformat:1 }}%</span>
-                                {% endif %}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Changes by Section -->
-                {% if changes_by_section %}
-                    {% for section, changes in changes_by_section.items %}
-                    <div id="section-{{ section }}" class="mb-4">
-                        <h4 class="border-bottom pb-2 mb-3">
-                            <i class="bi bi-{{ section|lower|slice:':4' }}"></i> {{ section|title }}
-                            <span class="badge bg-primary ms-2">{{ changes|length }} change{{ changes|length|pluralize }}</span>
-                        </h4>
-
-                        {% for change in changes %}
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <!-- Old Value -->
-                                {% if change.change_type == 'deleted' or change.change_type == 'modified' %}
-                                <div class="{% if change.change_type == 'deleted' %}diff-removed{% else %}diff-modified{% endif %}">
-                                    <div class="d-flex justify-content-between align-items-start mb-1">
-                                        <strong class="small">{{ change.field|title }}</strong>
-                                        {% if change.change_type == 'deleted' %}
-                                        <span class="badge bg-danger">Removed</span>
-                                        {% else %}
-                                        <span class="badge bg-warning">Changed</span>
-                                        {% endif %}
-                                    </div>
-                                    <div>{{ change.old_value|default:"[Empty]"|linebreaks }}</div>
-                                </div>
-                                {% else %}
-                                <div class="diff-unchanged">
-                                    <div class="small text-muted mb-1">{{ change.field|title }}</div>
-                                    <div class="text-muted">[Not present]</div>
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <!-- New Value -->
-                                {% if change.change_type == 'added' or change.change_type == 'modified' %}
-                                <div class="{% if change.change_type == 'added' %}diff-added{% else %}diff-modified{% endif %}">
-                                    <div class="d-flex justify-content-between align-items-start mb-1">
-                                        <strong class="small">{{ change.field|title }}</strong>
-                                        {% if change.change_type == 'added' %}
-                                        <span class="badge bg-success">Added</span>
-                                        {% else %}
-                                        <span class="badge bg-warning">Changed</span>
-                                        {% endif %}
-                                    </div>
-                                    <div>{{ change.new_value|default:"[Empty]"|linebreaks }}</div>
-                                </div>
-                                {% else %}
-                                <div class="diff-unchanged">
-                                    <div class="small text-muted mb-1">{{ change.field|title }}</div>
-                                    <div class="text-muted">[Removed]</div>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <!-- No Changes -->
-                    <div class="text-center py-5">
-                        <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
-                        <h4 class="mt-3">No Differences Found</h4>
-                        <p class="text-muted">These two versions are identical.</p>
-                    </div>
-                {% endif %}
-
-                <!-- Full Content Comparison (Collapsed by default) -->
-                <div class="card mt-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <button class="btn btn-link text-decoration-none w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#fullComparison">
-                                <i class="bi bi-chevron-down"></i> View Full Side-by-Side Content
-                            </button>
-                        </h5>
-                    </div>
-                    <div id="fullComparison" class="collapse">
-                        <div class="card-body">
-                            <div class="row">
-                                <!-- Version 1 Full Content -->
-                                <div class="col-md-6 border-end">
-                                    <h6 class="text-muted mb-3">Version {{ version1.version_number }}</h6>
-                                    
-                                    {% if snapshot1.personal_info %}
-                                    <div class="mb-3">
-                                        <strong>Personal Info:</strong>
-                                        <div class="small">{{ snapshot1.personal_info.full_name }}</div>
-                                        <div class="small text-muted">{{ snapshot1.personal_info.email }}</div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if snapshot1.experiences %}
-                                    <div class="mb-3">
-                                        <strong>Experience:</strong> {{ snapshot1.experiences|length }} item{{ snapshot1.experiences|length|pluralize }}
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if snapshot1.education %}
-                                    <div class="mb-3">
-                                        <strong>Education:</strong> {{ snapshot1.education|length }} item{{ snapshot1.education|length|pluralize }}
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if snapshot1.skills %}
-                                    <div class="mb-3">
-                                        <strong>Skills:</strong> {{ snapshot1.skills|length }} item{{ snapshot1.skills|length|pluralize }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                                
-                                <!-- Version 2 Full Content -->
-                                <div class="col-md-6">
-                                    <h6 class="text-muted mb-3">Version {{ version2.version_number }}</h6>
-                                    
-                                    {% if snapshot2.personal_info %}
-                                    <div class="mb-3">
-                                        <strong>Personal Info:</strong>
-                                        <div class="small">{{ snapshot2.personal_info.full_name }}</div>
-                                        <div class="small text-muted">{{ snapshot2.personal_info.email }}</div>
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if snapshot2.experiences %}
-                                    <div class="mb-3">
-                                        <strong>Experience:</strong> {{ snapshot2.experiences|length }} item{{ snapshot2.experiences|length|pluralize }}
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if snapshot2.education %}
-                                    <div class="mb-3">
-                                        <strong>Education:</strong> {{ snapshot2.education|length }} item{{ snapshot2.education|length|pluralize }}
-                                    </div>
-                                    {% endif %}
-                                    
-                                    {% if snapshot2.skills %}
-                                    <div class="mb-3">
-                                        <strong>Skills:</strong> {{ snapshot2.skills|length }} item{{ snapshot2.skills|length|pluralize }}
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Bottom Actions -->
-        <div class="mt-4 d-flex justify-content-between">
-            <a href="{% url 'version_list' resume.id %}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Version History
-            </a>
-            
-            <div class="btn-group">
-                <a href="{% url 'version_detail' resume.id version1.id %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-eye"></i> View v{{ version1.version_number }}
-                </a>
-                <a href="{% url 'version_detail' resume.id version2.id %}" class="btn btn-outline-primary">
-                    <i class="bi bi-eye"></i> View v{{ version2.version_number }}
-                </a>
-            </div>
-        </div>
+  <!-- Header -->
+  <div class="vc-hdr">
+    <div>
+      <h1><i class="bi bi-arrow-left-right" style="color:var(--primary-light)"></i> Version Comparison</h1>
+      <p>{{ resume.title }} &nbsp;·&nbsp; v{{ version1.version_number }} vs v{{ version2.version_number }}</p>
     </div>
+    <a href="{% url 'version_list' resume.id %}" class="btn-sm btn-ghost">
+      <i class="bi bi-arrow-left"></i> Back to History
+    </a>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stats-row">
+    <div class="stat-cell">
+      <div class="stat-cell-lbl">Total Changes</div>
+      <div class="stat-cell-val" style="color:var(--primary-light)">{{ total_changes }}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-cell-lbl">Additions</div>
+      <div class="stat-cell-val" style="color:var(--green)">{{ diff.summary.additions|default:0 }}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-cell-lbl">Deletions</div>
+      <div class="stat-cell-val" style="color:var(--red)">{{ diff.summary.deletions|default:0 }}</div>
+    </div>
+    <div class="stat-cell">
+      <div class="stat-cell-lbl">Modifications</div>
+      <div class="stat-cell-val" style="color:var(--amber)">{{ diff.summary.modifications|default:0 }}</div>
+    </div>
+  </div>
+
+  <!-- Score banner -->
+  {% if version1.ats_score or version2.ats_score %}
+  <div class="score-banner">
+    <div class="score-side">
+      <div class="score-side-lbl">v{{ version1.version_number }} Score</div>
+      <div class="score-side-num {% if version1.ats_score >= 75 %}score-good{% elif version1.ats_score >= 50 %}score-mid{% else %}score-low{% endif %}">
+        {% if version1.ats_score %}{{ version1.ats_score|floatformat:1 }}{% else %}—{% endif %}
+      </div>
+    </div>
+    <div class="score-arrow"><i class="bi bi-arrow-right"></i></div>
+    <div class="score-delta-wrap">
+      <div class="score-side-lbl">Change</div>
+      {% if version1.ats_score and version2.ats_score %}
+        {% if version2.ats_score > version1.ats_score %}
+          <div class="score-delta delta-up"><i class="bi bi-arrow-up-circle-fill"></i> Improved</div>
+        {% elif version2.ats_score < version1.ats_score %}
+          <div class="score-delta delta-down"><i class="bi bi-arrow-down-circle-fill"></i> Declined</div>
+        {% else %}
+          <div class="score-delta delta-same"><i class="bi bi-dash-circle-fill"></i> No Change</div>
+        {% endif %}
+      {% else %}
+        <div class="score-delta delta-same">—</div>
+      {% endif %}
+    </div>
+    <div class="score-arrow"><i class="bi bi-arrow-right"></i></div>
+    <div class="score-side">
+      <div class="score-side-lbl">v{{ version2.version_number }} Score</div>
+      <div class="score-side-num {% if version2.ats_score >= 75 %}score-good{% elif version2.ats_score >= 50 %}score-mid{% else %}score-low{% endif %}">
+        {% if version2.ats_score %}{{ version2.ats_score|floatformat:1 }}{% else %}—{% endif %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="vc-layout">
+
+    <!-- Section nav -->
+    <div class="section-nav">
+      <h6>Sections</h6>
+      {% for section, changes in changes_by_section.items %}
+      <a href="#section-{{ section }}" class="nav-item">
+        {{ section|title }}
+        <span class="nav-count">{{ changes|length }}</span>
+      </a>
+      {% empty %}
+      <span style="font-size:.78rem;color:var(--text3)">No changes</span>
+      {% endfor %}
+    </div>
+
+    <!-- Main diff -->
+    <div>
+      <!-- Version headers -->
+      <div class="v-headers">
+        <div class="v-header-card older">
+          <div class="v-header-title">
+            <i class="bi bi-clock-history"></i> Version {{ version1.version_number }}
+            <span class="v-badge badge-older">Older</span>
+            {% if version1.modification_type == 'optimized' %}<span class="v-badge badge-optimized">AI</span>{% endif %}
+          </div>
+          <div class="v-header-meta">
+            <i class="bi bi-calendar3"></i> {{ version1.created_at|date:"M d, Y · g:i A" }}
+            {% if version1.ats_score %} &nbsp;·&nbsp; Score: <strong>{{ version1.ats_score|floatformat:1 }}</strong>{% endif %}
+          </div>
+        </div>
+        <div class="v-header-card newer">
+          <div class="v-header-title">
+            <i class="bi bi-clock-history"></i> Version {{ version2.version_number }}
+            <span class="v-badge badge-newer">Newer</span>
+            {% if version2.modification_type == 'optimized' %}<span class="v-badge badge-optimized">AI</span>{% endif %}
+          </div>
+          <div class="v-header-meta">
+            <i class="bi bi-calendar3"></i> {{ version2.created_at|date:"M d, Y · g:i A" }}
+            {% if version2.ats_score %} &nbsp;·&nbsp; Score: <strong>{{ version2.ats_score|floatformat:1 }}</strong>{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {% if changes_by_section %}
+        {% for section, changes in changes_by_section.items %}
+        <div class="diff-section" id="section-{{ section }}">
+          <div class="diff-section-title">
+            <i class="bi bi-{% if section == 'experiences' %}briefcase{% elif section == 'education' %}mortarboard{% elif section == 'skills' %}gear{% elif section == 'projects' %}code-square{% else %}person{% endif %}"></i>
+            {{ section|title }}
+            <span class="count">{{ changes|length }} change{{ changes|length|pluralize }}</span>
+          </div>
+
+          {% for change in changes %}
+          <div class="diff-row">
+            <!-- Old side -->
+            <div class="diff-cell {% if change.type == 'deleted' %}diff-removed{% elif change.type == 'modified' %}diff-modified{% else %}diff-empty{% endif %}">
+              <div class="diff-cell-lbl">
+                <span>{{ change.field|default:change.item|title }}</span>
+                {% if change.type == 'deleted' %}<span class="change-tag tag-removed">Removed</span>
+                {% elif change.type == 'modified' %}<span class="change-tag tag-modified">Before</span>
+                {% endif %}
+              </div>
+              <div class="diff-cell-content">
+                {% if change.type == 'deleted' %}
+                  {% if change.old_value %}
+                    {% if change.old_value|length > 200 %}{{ change.old_value|truncatechars:200 }}{% else %}{{ change.old_value }}{% endif %}
+                  {% else %}[empty]{% endif %}
+                {% elif change.type == 'modified' %}
+                  {% if change.old_value %}{{ change.old_value }}{% else %}[empty]{% endif %}
+                  {% if change.field_changes %}
+                    {% for fc in change.field_changes %}
+                    <div style="margin-top:6px;padding:6px 8px;background:rgba(248,113,113,.08);border-radius:6px;font-size:.75rem">
+                      <strong style="color:var(--text3)">{{ fc.field }}:</strong> {{ fc.old|default:"—" }}
+                    </div>
+                    {% endfor %}
+                  {% endif %}
+                {% else %}
+                  <span style="font-style:italic">Not present in v{{ version1.version_number }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- New side -->
+            <div class="diff-cell {% if change.type == 'added' %}diff-added{% elif change.type == 'modified' %}diff-modified{% else %}diff-empty{% endif %}">
+              <div class="diff-cell-lbl">
+                <span>{{ change.field|default:change.item|title }}</span>
+                {% if change.type == 'added' %}<span class="change-tag tag-added">Added</span>
+                {% elif change.type == 'modified' %}<span class="change-tag tag-modified">After</span>
+                {% endif %}
+              </div>
+              <div class="diff-cell-content">
+                {% if change.type == 'added' %}
+                  {% if change.new_value %}
+                    {% if change.new_value|length > 200 %}{{ change.new_value|truncatechars:200 }}{% else %}{{ change.new_value }}{% endif %}
+                  {% else %}[empty]{% endif %}
+                {% elif change.type == 'modified' %}
+                  {% if change.new_value %}{{ change.new_value }}{% else %}[empty]{% endif %}
+                  {% if change.field_changes %}
+                    {% for fc in change.field_changes %}
+                    <div style="margin-top:6px;padding:6px 8px;background:rgba(16,185,129,.08);border-radius:6px;font-size:.75rem">
+                      <strong style="color:var(--text3)">{{ fc.field }}:</strong> {{ fc.new|default:"—" }}
+                    </div>
+                    {% endfor %}
+                  {% endif %}
+                {% else %}
+                  <span style="font-style:italic">Removed in v{{ version2.version_number }}</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endfor %}
+
+      {% else %}
+      <div class="no-changes">
+        <div class="no-changes-icon"><i class="bi bi-check-circle-fill"></i></div>
+        <div style="font-size:1.1rem;font-weight:700;margin-bottom:8px">No Differences Found</div>
+        <div style="font-size:.82rem;color:var(--text3)">These two versions are identical.</div>
+      </div>
+      {% endif %}
+
+      <!-- Bottom actions -->
+      <div style="display:flex;gap:10px;justify-content:space-between;margin-top:24px;flex-wrap:wrap">
+        <a href="{% url 'version_list' resume.id %}" class="btn-sm btn-ghost">
+          <i class="bi bi-arrow-left"></i> Back to History
+        </a>
+        <div style="display:flex;gap:8px">
+          <a href="{% url 'version_detail' resume.id version1.id %}" class="btn-sm btn-ghost">
+            <i class="bi bi-eye"></i> View v{{ version1.version_number }}
+          </a>
+          <a href="{% url 'version_detail' resume.id version2.id %}" class="btn-sm btn-primary">
+            <i class="bi bi-eye"></i> View v{{ version2.version_number }}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Smooth scroll for section navigation
-    document.querySelectorAll('.section-nav-item').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-            
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                
-                // Update active state
-                document.querySelectorAll('.section-nav-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                this.classList.add('active');
-            }
-        });
+document.addEventListener('DOMContentLoaded', () => {
+  // Smooth scroll + active state for section nav
+  document.querySelectorAll('.nav-item').forEach(link => {
+    link.addEventListener('click', e => {
+      e.preventDefault();
+      const target = document.querySelector(link.getAttribute('href'));
+      if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      link.classList.add('active');
     });
-    
-    // Highlight active section on scroll
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const id = entry.target.getAttribute('id');
-                document.querySelectorAll('.section-nav-item').forEach(item => {
-                    item.classList.remove('active');
-                    if (item.getAttribute('href') === `#${id}`) {
-                        item.classList.add('active');
-                    }
-                });
-            }
+  });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        document.querySelectorAll('.nav-item').forEach(i => {
+          i.classList.toggle('active', i.getAttribute('href') === `#${id}`);
         });
-    }, { threshold: 0.5 });
-    
-    document.querySelectorAll('[id^="section-"]').forEach(section => {
-        observer.observe(section);
+      }
     });
+  }, { threshold: 0.3 });
+
+  document.querySelectorAll('[id^="section-"]').forEach(s => observer.observe(s));
 });
 </script>
 {% endblock %}
