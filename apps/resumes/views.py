@@ -149,18 +149,23 @@ def resume_create(request):
                     messages.success(request, 'Skill removed successfully!')
                 return redirect('resume_create')
             elif action == 'add_skill':
-                from .forms import SkillForm
-                form = SkillForm(request.POST)
-                if form.is_valid():
+                name = request.POST.get('name', '').strip()
+                category = request.POST.get('category', 'Technical').strip() or 'Technical'
+                if name:
                     if 'skills' not in wizard_data['data']:
                         wizard_data['data']['skills'] = []
-                    wizard_data['data']['skills'].append({
-                        'name': form.cleaned_data['name'],
-                        'category': form.cleaned_data['category']
-                    })
+                    # Prevent duplicates
+                    existing_names = {s['name'].lower() for s in wizard_data['data']['skills']}
+                    if name.lower() not in existing_names:
+                        wizard_data['data']['skills'].append({
+                            'name': name,
+                            'category': category,
+                        })
+                        messages.success(request, f'Added "{name}"!')
+                    else:
+                        messages.info(request, f'"{name}" is already in your skills.')
                     request.session.modified = True
-                    messages.success(request, 'Skill added successfully!')
-                    return redirect('resume_create')
+                return redirect('resume_create')
             elif action == 'next':
                 wizard_data['step'] = 5
                 request.session.modified = True
@@ -168,57 +173,74 @@ def resume_create(request):
         
         elif current_step == 5:
             # Step 5: Summary and finish
-            action = request.POST.get('action')
-            if action == 'save' or action == 'next' or 'finish' in request.POST:
-                # Get summary if provided
-                summary = request.POST.get('summary', '')
-                if summary:
-                    wizard_data['data']['summary'] = summary
-                    request.session.modified = True
-                
-                # Log wizard data for debugging
-                logger.info(f'Creating resume with wizard data: {wizard_data["data"]}')
-                
-                # Convert date strings back to date objects for experiences
-                from datetime import date
-                if 'experiences' in wizard_data['data']:
-                    for exp in wizard_data['data']['experiences']:
-                        try:
-                            if isinstance(exp['start_date'], str) and exp['start_date']:
-                                exp['start_date'] = date.fromisoformat(exp['start_date'])
-                            if exp.get('end_date') and isinstance(exp['end_date'], str):
-                                exp['end_date'] = date.fromisoformat(exp['end_date'])
-                        except (ValueError, TypeError):
-                            pass  # Keep as string if parsing fails
-                
-                # Set default title and template if not provided
-                if 'title' not in wizard_data['data']:
-                    wizard_data['data']['title'] = f"{wizard_data['data'].get('personal_info', {}).get('full_name', 'My')} Resume"
-                if 'template' not in wizard_data['data']:
-                    wizard_data['data']['template'] = 'professional'
-                
-                # Mark resume as complete (not draft) - Requirements: 4.2, 5.1, 5.5
-                wizard_data['data']['is_draft'] = False
-                
-                # Create the resume
-                resume = ResumeService.create_resume(request.user, wizard_data['data'])
+            # Skip AJAX requests — they are handled below
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                pass  # fall through to AJAX handler
+            else:
+                action = request.POST.get('action')
+                if action == 'save' or action == 'next' or 'finish' in request.POST:
+                    summary = request.POST.get('summary', '').strip()
+                    if summary:
+                        wizard_data['data']['summary'] = summary
+                        request.session.modified = True
 
-                # Log activity
-                from apps.authentication.models import ActivityLog
-                ActivityLog.log(request.user, 'resume_created', f'Created resume "{resume.title}"', resume=resume)
+                    logger.info(f'Creating resume with wizard data keys: {list(wizard_data["data"].keys())}')
 
-                # Log what was created
-                logger.info(f'Resume created: ID={resume.id}, Experiences={resume.experiences.count()}, Education={resume.education.count()}, Skills={resume.skills.count()}')
-                
-                # Clear wizard data
-                del request.session['resume_wizard']
-                request.session.modified = True
-                
-                # Requirement: 5.3 - Display success message
-                messages.success(request, 'Resume created successfully!')
-                
-                # Requirement: 5.2 - Redirect to resume detail page
-                return redirect('resume_detail', pk=resume.id)
+                    # Convert date strings back to date objects for experiences
+                    from datetime import date
+                    if 'experiences' in wizard_data['data']:
+                        for exp in wizard_data['data']['experiences']:
+                            try:
+                                if isinstance(exp.get('start_date'), str) and exp['start_date']:
+                                    exp['start_date'] = date.fromisoformat(exp['start_date'])
+                                if exp.get('end_date') and isinstance(exp['end_date'], str):
+                                    exp['end_date'] = date.fromisoformat(exp['end_date'])
+                            except (ValueError, TypeError):
+                                pass
+
+                    # Set defaults
+                    if 'title' not in wizard_data['data']:
+                        full_name = wizard_data['data'].get('personal_info', {}).get('full_name', 'My')
+                        wizard_data['data']['title'] = f"{full_name} Resume"
+                    if 'template' not in wizard_data['data']:
+                        wizard_data['data']['template'] = 'professional'
+                    wizard_data['data']['is_draft'] = False
+
+                    try:
+                        resume = ResumeService.create_resume(request.user, wizard_data['data'])
+
+                        from apps.authentication.models import ActivityLog
+                        ActivityLog.log(
+                            request.user, 'resume_created',
+                            f'Created resume "{resume.title}"', resume=resume
+                        )
+                        logger.info(
+                            f'Resume created: ID={resume.id}, '
+                            f'Experiences={resume.experiences.count()}, '
+                            f'Education={resume.education.count()}, '
+                            f'Skills={resume.skills.count()}'
+                        )
+
+                        # Clear wizard session only on success
+                        del request.session['resume_wizard']
+                        request.session.modified = True
+
+                        messages.success(request, 'Resume created successfully!')
+                        return redirect('resume_detail', pk=resume.id)
+
+                    except Exception as e:
+                        logger.error(f'Failed to create resume from wizard: {e}', exc_info=True)
+                        messages.error(
+                            request,
+                            f'Failed to create resume: {str(e)}. Please try again.'
+                        )
+                        # Stay on step 5 — do NOT clear session
+                        from .forms import SummaryForm
+                        return render(request, 'resumes/wizard_steps/step5_summary.html', {
+                            'step': 5,
+                            'wizard_data': wizard_data['data'],
+                            'form': SummaryForm(initial={'summary': wizard_data['data'].get('summary', '')}),
+                        })
     
     # Handle back button
     if request.GET.get('back'):
@@ -326,16 +348,20 @@ def resume_create(request):
             request.session.modified = True
             return JsonResponse({'success': True, 'message': 'Draft saved'})
         
-        # Requirement: 4.4 - AI summary generation endpoint
+        # AI summary generation endpoint
         if request.POST.get('action') == 'generate_summary':
             try:
-                # Generate AI summary based on experience and skills
-                summary = generate_ai_summary(wizard_data['data'])
-                return JsonResponse({'summary': summary, 'success': True})
+                from apps.resumes.services.llm_service import LLMService
+                result = LLMService.generate_summary(wizard_data['data'])
+                return JsonResponse({
+                    'summary': result['summary'],
+                    'ai_powered': result['ai_powered'],
+                    'success': True,
+                })
             except Exception as e:
                 logger.error(f'Failed to generate AI summary: {str(e)}', exc_info=True)
                 return JsonResponse({
-                    'success': False, 
+                    'success': False,
                     'error': 'Failed to generate summary. Please try again.'
                 }, status=500)
     
@@ -3167,9 +3193,21 @@ def generate_summary_ai(request):
     except ImportError:
         pass
 
+    # Try to parse JSON body first
+    wizard_data = {}
     try:
-        wizard_data = json.loads(request.body)
+        body = json.loads(request.body)
+        # If called from wizard, read data from session
+        if body.get('source') == 'wizard':
+            wizard_data = request.session.get('resume_wizard', {}).get('data', {})
+        else:
+            wizard_data = body
     except (json.JSONDecodeError, ValueError):
+        wizard_data = request.session.get('resume_wizard', {}).get('data', {})
+
+    # Ensure we have something useful to generate from
+    if not wizard_data.get('experiences') and not wizard_data.get('skills'):
+        # Last resort: use whatever is in the session
         wizard_data = request.session.get('resume_wizard', {}).get('data', {})
 
     from apps.resumes.services.llm_service import LLMService

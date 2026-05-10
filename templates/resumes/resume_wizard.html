@@ -180,19 +180,111 @@ textarea.field-input{min-height:100px;resize:vertical;font-family:var(--font);li
 </div>
 
 <script>
-// Real-time preview update
+// ── localStorage auto-save backup ────────────────────────────────────────────
+const WIZ_KEY = 'nextgencv_wizard_backup_{{ step }}';
+
+function saveToLocalStorage() {
+  const form = document.getElementById('wizForm');
+  if (!form) return;
+  const data = {};
+  new FormData(form).forEach((v, k) => { data[k] = v; });
+  data._saved_at = Date.now();
+  try { localStorage.setItem(WIZ_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function restoreFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem(WIZ_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    const age = (Date.now() - (data._saved_at || 0)) / 1000;
+    if (age > 3600) { localStorage.removeItem(WIZ_KEY); return; } // expire after 1h
+    const form = document.getElementById('wizForm');
+    if (!form) return;
+    // Only restore if all fields are currently empty
+    const hasData = [...form.querySelectorAll('input,textarea')].some(el => el.value.trim());
+    if (hasData) return;
+    const banner = document.createElement('div');
+    banner.id = 'restoreBanner';
+    banner.style.cssText = 'background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:.85rem;color:#818cf8';
+    banner.innerHTML = `<span><i class="bi bi-clock-history"></i> Unsaved data found from ${Math.round(age/60)} min ago.</span><div style="display:flex;gap:8px"><button type="button" onclick="doRestore()" style="background:rgba(99,102,241,.2);border:1px solid rgba(99,102,241,.4);color:#818cf8;border-radius:6px;padding:4px 12px;font-size:.8rem;cursor:pointer;font-family:inherit">Restore</button><button type="button" onclick="dismissRestore()" style="background:transparent;border:none;color:#6e7681;cursor:pointer;font-size:.8rem;font-family:inherit">Dismiss</button></div>`;
+    form.parentElement.insertBefore(banner, form);
+    window._wizBackup = data;
+  } catch(e) {}
+}
+
+function doRestore() {
+  const form = document.getElementById('wizForm');
+  const data = window._wizBackup;
+  if (!form || !data) return;
+  Object.entries(data).forEach(([k, v]) => {
+    const el = form.querySelector(`[name="${k}"]`);
+    if (el && k !== '_saved_at' && k !== 'csrfmiddlewaretoken') el.value = v;
+  });
+  document.getElementById('restoreBanner')?.remove();
+  updatePreview();
+}
+
+function dismissRestore() {
+  localStorage.removeItem(WIZ_KEY);
+  document.getElementById('restoreBanner')?.remove();
+}
+
+// ── Mobile bottom-sheet preview toggle ───────────────────────────────────────
+function initMobilePreview() {
+  if (window.innerWidth > 1024) return;
+  const preview = document.querySelector('.wiz-preview');
+  if (!preview) return;
+  // Hide preview panel on mobile by default
+  preview.style.display = 'none';
+  // Add toggle button to nav
+  const nav = document.querySelector('.wiz-nav > div:first-child');
+  if (!nav) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.className = 'btn-wiz btn-wiz-ghost';
+  btn.innerHTML = '<i class="bi bi-eye"></i> Preview';
+  btn.style.cssText = 'position:relative';
+  btn.addEventListener('click', () => {
+    const isOpen = preview.style.display !== 'none';
+    if (isOpen) {
+      preview.style.display = 'none';
+      btn.innerHTML = '<i class="bi bi-eye"></i> Preview';
+      document.body.style.overflow = '';
+    } else {
+      preview.style.cssText = 'display:flex;position:fixed;bottom:0;left:0;right:0;height:70vh;z-index:500;border-radius:20px 20px 0 0;border-top:1px solid #21262d;box-shadow:0 -8px 40px rgba(0,0,0,.5);overflow-y:auto;flex-direction:column;background:#0d1117;padding:20px';
+      btn.innerHTML = '<i class="bi bi-x-lg"></i> Close';
+      document.body.style.overflow = 'hidden';
+      // Drag handle
+      if (!preview.querySelector('.drag-handle')) {
+        const handle = document.createElement('div');
+        handle.className = 'drag-handle';
+        handle.style.cssText = 'width:40px;height:4px;background:#30363d;border-radius:2px;margin:0 auto 16px;cursor:pointer';
+        handle.addEventListener('click', () => btn.click());
+        preview.insertBefore(handle, preview.firstChild);
+      }
+    }
+  });
+  nav.appendChild(btn);
+}
+
+// ── Real-time preview update ──────────────────────────────────────────────────
 let updateTimeout;
 function updatePreview() {
   clearTimeout(updateTimeout);
   const status = document.getElementById('saveStatus');
-  status.className = 'preview-save saving';
-  status.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Updating...</span>';
-  
+  if (status) {
+    status.className = 'preview-save saving';
+    status.innerHTML = '<i class="bi bi-arrow-repeat"></i><span>Updating...</span>';
+  }
+  saveToLocalStorage();
+
   updateTimeout = setTimeout(() => {
     const form = document.getElementById('wizForm');
+    if (!form) return;
     const fd = new FormData(form);
     fd.append('preview_update', 'true');
-    
+
     fetch(window.location.href, {
       method: 'POST',
       body: fd,
@@ -203,19 +295,24 @@ function updatePreview() {
       if (d.preview_html) {
         document.getElementById('previewCanvas').innerHTML = d.preview_html;
       }
-      status.className = 'preview-save saved';
-      status.innerHTML = '<i class="bi bi-check-circle"></i><span>Saved</span>';
+      if (status) {
+        status.className = 'preview-save saved';
+        status.innerHTML = '<i class="bi bi-check-circle"></i><span>Saved</span>';
+      }
     })
-    .catch(e => {
-      console.error('Preview update failed:', e);
-      status.className = 'preview-save';
-      status.innerHTML = '<i class="bi bi-x-circle"></i><span>Error</span>';
+    .catch(() => {
+      if (status) {
+        status.className = 'preview-save';
+        status.innerHTML = '<i class="bi bi-x-circle"></i><span>Error</span>';
+      }
     });
   }, 600);
 }
 
-// Attach to all inputs
 document.addEventListener('DOMContentLoaded', () => {
+  restoreFromLocalStorage();
+  initMobilePreview();
+
   const form = document.getElementById('wizForm');
   if (form) {
     form.querySelectorAll('input, textarea, select').forEach(el => {
@@ -223,20 +320,24 @@ document.addEventListener('DOMContentLoaded', () => {
       el.addEventListener('change', updatePreview);
     });
   }
-  
-  // Save draft
-  document.getElementById('saveDraft')?.addEventListener('click', () => {
-    const fd = new FormData(form);
-    fd.append('save_draft', 'true');
-    fetch(window.location.href, {
-      method: 'POST',
-      body: fd,
-      headers: {'X-Requested-With': 'XMLHttpRequest'}
-    })
-    .then(r => r.json())
-    .then(d => {
-      if (d.success) alert('Draft saved!');
+
+  // Clear localStorage only when the FINISH form actually submits (not AJAX)
+  document.querySelectorAll('form').forEach(f => {
+    f.addEventListener('submit', (e) => {
+      // Only clear if this is the final wizard form (has 'finish' field)
+      if (f.querySelector('[name="finish"]')) {
+        try { localStorage.removeItem(WIZ_KEY); } catch(e) {}
+      }
     });
+  });
+
+  // Save draft button
+  document.getElementById('saveDraft')?.addEventListener('click', () => {
+    saveToLocalStorage();
+    const btn = document.getElementById('saveDraft');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="bi bi-check-circle"></i> Saved!';
+    setTimeout(() => { btn.innerHTML = orig; }, 1500);
   });
 });
 </script>

@@ -85,24 +85,35 @@ class ResumeService:
                     Education.objects.create(
                         resume=resume,
                         order=idx,
-                        **edu_data
+                        institution=edu_data.get('institution', ''),
+                        degree=edu_data.get('degree', ''),
+                        field=edu_data.get('field', '') or '',
+                        start_year=edu_data.get('start_year') or 2000,
+                        end_year=edu_data.get('end_year'),
                     )
-            
+
             # Create skills if provided
             if 'skills' in data:
                 for skill_data in data['skills']:
+                    name = skill_data.get('name', '').strip()
+                    if not name:
+                        continue
                     Skill.objects.create(
                         resume=resume,
-                        **skill_data
+                        name=name,
+                        category=skill_data.get('category') or 'General',
                     )
-            
+
             # Create projects if provided
             if 'projects' in data:
                 for idx, proj_data in enumerate(data['projects']):
                     Project.objects.create(
                         resume=resume,
                         order=idx,
-                        **proj_data
+                        name=proj_data.get('name', ''),
+                        description=proj_data.get('description', ''),
+                        technologies=proj_data.get('technologies', ''),
+                        url=proj_data.get('url', ''),
                     )
             
             return resume
@@ -155,49 +166,58 @@ class ResumeService:
             
             # Update experiences if provided
             if 'experiences' in data:
-                # Delete existing experiences
                 resume.experiences.all().delete()
-                # Create new experiences
                 for idx, exp_data in enumerate(data['experiences']):
                     Experience.objects.create(
                         resume=resume,
                         order=idx,
-                        **exp_data
+                        company=exp_data.get('company', 'Unknown Company'),
+                        role=exp_data.get('role', 'Unknown Role'),
+                        start_date=exp_data.get('start_date'),
+                        end_date=exp_data.get('end_date'),
+                        description=exp_data.get('description', ''),
+                        achievements=exp_data.get('achievements', ''),
+                        location=exp_data.get('location', ''),
                     )
-            
+
             # Update education if provided
             if 'education' in data:
-                # Delete existing education
                 resume.education.all().delete()
-                # Create new education entries
                 for idx, edu_data in enumerate(data['education']):
                     Education.objects.create(
                         resume=resume,
                         order=idx,
-                        **edu_data
+                        institution=edu_data.get('institution', ''),
+                        degree=edu_data.get('degree', ''),
+                        field=edu_data.get('field', '') or '',
+                        start_year=edu_data.get('start_year') or 2000,
+                        end_year=edu_data.get('end_year'),
                     )
-            
+
             # Update skills if provided
             if 'skills' in data:
-                # Delete existing skills
                 resume.skills.all().delete()
-                # Create new skills
                 for skill_data in data['skills']:
+                    name = skill_data.get('name', '').strip()
+                    if not name:
+                        continue
                     Skill.objects.create(
                         resume=resume,
-                        **skill_data
+                        name=name,
+                        category=skill_data.get('category') or 'General',
                     )
-            
+
             # Update projects if provided
             if 'projects' in data:
-                # Delete existing projects
                 resume.projects.all().delete()
-                # Create new projects
                 for idx, proj_data in enumerate(data['projects']):
                     Project.objects.create(
                         resume=resume,
                         order=idx,
-                        **proj_data
+                        name=proj_data.get('name', ''),
+                        description=proj_data.get('description', ''),
+                        technologies=proj_data.get('technologies', ''),
+                        url=proj_data.get('url', ''),
                     )
             
             return resume

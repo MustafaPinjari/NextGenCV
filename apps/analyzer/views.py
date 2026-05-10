@@ -62,52 +62,69 @@ def analyze_resume(request, resume_id):
                     defaults={'title': jd_title, 'last_used_at': __import__('django.utils.timezone', fromlist=['timezone']).timezone.now()}
                 )
 
-            # Update last_used_at if loading a saved JD
             saved_id = request.POST.get('load_saved_jd')
             if saved_id:
-                from django.utils import timezone
-                SavedJobDescription.objects.filter(id=saved_id, user=request.user).update(last_used_at=timezone.now())
+                from django.utils import timezone as _tz
+                SavedJobDescription.objects.filter(id=saved_id, user=request.user).update(last_used_at=_tz.now())
+
             try:
-                analysis_result = ATSAnalyzerService.analyze_resume(resume_id, job_description)
-
-                if analysis_result:
-                    score_decimal = analysis_result['score'] / 100
-                    analysis_result['stroke_dashoffset'] = 452.39 * (1 - score_decimal)
-
-                    # Save score back to Resume (no duplicate analyses)
-                    from apps.resumes.models import ResumeAnalysis
-                    from django.utils import timezone
-                    ResumeAnalysis.objects.update_or_create(
-                        resume=resume,
-                        job_description=job_description,
-                        defaults={
-                            'keyword_match_score': analysis_result['score'],
-                            'skill_relevance_score': analysis_result['score'],
-                            'section_completeness_score': analysis_result['score'],
-                            'experience_impact_score': analysis_result['score'],
-                            'quantification_score': analysis_result['score'],
-                            'action_verb_score': analysis_result['score'],
-                            'final_score': analysis_result['score'],
-                            'matched_keywords': analysis_result['matched_keywords'],
-                            'missing_keywords': analysis_result['missing_keywords'],
-                            'suggestions': analysis_result['suggestions'],
-                        }
-                    )
-                    # Cache score + completeness on Resume row
-                    resume.latest_ats_score = round(analysis_result['score'], 1)
-                    resume.last_analyzed_at = timezone.now()
-                    resume.completeness_score = _compute_completeness(resume)
-                    resume.save(update_fields=['latest_ats_score', 'last_analyzed_at', 'completeness_score'])
-
-                from apps.authentication.models import ActivityLog
-                ActivityLog.log(
-                    request.user, 'resume_analyzed',
-                    f'Analyzed "{resume.title}" — score {round(analysis_result["score"], 1)}',
-                    resume=resume,
-                    metadata={'score': analysis_result['score']}
+                from django.conf import settings as _s
+                _use_celery = (
+                    not getattr(_s, 'CELERY_TASK_ALWAYS_EAGER', True)
+                    and _s.CELERY_BROKER_URL
+                    and not _s.CELERY_BROKER_URL.startswith('memory://')
                 )
-                logger.info(f'ATS analysis completed for resume {resume_id} by {request.user.username}')
-                messages.success(request, 'Resume analysis completed successfully!')
+
+                if _use_celery:
+                    # ── Async path: queue task, redirect to SSE polling page ──
+                    from apps.resumes.tasks import analyse_ats_task
+                    task = analyse_ats_task.delay(resume_id, job_description, request.user.id)
+                    # Store task_id in session so the template can poll it
+                    request.session[f'ats_task_{resume_id}'] = task.id
+                    request.session.modified = True
+                    messages.info(request, 'Analysis queued — results will appear shortly.')
+                    return redirect('analyze_resume', resume_id=resume_id)
+                else:
+                    # ── Sync path (dev / no Redis): run inline ──
+                    analysis_result = ATSAnalyzerService.analyze_resume(resume_id, job_description)
+
+                    if analysis_result:
+                        score_decimal = analysis_result['score'] / 100
+                        analysis_result['stroke_dashoffset'] = 452.39 * (1 - score_decimal)
+
+                        from apps.resumes.models import ResumeAnalysis
+                        from django.utils import timezone
+                        ResumeAnalysis.objects.update_or_create(
+                            resume=resume,
+                            job_description=job_description,
+                            defaults={
+                                'keyword_match_score': analysis_result['score'],
+                                'skill_relevance_score': analysis_result['score'],
+                                'section_completeness_score': analysis_result['score'],
+                                'experience_impact_score': analysis_result['score'],
+                                'quantification_score': analysis_result['score'],
+                                'action_verb_score': analysis_result['score'],
+                                'final_score': analysis_result['score'],
+                                'matched_keywords': analysis_result['matched_keywords'],
+                                'missing_keywords': analysis_result['missing_keywords'],
+                                'suggestions': analysis_result['suggestions'],
+                            }
+                        )
+                        resume.latest_ats_score = round(analysis_result['score'], 1)
+                        resume.last_analyzed_at = timezone.now()
+                        resume.completeness_score = _compute_completeness(resume)
+                        resume.save(update_fields=['latest_ats_score', 'last_analyzed_at', 'completeness_score'])
+
+                    from apps.authentication.models import ActivityLog
+                    ActivityLog.log(
+                        request.user, 'resume_analyzed',
+                        f'Analyzed "{resume.title}" — score {round(analysis_result["score"], 1)}',
+                        resume=resume,
+                        metadata={'score': analysis_result['score']}
+                    )
+                    logger.info(f'ATS analysis completed for resume {resume_id} by {request.user.username}')
+                    messages.success(request, 'Resume analysis completed successfully!')
+
             except Exception as e:
                 logger.error(f'ATS analysis failed for resume {resume_id}: {str(e)}', exc_info=True)
                 messages.error(request, f'Analysis failed: {str(e)}')

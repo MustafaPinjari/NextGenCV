@@ -1,19 +1,47 @@
 # Keyword extraction service
-import spacy
+import threading
+import logging
+import string
 from typing import Set, Dict
-import re
+
+logger = logging.getLogger(__name__)
+
+# ── Thread-safe spaCy singleton ───────────────────────────────────────────────
+_nlp_lock = threading.Lock()
+_nlp = None
+_nlp_failed = False
+
+
+def _get_nlp():
+    global _nlp, _nlp_failed
+    if _nlp is not None:
+        return _nlp
+    if _nlp_failed:
+        return None
+    with _nlp_lock:
+        if _nlp is None and not _nlp_failed:
+            try:
+                import spacy
+                _nlp = spacy.load('en_core_web_sm')
+                logger.info('spaCy en_core_web_sm loaded successfully')
+            except OSError:
+                logger.error(
+                    "spaCy model missing. Run: python -m spacy download en_core_web_sm. "
+                    "Falling back to simple tokenisation."
+                )
+                _nlp_failed = True
+            except Exception as exc:
+                logger.error(f"spaCy load failed unexpectedly: {exc}")
+                _nlp_failed = True
+    return _nlp
 
 
 class KeywordExtractorService:
     """
-    Service for extracting and analyzing keywords from text using NLP.
-    Uses spaCy for natural language processing.
+    Keyword extraction using spaCy NLP with thread-safe singleton.
+    Falls back to simple tokenisation if spaCy is unavailable.
     """
-    
-    # Load spaCy model (singleton pattern)
-    _nlp = None
-    
-    # Common stop words to exclude
+
     STOP_WORDS = {
         'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
         'of', 'with', 'by', 'from', 'as', 'is', 'was', 'are', 'were', 'been',
@@ -22,128 +50,73 @@ class KeywordExtractorService:
         'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'them',
         'their', 'my', 'your', 'his', 'her', 'its', 'our'
     }
-    
-    @classmethod
-    def _get_nlp(cls):
-        """Lazy load spaCy model once per process."""
-        if cls._nlp is None:
-            try:
-                cls._nlp = spacy.load('en_core_web_sm')
-            except OSError:
-                import logging
-                logging.getLogger(__name__).warning(
-                    "spaCy model 'en_core_web_sm' not found. Run: python -m spacy download en_core_web_sm"
-                )
-                cls._nlp = False  # sentinel so we don't retry every call
-        return cls._nlp if cls._nlp else None
-    
+
     @staticmethod
     def extract_keywords(text: str, min_length: int = 3) -> Set[str]:
         """
         Extract keywords from text using spaCy NLP.
-        
+
         Args:
             text: Input text to extract keywords from
             min_length: Minimum length of keywords to include
-            
+
         Returns:
             Set of extracted keywords (lowercase)
         """
         if not text or not text.strip():
             return set()
 
-        nlp = KeywordExtractorService._get_nlp()
+        nlp = _get_nlp()
         if not nlp:
-            # Fallback: simple tokenization without NLP
-            import string
-            tokens = text.lower().translate(str.maketrans('', '', string.punctuation)).split()
-            return {t for t in tokens if len(t) >= min_length and t not in KeywordExtractorService.STOP_WORDS}
+            # Fallback: simple tokenisation without NLP
+            tokens = text.lower().translate(
+                str.maketrans('', '', string.punctuation)
+            ).split()
+            return {
+                t for t in tokens
+                if len(t) >= min_length and t not in KeywordExtractorService.STOP_WORDS
+            }
 
         doc = nlp(text.lower())
-        
         keywords = set()
-        
+
         # Extract nouns and proper nouns
         for token in doc:
-            if token.pos_ in ['NOUN', 'PROPN'] and len(token.text) >= min_length:
-                # Use lemma for better matching
+            if token.pos_ in ('NOUN', 'PROPN') and len(token.text) >= min_length:
                 lemma = token.lemma_.lower()
                 if lemma not in KeywordExtractorService.STOP_WORDS:
                     keywords.add(lemma)
-        
-        # Extract noun phrases (up to 3 words)
+
+        # Extract noun phrases (1–3 words)
         for chunk in doc.noun_chunks:
             phrase = chunk.text.lower().strip()
-            # Only include phrases with 1-3 words
             if 1 <= len(phrase.split()) <= 3 and len(phrase) >= min_length:
-                # Remove stop words from phrase
-                words = phrase.split()
-                filtered_words = [w for w in words if w not in KeywordExtractorService.STOP_WORDS]
-                if filtered_words:
-                    filtered_phrase = ' '.join(filtered_words)
-                    keywords.add(filtered_phrase)
-        
-        # Remove very short tokens
-        keywords = {kw for kw in keywords if len(kw) >= min_length}
-        
-        return keywords
-    
+                filtered = ' '.join(
+                    w for w in phrase.split()
+                    if w not in KeywordExtractorService.STOP_WORDS
+                )
+                if filtered:
+                    keywords.add(filtered)
+
+        return {kw for kw in keywords if len(kw) >= min_length}
+
     @staticmethod
     def calculate_keyword_frequency(text: str) -> Dict[str, int]:
-        """
-        Calculate frequency of each keyword in text.
-        
-        Args:
-            text: Input text to analyze
-            
-        Returns:
-            Dictionary mapping keywords to their frequency counts
-        """
+        """Calculate frequency of each keyword in text."""
         if not text or not text.strip():
             return {}
-        
         keywords = KeywordExtractorService.extract_keywords(text)
         text_lower = text.lower()
-        
-        frequency = {}
-        for keyword in keywords:
-            # Count occurrences (case-insensitive)
-            count = text_lower.count(keyword)
-            if count > 0:
-                frequency[keyword] = count
-        
-        return frequency
-    
+        return {kw: text_lower.count(kw) for kw in keywords if text_lower.count(kw) > 0}
+
     @staticmethod
     def weight_keywords_by_importance(keywords: Set[str], context: str) -> Dict[str, float]:
-        """
-        Assign importance weights to keywords based on context.
-        
-        Args:
-            keywords: Set of keywords to weight
-            context: Context text (e.g., job description) to determine importance
-            
-        Returns:
-            Dictionary mapping keywords to importance weights (0.0 to 1.0)
-        """
+        """Assign importance weights to keywords based on context frequency."""
         if not keywords or not context:
             return {kw: 0.5 for kw in keywords}
-        
-        # Calculate frequency in context
         context_freq = KeywordExtractorService.calculate_keyword_frequency(context)
-        
-        # Find max frequency for normalization
         max_freq = max(context_freq.values()) if context_freq else 1
-        
-        weights = {}
-        for keyword in keywords:
-            freq = context_freq.get(keyword, 0)
-            # Normalize to 0.0-1.0 range
-            # Keywords not in context get 0.1, keywords in context get 0.1-1.0
-            if freq == 0:
-                weights[keyword] = 0.1
-            else:
-                # Scale frequency to 0.1-1.0 range
-                weights[keyword] = 0.1 + (0.9 * (freq / max_freq))
-        
-        return weights
+        return {
+            kw: 0.1 + 0.9 * (context_freq.get(kw, 0) / max_freq)
+            for kw in keywords
+        }

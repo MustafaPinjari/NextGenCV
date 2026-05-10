@@ -47,12 +47,16 @@ class ActivityLog(models.Model):
             resume_title=resume.title if resume else '',
             metadata=metadata or {},
         )
-        # Keep only last 200 entries per user
-        old_ids = list(
-            cls.objects.filter(user=user).values_list('id', flat=True)[200:]
+        # Keep only the 200 most recent entries per user.
+        # Subquery approach works on both SQLite and PostgreSQL.
+        keep_ids = (
+            cls.objects
+            .filter(user=user)
+            .order_by('-created_at')
+            .values_list('id', flat=True)[:200]
         )
-        if old_ids:
-            cls.objects.filter(id__in=old_ids).delete()
+        # Wrap in list() to force evaluation before the DELETE
+        cls.objects.filter(user=user).exclude(id__in=list(keep_ids)).delete()
 
 
 class SavedJobDescription(models.Model):

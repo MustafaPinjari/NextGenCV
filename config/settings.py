@@ -34,7 +34,16 @@ if _env_file.exists():
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-fallback-dev-only')
+# Fail fast in production — never fall back to an insecure default.
+_secret_key = os.environ.get('SECRET_KEY', '')
+if not _secret_key:
+    if os.environ.get('DJANGO_ENV') == 'production':
+        raise RuntimeError(
+            'SECRET_KEY environment variable is not set. '
+            'Generate one with: python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
+        )
+    _secret_key = 'django-insecure-dev-only-do-not-use-in-production'
+SECRET_KEY = _secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG', 'True').lower() not in ('false', '0', 'no')
@@ -118,20 +127,36 @@ DATABASES = {
 
 
 # Cache Configuration
-# https://docs.djangoproject.com/en/4.2/ref/settings/#caches
-# Using local-memory caching for development
-# For production, consider Redis or Memcached
-# Requirements: 18.3
+# Redis in production (shared across workers, survives restarts)
+# LocMemCache in dev (zero config, single process only)
+_redis_url = os.environ.get('REDIS_URL', '')
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'nextgencv-cache',
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000,
+if _redis_url and not _redis_url.startswith('memory://'):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _redis_url,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            },
+            'KEY_PREFIX': 'nextgencv',
+            'TIMEOUT': 300,
         }
     }
-}
+    # Redis-backed sessions — shared across workers, survives restarts
+    # Eliminates SQLite write-lock contention from SESSION_SAVE_EVERY_REQUEST
+    SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+    SESSION_CACHE_ALIAS = 'default'
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'nextgencv-cache',
+            'OPTIONS': {'MAX_ENTRIES': 1000},
+        }
+    }
+    # DB-backed sessions in dev (no Redis required)
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 
 # Cache timeout settings (in seconds)
 CACHE_TIMEOUT_RESUME_HEALTH = 300  # 5 minutes

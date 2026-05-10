@@ -92,22 +92,45 @@ function generateSummary(){
   const btn = document.getElementById('genBtn');
   btn.disabled = true;
   btn.innerHTML = '<i class="bi bi-arrow-repeat" style="animation:spin 1s linear infinite"></i> Generating...';
-  fetch(window.location.href, {
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest','X-CSRFToken':'{{ csrf_token }}'},
-    body:'action=generate_summary'
+
+  // Send via the dedicated AI endpoint so it always hits LLMService
+  fetch('{% url "generate_summary_ai" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}',
+      'X-Requested-With': 'XMLHttpRequest',
+    },
+    // Pass wizard data from session via a lightweight signal;
+    // the view reads wizard_data from session server-side
+    body: JSON.stringify({ source: 'wizard' })
   })
-  .then(r=>r.json())
-  .then(d=>{
-    if(d.summary){
+  .then(r => {
+    if (!r.ok) throw new Error('Server error ' + r.status);
+    return r.json();
+  })
+  .then(d => {
+    if (d.summary) {
       document.getElementById('suggText').textContent = d.summary;
       document.getElementById('aiResult').style.display = 'block';
+      // Show AI badge if powered by OpenAI
+      const badge = document.querySelector('#aiResult span');
+      if (badge) {
+        badge.innerHTML = d.ai_powered
+          ? '<i class="bi bi-stars"></i> AI Suggestion (GPT-4o-mini)'
+          : '<i class="bi bi-cpu"></i> Smart Suggestion';
+      }
+    } else {
+      alert(d.error || 'Could not generate summary. Please try again.');
     }
   })
-  .catch(()=>alert('Failed to generate. Please try again.'))
-  .finally(()=>{
-    btn.disabled=false;
-    btn.innerHTML='<i class="bi bi-magic"></i> Generate';
+  .catch(e => {
+    console.error(e);
+    alert('Failed to generate. Please check your connection and try again.');
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-magic"></i> Generate';
   });
 }
 

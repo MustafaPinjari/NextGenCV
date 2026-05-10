@@ -414,6 +414,32 @@
                         <!-- Score Section -->
                         <div class="score-section">
                             <h2 class="card-title">Analysis Results</h2>
+
+                            <!-- Emotional context banner -->
+                            {% with score=analysis_result.score|floatformat:0|add:"0" %}
+                            <div style="margin-bottom:18px;padding:14px 18px;border-radius:12px;
+                              {% if analysis_result.score >= 80 %}background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);
+                              {% elif analysis_result.score >= 60 %}background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);
+                              {% elif analysis_result.score >= 40 %}background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);
+                              {% else %}background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);{% endif %}">
+                              <div style="font-size:.95rem;font-weight:700;margin-bottom:4px;
+                                {% if analysis_result.score >= 80 %}color:#10b981;
+                                {% elif analysis_result.score >= 60 %}color:#818cf8;
+                                {% elif analysis_result.score >= 40 %}color:#f59e0b;
+                                {% else %}color:#f87171;{% endif %}">
+                                {% if analysis_result.score >= 80 %}✅ Strong match — you\'re in the top tier for this role
+                                {% elif analysis_result.score >= 60 %}📈 Good match — a few targeted fixes will push you over 80
+                                {% elif analysis_result.score >= 40 %}⚠️ Below average — ATS systems may filter this resume out
+                                {% else %}🚨 High risk — most ATS systems will reject this before a human sees it{% endif %}
+                              </div>
+                              <div style="font-size:.8rem;color:#8b949e;line-height:1.5">
+                                {% if analysis_result.score >= 80 %}Resumes scoring 80+ get <strong style="color:#10b981">3.2x more callbacks</strong> on average. You\'re well positioned.
+                                {% elif analysis_result.score >= 60 %}Adding the {{ analysis_result.missing_keywords|length }} missing keywords could push your score above 80 and <strong style="color:#818cf8">double your callback rate</strong>.
+                                {% elif analysis_result.score >= 40 %}Resumes below 60 are filtered by most ATS before reaching a recruiter. Fix the {{ analysis_result.missing_keywords|length }} missing keywords first.
+                                {% else %}{{ analysis_result.missing_keywords|length }} critical keywords are missing. Use <strong style="color:#f87171">Fix My Resume</strong> to close this gap automatically.{% endif %}
+                              </div>
+                            </div>
+                            {% endwith %}
                             
                             <!-- Circular Progress Score -->
                             <div class="score-display">
@@ -546,23 +572,71 @@
     </div>
 </div>
 
-<!-- Loading State Overlay (hidden by default) -->
-<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(10, 10, 10, 0.9); z-index: 9999; backdrop-filter: blur(4px);">
-    <div class="loading-state" style="height: 100vh;">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Analyzing Resume...</div>
-        <div class="loading-subtext">This may take a few moments</div>
+<!-- Loading State Overlay -->
+<div id="loadingOverlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(3,7,18,.92);z-index:9999;backdrop-filter:blur(6px);align-items:center;justify-content:center;flex-direction:column">
+  <div style="text-align:center">
+    <!-- Animated score ring skeleton -->
+    <div style="position:relative;width:120px;height:120px;margin:0 auto 24px">
+      <svg width="120" height="120" viewBox="0 0 120 120" style="transform:rotate(-90deg)">
+        <circle cx="60" cy="60" r="52" fill="none" stroke="#21262d" stroke-width="8"/>
+        <circle cx="60" cy="60" r="52" fill="none" stroke="url(#loadGrad)" stroke-width="8"
+          stroke-linecap="round" stroke-dasharray="326" stroke-dashoffset="326"
+          style="animation:fillRing 2s ease-in-out infinite alternate">
+          <defs>
+            <linearGradient id="loadGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#6366f1"/>
+              <stop offset="100%" stop-color="#06b6d4"/>
+            </linearGradient>
+          </defs>
+        </circle>
+      </svg>
+      <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center">
+        <i class="bi bi-search" style="font-size:1.8rem;color:#6366f1;animation:pulse 1.5s ease-in-out infinite"></i>
+      </div>
     </div>
+    <!-- Skeleton lines -->
+    <div style="width:220px;margin:0 auto">
+      <div style="height:14px;background:linear-gradient(90deg,#161b22 25%,#21262d 50%,#161b22 75%);background-size:200% 100%;border-radius:7px;margin-bottom:10px;animation:shimmer 1.5s infinite"></div>
+      <div style="height:10px;background:linear-gradient(90deg,#161b22 25%,#21262d 50%,#161b22 75%);background-size:200% 100%;border-radius:5px;margin-bottom:8px;width:80%;animation:shimmer 1.5s infinite .2s"></div>
+      <div style="height:10px;background:linear-gradient(90deg,#161b22 25%,#21262d 50%,#161b22 75%);background-size:200% 100%;border-radius:5px;width:60%;animation:shimmer 1.5s infinite .4s"></div>
+    </div>
+    <div style="margin-top:20px;font-size:1rem;font-weight:600;color:#f0f6fc">Analyzing Resume...</div>
+    <div style="font-size:.82rem;color:#6e7681;margin-top:6px" id="loadingStep">Extracting keywords from job description</div>
+  </div>
 </div>
+<style>
+@keyframes fillRing{from{stroke-dashoffset:326}to{stroke-dashoffset:80}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+</style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
     // Show loading state when form is submitted
     document.getElementById('analyzerForm').addEventListener('submit', function() {
-        document.getElementById('loadingOverlay').style.display = 'block';
-        document.getElementById('analyzeBtn').classList.add('btn-loading');
+        const overlay = document.getElementById('loadingOverlay');
+        overlay.style.display = 'flex';
         document.getElementById('analyzeBtn').disabled = true;
+
+        // Cycle through realistic status messages
+        const steps = [
+            'Extracting keywords from job description',
+            'Running NLP analysis on your resume',
+            'Calculating keyword match score',
+            'Evaluating action verb strength',
+            'Checking quantification coverage',
+            'Computing final ATS score',
+            'Generating improvement suggestions',
+        ];
+        let i = 0;
+        const stepEl = document.getElementById('loadingStep');
+        const interval = setInterval(() => {
+            i = (i + 1) % steps.length;
+            if (stepEl) stepEl.textContent = steps[i];
+        }, 1400);
+        // Store interval so it can be cleared if needed
+        window._loadingInterval = interval;
     });
 
     // Saved JD buttons

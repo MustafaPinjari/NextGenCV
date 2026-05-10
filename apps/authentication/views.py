@@ -7,11 +7,22 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
+
+def _rate_limit_check(request, group: str, rate: str = '10/m') -> bool:
+    """Returns True if the request is rate-limited. Soft-fails if django-ratelimit not installed."""
+    try:
+        from ratelimit.utils import is_ratelimited
+        return is_ratelimited(request, group=group, key='ip', rate=rate, method='POST', increment=True)
+    except ImportError:
+        return False
+
 
 def register(request):
     """User registration view — creates account and sends verification email."""
     if request.method == 'POST':
+        if _rate_limit_check(request, group='register', rate='5/m'):
+            messages.error(request, 'Too many registration attempts. Please wait a minute.')
+            return render(request, 'authentication/register.html', {'form': UserRegistrationForm()})
         form = UserRegistrationForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -225,6 +236,8 @@ def dashboard(request):
     import json
 
     resumes = ResumeService.get_user_resumes(request.user)
+    # Slice at DB level (LIMIT 3 in SQL) — don't fetch all then slice in template
+    resumes_for_display = resumes[:3]
 
     # ── Resume health & ATS score ─────────────────────────────────────────────
     resume_health = None
@@ -310,6 +323,7 @@ def dashboard(request):
     context = {
         'user': request.user,
         'resumes': resumes,
+        'resumes_for_display': resumes_for_display,
         'resume_health': resume_health,
         'average_score': average_score,
         'score_breakdown': score_breakdown,

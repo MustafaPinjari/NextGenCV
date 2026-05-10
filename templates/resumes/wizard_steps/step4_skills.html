@@ -28,31 +28,35 @@
   <div style="padding:20px 24px">
     <form method="post" id="wizForm">
       {% csrf_token %}
+      <input type="hidden" name="action" value="add_skill" id="skillAction">
       <div class="skill-add-row">
         <div class="field" style="flex:2;margin-bottom:0">
           <label class="field-label">Skill Name <span class="req">*</span></label>
           <div class="field-input-wrap">
             <i class="bi bi-lightning field-icon"></i>
-            <input type="text" name="name" id="skillName" class="field-input has-icon" placeholder="e.g. Python, React, Leadership" value="{{ form.name.value|default:'' }}" required>
+            <input type="text" name="name" id="skillName" class="field-input has-icon" placeholder="e.g. Python, React, Leadership" value="{{ form.name.value|default:'' }}" autocomplete="off">
           </div>
           {% if form.name.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.name.errors.0 }}</div>{% endif %}
         </div>
         <div class="field" style="flex:1;margin-bottom:0">
           <label class="field-label">Category</label>
-          <select name="category" id="skillCat" class="field-input">
-            <option value="">Select...</option>
-            <option value="Technical"{% if form.category.value == 'Technical' %} selected{% endif %}>Technical</option>
-            <option value="Soft Skills"{% if form.category.value == 'Soft Skills' %} selected{% endif %}>Soft Skills</option>
-            <option value="Languages"{% if form.category.value == 'Languages' %} selected{% endif %}>Languages</option>
-            <option value="Tools"{% if form.category.value == 'Tools' %} selected{% endif %}>Tools</option>
-            <option value="Frameworks"{% if form.category.value == 'Frameworks' %} selected{% endif %}>Frameworks</option>
-            <option value="Databases"{% if form.category.value == 'Databases' %} selected{% endif %}>Databases</option>
-            <option value="Other"{% if form.category.value == 'Other' %} selected{% endif %}>Other</option>
-          </select>
+          <div class="custom-select-wrap">
+            <select name="category" id="skillCat" class="custom-select">
+              <option value="Technical">Technical</option>
+              <option value="Soft Skills">Soft Skills</option>
+              <option value="Languages">Languages</option>
+              <option value="Tools">Tools</option>
+              <option value="Frameworks">Frameworks</option>
+              <option value="Databases">Databases</option>
+              <option value="Cloud">Cloud</option>
+              <option value="Other">Other</option>
+            </select>
+            <i class="bi bi-chevron-down custom-select-arrow"></i>
+          </div>
           {% if form.category.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.category.errors.0 }}</div>{% endif %}
         </div>
         <div style="display:flex;align-items:flex-end;padding-bottom:0">
-          <button type="submit" name="action" value="add_skill" class="btn-add" style="margin-top:0;height:42px">
+          <button type="submit" class="btn-add" style="margin-top:0;height:42px">
             <i class="bi bi-plus"></i> Add
           </button>
         </div>
@@ -102,6 +106,18 @@
 .skill-add-row{display:flex;gap:12px;align-items:flex-start}
 .btn-add{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .2s;white-space:nowrap}
 .btn-add:hover{background:rgba(99,102,241,.25);border-color:var(--primary)}
+/* Custom select — overrides native OS rendering */
+.custom-select-wrap{position:relative}
+.custom-select{
+  width:100%;background:#161b22;border:1px solid #30363d;border-radius:10px;
+  padding:11px 36px 11px 14px;font-size:.9rem;color:#f0f6fc;
+  font-family:var(--font);cursor:pointer;outline:none;
+  -webkit-appearance:none;-moz-appearance:none;appearance:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.custom-select:focus{border-color:#6366f1;box-shadow:0 0 0 3px rgba(99,102,241,.12)}
+.custom-select option{background:#161b22;color:#f0f6fc}
+.custom-select-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#6e7681;font-size:.8rem;pointer-events:none}
 .suggestions-wrap{margin-top:20px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r16)}
 .suggestions-label{font-size:.78rem;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:5px}
 .suggestions-list{display:flex;flex-wrap:wrap;gap:6px}
@@ -111,14 +127,33 @@
 </style>
 
 <script>
-function quickAdd(name, cat){
-  document.getElementById('skillName').value=name;
-  document.getElementById('skillCat').value=cat||'Technical';
+function quickAdd(name, cat) {
+  const nameEl = document.getElementById('skillName');
+  const catEl  = document.getElementById('skillCat');
+  if (!nameEl || !catEl) return;
+  nameEl.value = name;
+  catEl.value  = cat || 'Technical';
+  // Ensure the hidden action field is set before submit
+  const actionEl = document.getElementById('skillAction');
+  if (actionEl) actionEl.value = 'add_skill';
   document.getElementById('wizForm').submit();
 }
-document.addEventListener('DOMContentLoaded',()=>{
-  const nextBtn=document.querySelector('[form="wizForm"]');
-  if(nextBtn) nextBtn.setAttribute('form','wizFormNext');
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Wire the wizard "Next" button to the next-step form, not the add-skill form
+  const nextBtn = document.querySelector('[form="wizForm"]');
+  if (nextBtn) nextBtn.setAttribute('form', 'wizFormNext');
+
+  // Allow pressing Enter in the skill name field to add the skill
+  const nameEl = document.getElementById('skillName');
+  nameEl?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const actionEl = document.getElementById('skillAction');
+      if (actionEl) actionEl.value = 'add_skill';
+      document.getElementById('wizForm').submit();
+    }
+  });
 });
 </script>
 {% endblock %}
