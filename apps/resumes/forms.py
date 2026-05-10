@@ -21,7 +21,11 @@ class ResumeForm(forms.ModelForm):
     template = forms.ChoiceField(
         choices=TEMPLATE_CHOICES,
         widget=forms.Select(attrs={'class': 'form-select'}),
-        required=True
+        required=True,
+        error_messages={
+            'required': 'Please select a template.',
+            'invalid_choice': 'Please select a valid template.',
+        }
     )
     
     class Meta:
@@ -35,7 +39,7 @@ class ResumeForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['title'].required = True
         self.fields['title'].error_messages = {'required': 'Resume title is required.', 'max_length': 'Resume title cannot exceed 200 characters.'}
-        self.fields['template'].error_messages = {'required': 'Please select a template.'}
+        self.fields['template'].error_messages.update({'required': 'Please select a template.'})
     
     def clean_title(self):
         title = self.cleaned_data.get('title')
@@ -154,12 +158,14 @@ class ExperienceForm(forms.ModelForm):
                 'placeholder': 'City, State/Country (e.g., San Francisco, CA)'
             }),
             'start_date': forms.DateInput(attrs={
-                'class': 'form-control', 
-                'type': 'date'
+                'class': 'form-control datepicker',
+                'type': 'date',
+                'placeholder': 'Select start date',
             }),
             'end_date': forms.DateInput(attrs={
-                'class': 'form-control', 
-                'type': 'date'
+                'class': 'form-control datepicker',
+                'type': 'date',
+                'placeholder': 'Select end date',
             }),
             'description': forms.Textarea(attrs={
                 'class': 'form-control', 
@@ -396,16 +402,21 @@ class SkillForm(forms.ModelForm):
     ]
     
     category = forms.ChoiceField(
-        choices=CATEGORY_CHOICES,
+        choices=[('', '— Select category —')] + CATEGORY_CHOICES,
         widget=forms.Select(attrs={'class': 'form-select'}),
-        required=True
+        required=True,
+        error_messages={
+            'required': 'Please select a category.',
+            'invalid_choice': 'Please select a valid category.',
+        }
     )
     
     proficiency_level = forms.ChoiceField(
-        choices=Skill.PROFICIENCY_LEVELS,
+        choices=[('', '— Select level —')] + list(Skill.PROFICIENCY_LEVELS),
         widget=forms.Select(attrs={'class': 'form-select'}),
         required=False,
-        initial='intermediate'
+        initial='intermediate',
+        error_messages={'invalid_choice': 'Please select a valid proficiency level.'}
     )
     
     class Meta:
@@ -435,7 +446,7 @@ class SkillForm(forms.ModelForm):
         self.fields['proficiency_level'].required = False
         self.fields['years_of_experience'].required = False
         self.fields['name'].error_messages = {'required': 'Skill name is required.', 'max_length': 'Skill name cannot exceed 100 characters.'}
-        self.fields['category'].error_messages = {'required': 'Please select a category.'}
+        self.fields['category'].error_messages.update({'required': 'Please select a category.'})
     
     def clean_name(self):
         name = self.cleaned_data.get('name')
@@ -499,12 +510,14 @@ class ProjectForm(forms.ModelForm):
                 'placeholder': 'https://github.com/username/project or https://project-demo.com'
             }),
             'start_date': forms.DateInput(attrs={
-                'class': 'form-control', 
-                'type': 'date'
+                'class': 'form-control datepicker',
+                'type': 'date',
+                'placeholder': 'Select start date',
             }),
             'end_date': forms.DateInput(attrs={
-                'class': 'form-control', 
-                'type': 'date'
+                'class': 'form-control datepicker',
+                'type': 'date',
+                'placeholder': 'Select end date',
             })
         }
         help_texts = {

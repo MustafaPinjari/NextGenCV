@@ -13,7 +13,205 @@
     
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
+
+    <!-- Flatpickr datepicker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+    /* ── Flatpickr dark theme override ── */
+    .flatpickr-calendar {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 16px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6), 0 0 0 1px rgba(99,102,241,.15);
+      font-family: 'Inter', -apple-system, sans-serif;
+      padding: 4px;
+      width: 308px;
+    }
+    .flatpickr-calendar.arrowTop::before,
+    .flatpickr-calendar.arrowTop::after { border-bottom-color: #30363d; }
+    .flatpickr-calendar.arrowBottom::before,
+    .flatpickr-calendar.arrowBottom::after { border-top-color: #30363d; }
+
+    /* Month header */
+    .flatpickr-months { padding: 12px 12px 4px; align-items: center; }
+    .flatpickr-month { background: transparent; color: #f0f6fc; height: 36px; }
+    .flatpickr-current-month { font-size: .95rem; font-weight: 700; color: #f0f6fc; padding-top: 4px; }
+    .flatpickr-current-month .flatpickr-monthDropdown-months {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #f0f6fc;
+      font-weight: 700;
+      font-size: .88rem;
+      padding: 4px 8px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .flatpickr-current-month .flatpickr-monthDropdown-months:hover { border-color: #6366f1; }
+    .flatpickr-current-month input.cur-year {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      color: #f0f6fc;
+      font-weight: 700;
+      font-size: .88rem;
+      padding: 4px 8px;
+      width: 68px;
+    }
+    .flatpickr-current-month input.cur-year:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+
+    /* Nav arrows */
+    .flatpickr-prev-month, .flatpickr-next-month {
+      color: #8b949e !important;
+      fill: #8b949e !important;
+      padding: 6px 10px;
+      border-radius: 8px;
+      transition: all .15s;
+    }
+    .flatpickr-prev-month:hover, .flatpickr-next-month:hover {
+      background: rgba(99,102,241,.12) !important;
+      color: #818cf8 !important;
+      fill: #818cf8 !important;
+    }
+
+    /* Weekday headers */
+    .flatpickr-weekdays { background: transparent; padding: 0 8px; }
+    .flatpickr-weekday { background: transparent; color: #6e7681; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+
+    /* Days grid */
+    .flatpickr-days { padding: 0 8px 8px; }
+    .dayContainer { padding: 0; }
+    .flatpickr-day {
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      color: #c9d1d9;
+      font-size: .83rem;
+      font-weight: 500;
+      height: 36px;
+      line-height: 34px;
+      max-width: 36px;
+      transition: all .12s;
+    }
+    .flatpickr-day:hover {
+      background: rgba(99,102,241,.12);
+      border-color: rgba(99,102,241,.3);
+      color: #818cf8;
+    }
+    .flatpickr-day.today {
+      border-color: rgba(99,102,241,.5);
+      color: #818cf8;
+      font-weight: 700;
+    }
+    .flatpickr-day.today:hover { background: rgba(99,102,241,.15); }
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-color: transparent;
+      color: #fff;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(99,102,241,.4);
+    }
+    .flatpickr-day.flatpickr-disabled,
+    .flatpickr-day.flatpickr-disabled:hover {
+      color: #30363d;
+      cursor: not-allowed;
+    }
+    .flatpickr-day.prevMonthDay,
+    .flatpickr-day.nextMonthDay { color: #484f58; }
+    .flatpickr-day.inRange {
+      background: rgba(99,102,241,.1);
+      border-color: transparent;
+      box-shadow: -5px 0 0 rgba(99,102,241,.1), 5px 0 0 rgba(99,102,241,.1);
+    }
+    .flatpickr-day.startRange, .flatpickr-day.endRange {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    /* Time picker */
+    .flatpickr-time { border-top: 1px solid #21262d; }
+    .flatpickr-time input { background: transparent; color: #f0f6fc; font-weight: 600; }
+    .flatpickr-time .flatpickr-am-pm { color: #8b949e; }
+
+    /* Custom trigger wrapper */
+    .dp-wrap { position: relative; }
+    .dp-wrap input[type=text].flatpickr-input {
+      background: var(--surface2, #161b22);
+      border: 1px solid var(--border2, #30363d);
+      border-radius: var(--r8, 8px);
+      padding: 10px 13px 10px 38px;
+      color: var(--text, #f0f6fc);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: .88rem;
+      width: 100%;
+      cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .dp-wrap input[type=text].flatpickr-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    }
+    .dp-wrap input[type=text].flatpickr-input.active {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+    }
+    .dp-icon {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6366f1;
+      font-size: .95rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+    .dp-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #6e7681;
+      font-size: .8rem;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 2px 4px;
+      border-radius: 4px;
+      display: none;
+      transition: color .15s;
+      z-index: 1;
+    }
+    .dp-clear:hover { color: #f87171; }
+    .dp-wrap.has-value .dp-clear { display: block; }
+
+    /* Today shortcut button inside calendar */
+    .flatpickr-today-btn {
+      display: block;
+      width: calc(100% - 16px);
+      margin: 0 8px 10px;
+      padding: 8px;
+      background: rgba(99,102,241,.1);
+      border: 1px solid rgba(99,102,241,.25);
+      border-radius: 8px;
+      color: #818cf8;
+      font-size: .78rem;
+      font-weight: 700;
+      font-family: 'Inter', -apple-system, sans-serif;
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s;
+      letter-spacing: .03em;
+    }
+    .flatpickr-today-btn:hover {
+      background: rgba(99,102,241,.2);
+      border-color: rgba(99,102,241,.5);
+    }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="authenticated-layout">
@@ -275,6 +473,122 @@
                 }
             }, 5000);
         });
+    </script>
+
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+    (function() {
+      // Auto-initialise every input[type=date] with Flatpickr
+      function initDatepickers() {
+        document.querySelectorAll('input[type="date"]').forEach(function(input) {
+          if (input._flatpickr) return; // already initialised
+
+          // Wrap in .dp-wrap if not already
+          var parent = input.parentElement;
+          var wrap;
+          if (parent && parent.classList.contains('dp-wrap')) {
+            wrap = parent;
+          } else {
+            wrap = document.createElement('div');
+            wrap.className = 'dp-wrap';
+            input.parentNode.insertBefore(wrap, input);
+            wrap.appendChild(input);
+          }
+
+          // Add calendar icon
+          if (!wrap.querySelector('.dp-icon')) {
+            var icon = document.createElement('i');
+            icon.className = 'bi bi-calendar3 dp-icon';
+            wrap.insertBefore(icon, wrap.firstChild);
+          }
+
+          // Add clear button
+          var clearBtn;
+          if (!wrap.querySelector('.dp-clear')) {
+            clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'dp-clear';
+            clearBtn.title = 'Clear date';
+            clearBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+            wrap.appendChild(clearBtn);
+          } else {
+            clearBtn = wrap.querySelector('.dp-clear');
+          }
+
+          // Determine if optional (no required attr)
+          var isOptional = !input.hasAttribute('required');
+
+          // Init Flatpickr
+          var fp = flatpickr(input, {
+            dateFormat: 'Y-m-d',          // Django-compatible
+            altInput: true,               // show friendly format
+            altFormat: 'M j, Y',          // display: Jan 5, 2024
+            allowInput: true,
+            disableMobile: false,
+            animate: true,
+            monthSelectorType: 'dropdown',
+            showMonths: 1,
+            onReady: function(selectedDates, dateStr, instance) {
+              // Inject "Today" button
+              var todayBtn = document.createElement('button');
+              todayBtn.type = 'button';
+              todayBtn.className = 'flatpickr-today-btn';
+              todayBtn.textContent = '\u2022 Today';
+              todayBtn.addEventListener('click', function() {
+                instance.setDate(new Date(), true);
+                instance.close();
+              });
+              instance.calendarContainer.appendChild(todayBtn);
+
+              // Style the alt input
+              if (instance.altInput) {
+                instance.altInput.style.paddingLeft = '38px';
+              }
+            },
+            onChange: function(selectedDates, dateStr) {
+              if (dateStr) {
+                wrap.classList.add('has-value');
+              } else {
+                wrap.classList.remove('has-value');
+              }
+            },
+            onOpen: function(selectedDates, dateStr, instance) {
+              // Animate in
+              instance.calendarContainer.style.opacity = '0';
+              instance.calendarContainer.style.transform = 'translateY(-8px) scale(.97)';
+              instance.calendarContainer.style.transition = 'opacity .18s ease, transform .18s ease';
+              requestAnimationFrame(function() {
+                instance.calendarContainer.style.opacity = '1';
+                instance.calendarContainer.style.transform = 'translateY(0) scale(1)';
+              });
+            }
+          });
+
+          // Set initial has-value state
+          if (input.value) wrap.classList.add('has-value');
+
+          // Clear button handler
+          clearBtn.addEventListener('click', function() {
+            fp.clear();
+            wrap.classList.remove('has-value');
+          });
+        });
+      }
+
+      // Run on DOM ready and after any dynamic content
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDatepickers);
+      } else {
+        initDatepickers();
+      }
+
+      // Re-run after page JS (catches dynamically added inputs)
+      window.addEventListener('load', initDatepickers);
+
+      // Expose globally so dynamic forms can call it
+      window.initDatepickers = initDatepickers;
+    })();
     </script>
 
     {% block extra_js %}{% endblock %}

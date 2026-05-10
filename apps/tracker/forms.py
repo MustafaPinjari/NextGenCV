@@ -8,7 +8,7 @@ class JobApplicationForm(forms.ModelForm):
         fields = ['company', 'role', 'job_url', 'job_description', 'resume',
                   'status', 'applied_date', 'notes']
         widgets = {
-            'applied_date': forms.DateInput(attrs={'type': 'date'}),
+            'applied_date': forms.DateInput(attrs={'type': 'date', 'class': 'datepicker', 'placeholder': 'Select date'}),
             'job_description': forms.Textarea(attrs={'rows': 6}),
             'notes': forms.Textarea(attrs={'rows': 3}),
         }

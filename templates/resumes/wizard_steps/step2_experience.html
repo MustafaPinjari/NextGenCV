@@ -59,18 +59,12 @@
       <div class="field-row">
         <div class="field">
           <label class="field-label">Start Date <span class="req">*</span></label>
-          <div class="field-input-wrap">
-            <i class="bi bi-calendar3 field-icon"></i>
-            <input type="date" name="start_date" class="field-input has-icon" value="{{ form.start_date.value|default:'' }}" required>
-          </div>
+          <input type="date" name="start_date" class="field-input" value="{{ form.start_date.value|default:'' }}" required>
           {% if form.start_date.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.start_date.errors.0 }}</div>{% endif %}
         </div>
         <div class="field">
           <label class="field-label">End Date</label>
-          <div class="field-input-wrap">
-            <i class="bi bi-calendar3 field-icon"></i>
-            <input type="date" name="end_date" class="field-input has-icon" value="{{ form.end_date.value|default:'' }}">
-          </div>
+          <input type="date" name="end_date" class="field-input" value="{{ form.end_date.value|default:'' }}">
           <div class="field-hint">Leave blank if this is your current role</div>
           {% if form.end_date.errors %}<div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.end_date.errors.0 }}</div>{% endif %}
         </div>
@@ -107,6 +101,10 @@
 .add-section-title{font-size:.9rem;font-weight:600;color:var(--text)}
 .btn-add{display:inline-flex;align-items:center;gap:7px;padding:10px 20px;border-radius:8px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:var(--primary-light);font-size:.85rem;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .2s;margin-top:4px}
 .btn-add:hover{background:rgba(99,102,241,.25);border-color:var(--primary)}
+/* Flatpickr alt input inherits field-input style */
+.dp-wrap .flatpickr-input.form-control{display:none}
+.dp-wrap input.flatpickr-input[readonly]{background:var(--surface2)!important;border:1px solid var(--border2)!important;border-radius:8px!important;padding:10px 13px 10px 38px!important;color:var(--text)!important;font-family:var(--font)!important;font-size:.88rem!important;width:100%!important;cursor:pointer!important}
+.dp-wrap input.flatpickr-input[readonly]:focus,.dp-wrap input.flatpickr-input.active{border-color:#6366f1!important;box-shadow:0 0 0 3px rgba(99,102,241,.12)!important}
 </style>
 
 <script>
