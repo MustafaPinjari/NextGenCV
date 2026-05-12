@@ -60,12 +60,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',          # Required by django-allauth
     # Third-party apps
     'django_extensions',
     'django_celery_results',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    # SSO — django-allauth (Google + LinkedIn)
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.linkedin_oauth2',
     # Custom apps
     'apps.authentication',
     'apps.resumes',
@@ -84,6 +91,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'allauth.account.middleware.AccountMiddleware',  # Required by django-allauth
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Custom middleware
     'config.middleware.GzipStaticMiddleware',  # Serve pre-compressed files
@@ -254,8 +262,53 @@ SESSION_SAVE_EVERY_REQUEST = True  # Prevent wizard data loss on refresh
 SESSION_COOKIE_AGE = 86400  # 24 hours
 
 # Email backend (console for dev — swap to SMTP in production)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'NextGenCV <noreply@nextgencv.com>'
+EMAIL_BACKEND       = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+EMAIL_HOST          = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT          = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS       = os.environ.get('EMAIL_USE_TLS', 'True').lower() not in ('false', '0', 'no')
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL  = os.environ.get('DEFAULT_FROM_EMAIL', 'NextGenCV <noreply@nextgencv.com>')
+SERVER_EMAIL        = DEFAULT_FROM_EMAIL
+
+# ─── django-allauth (SSO — Google + LinkedIn) ────────────────────────────────
+SITE_ID = 1
+
+AUTHENTICATION_BACKENDS = [
+    # Standard Django username/password login (keeps existing login working)
+    'django.contrib.auth.backends.ModelBackend',
+    # allauth backend — handles Google + LinkedIn OAuth2
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
+ACCOUNT_EMAIL_REQUIRED              = True
+ACCOUNT_USERNAME_REQUIRED           = False
+ACCOUNT_AUTHENTICATION_METHOD       = 'email'
+ACCOUNT_EMAIL_VERIFICATION          = 'optional'   # set to 'mandatory' in production
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_LOGOUT_ON_GET               = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL       = 'https' if os.environ.get('DJANGO_ENV') == 'production' else 'http'
+
+# SSO-specific: Google/LinkedIn already verify the email — skip the confirmation form
+# and create the account immediately on first login.
+SOCIALACCOUNT_AUTO_SIGNUP             = True   # auto-create User on first SSO login
+SOCIALACCOUNT_EMAIL_REQUIRED          = False  # don't ask for email again (Google provides it)
+SOCIALACCOUNT_EMAIL_VERIFICATION      = 'none' # Google/LinkedIn already verified it
+SOCIALACCOUNT_QUERY_EMAIL             = True
+SOCIALACCOUNT_LOGIN_ON_GET            = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    # Credentials are stored in the database (SocialApp table) via setup_sso.py.
+    # Do NOT add an 'APP' dict here — it causes MultipleObjectsReturned when
+    # both a DB record and a settings-level APP exist for the same provider.
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+    },
+    'linkedin_oauth2': {
+        'SCOPE': ['openid', 'profile', 'email'],
+    },
+}
 
 # ─── Celery Configuration ────────────────────────────────────────────────────
 # Broker options (pick one):

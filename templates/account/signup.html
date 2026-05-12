@@ -1,0 +1,313 @@
+{% extends 'layouts/public.html' %}
+{% load static %}
+{% block title %}Create Account — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030712;--surface:#0d1117;--border:#21262d;--border-focus:#6366f1;
+  --primary:#6366f1;--primary-light:#818cf8;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --error:#f87171;--success:#34d399;
+  --font:'Inter',-apple-system,sans-serif;
+}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+.public-nav{display:none!important}
+.public-footer{display:none!important}
+
+.auth-shell{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+
+/* LEFT PANEL */
+.auth-left{
+  background:linear-gradient(135deg,#0d1117 0%,#0a0f1e 100%);
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:48px;position:relative;overflow:hidden;
+}
+.auth-left::before{
+  content:'';position:absolute;inset:0;
+  background-image:linear-gradient(rgba(99,102,241,.07) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.07) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+}
+.auth-left-orb{
+  position:absolute;width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(99,102,241,.2) 0%,transparent 70%);
+  top:-100px;left:-100px;pointer-events:none;
+}
+.auth-brand{position:relative;z-index:1;display:flex;align-items:center;gap:10px;text-decoration:none}
+.auth-brand-logo{height:80px;width:auto;display:block;object-fit:contain;max-width:220px}
+.auth-left-body{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;justify-content:center;padding:40px 0}
+.auth-left-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.25);
+  color:var(--primary-light);padding:5px 14px;border-radius:99px;
+  font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:24px;
+}
+.auth-left-title{font-size:2.4rem;font-weight:900;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+.auth-left-title span{
+  background:linear-gradient(135deg,#818cf8,#06b6d4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.auth-left-sub{font-size:.95rem;color:var(--text2);line-height:1.7;max-width:380px;margin-bottom:40px}
+.auth-feature-list{display:flex;flex-direction:column;gap:14px}
+.auth-feature{display:flex;align-items:center;gap:12px;font-size:.88rem;color:var(--text2)}
+.auth-feature-icon{
+  width:32px;height:32px;border-radius:8px;flex-shrink:0;
+  background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.2);
+  display:flex;align-items:center;justify-content:center;color:var(--primary-light);font-size:.9rem;
+}
+.auth-left-stats{display:flex;gap:32px;position:relative;z-index:1}
+.auth-stat-num{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,var(--text),var(--primary-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.auth-stat-label{font-size:.72rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+
+/* RIGHT PANEL */
+.auth-right{background:var(--bg);display:flex;align-items:center;justify-content:center;padding:48px 40px}
+.auth-form-wrap{width:100%;max-width:420px}
+.auth-form-header{margin-bottom:32px}
+.auth-form-title{font-size:1.8rem;font-weight:800;letter-spacing:-.025em;margin-bottom:8px}
+.auth-form-sub{font-size:.9rem;color:var(--text2)}
+.auth-form-sub a{color:var(--primary-light);font-weight:600;text-decoration:none}
+.auth-form-sub a:hover{text-decoration:underline}
+
+/* MESSAGES */
+.msg-list{margin-bottom:20px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 14px;border-radius:8px;font-size:.84rem;display:flex;align-items:center;gap:8px}
+.msg-success{background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.2);color:var(--success)}
+.msg-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--error)}
+.msg-info{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);color:var(--primary-light)}
+
+/* FIELDS */
+.field{margin-bottom:18px}
+.field-label{display:block;font-size:.82rem;font-weight:600;color:var(--text2);margin-bottom:7px;letter-spacing:.01em}
+.field-input-wrap{position:relative}
+.field-input{
+  width:100%;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;font-size:.95rem;color:var(--text);
+  font-family:var(--font);transition:border-color .2s,box-shadow .2s;outline:none;
+}
+.field-input:focus{border-color:var(--border-focus);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+.field-input.has-icon{padding-right:44px}
+.field-input.error{border-color:var(--error)}
+.field-icon{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;
+  display:flex;align-items:center;font-size:1rem;transition:color .2s;
+}
+.field-icon:hover{color:var(--text)}
+.field-error{font-size:.78rem;color:var(--error);margin-top:5px;display:flex;align-items:center;gap:4px}
+.field-hint{font-size:.75rem;color:var(--text3);margin-top:5px;line-height:1.5}
+
+/* PASSWORD RULES */
+.pw-rules{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:8px;padding:12px 14px;margin-top:8px;
+}
+.pw-rules-title{font-size:.75rem;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em}
+.pw-rule{display:flex;align-items:center;gap:7px;font-size:.78rem;color:var(--text3);margin-bottom:4px}
+.pw-rule i{font-size:.75rem}
+
+/* TERMS */
+.terms-note{font-size:.75rem;color:var(--text3);text-align:center;margin-top:16px;line-height:1.6}
+.terms-note a{color:var(--primary-light);text-decoration:none}
+.terms-note a:hover{text-decoration:underline}
+
+/* SUBMIT */
+.btn-submit{
+  width:100%;padding:13px;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--primary),#8b5cf6);
+  color:#fff;font-size:.95rem;font-weight:700;font-family:var(--font);
+  transition:opacity .2s,transform .2s;display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:4px;
+}
+.btn-submit:hover{opacity:.9;transform:translateY(-1px)}
+.btn-submit:active{transform:translateY(0)}
+
+/* DIVIDER */
+.or-divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:var(--text3);font-size:.8rem}
+.or-divider::before,.or-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* SOCIAL */
+.social-btn{
+  width:100%;padding:11px;border-radius:10px;border:1px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:.88rem;font-weight:600;
+  font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:border-color .2s,background .2s;margin-bottom:10px;text-decoration:none;
+}
+.social-btn:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.05)}
+
+@media(max-width:900px){
+  .auth-shell{grid-template-columns:1fr}
+  .auth-left{display:none}
+  .auth-right{padding:32px 24px;min-height:100vh}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+
+  <!-- LEFT: Brand panel -->
+  <div class="auth-left">
+    <div class="auth-left-orb"></div>
+    <a href="{% url 'landing' %}" class="auth-brand">
+      <img src="{% static 'images/logo.png' %}" alt="NextGenCV" class="auth-brand-logo">
+    </a>
+
+    <div class="auth-left-body">
+      <div class="auth-left-tag"><i class="bi bi-stars"></i> Free — No Credit Card</div>
+      <h2 class="auth-left-title">Your career,<br><span>supercharged by AI</span></h2>
+      <p class="auth-left-sub">Build an ATS-optimised resume in minutes and start getting more interviews.</p>
+
+      <div class="auth-feature-list">
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="bi bi-graph-up-arrow"></i></div>
+          <span>Real-time ATS score with 6-factor analysis</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="bi bi-magic"></i></div>
+          <span>AI rewrites your bullet points in seconds</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="bi bi-shield-check"></i></div>
+          <span>Simulate Taleo, Workday, Greenhouse & more</span>
+        </div>
+        <div class="auth-feature">
+          <div class="auth-feature-icon"><i class="bi bi-briefcase"></i></div>
+          <span>Track every application with outcome analytics</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-left-stats">
+      <div><div class="auth-stat-num">10K+</div><div class="auth-stat-label">Users</div></div>
+      <div><div class="auth-stat-num">94%</div><div class="auth-stat-label">ATS Pass Rate</div></div>
+      <div><div class="auth-stat-num">3.2x</div><div class="auth-stat-label">More Interviews</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Form panel -->
+  <div class="auth-right">
+    <div class="auth-form-wrap">
+
+      <div class="auth-form-header">
+        <h1 class="auth-form-title">Create your account</h1>
+        <p class="auth-form-sub">Already have one? <a href="{% url 'login' %}">Sign in</a></p>
+      </div>
+
+      {# Django messages (e.g. "Email verified!") #}
+      {% if messages %}
+      <div class="msg-list">
+        {% for message in messages %}
+        <div class="msg {% if message.tags == 'error' %}msg-error{% elif message.tags == 'success' %}msg-success{% else %}msg-info{% endif %}">
+          <i class="bi {% if message.tags == 'error' %}bi-exclamation-circle{% elif message.tags == 'success' %}bi-check-circle{% else %}bi-info-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {# allauth signup form #}
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {# Non-field errors #}
+        {% if form.non_field_errors %}
+        <div class="msg msg-error" style="margin-bottom:16px">
+          <i class="bi bi-exclamation-circle"></i>
+          <span>{{ form.non_field_errors.0 }}</span>
+        </div>
+        {% endif %}
+
+        {# Email field #}
+        <div class="field">
+          <label class="field-label" for="{{ form.email.id_for_label }}">Email address</label>
+          <div class="field-input-wrap">
+            <input type="email" name="email" id="{{ form.email.id_for_label }}"
+              class="field-input {% if form.email.errors %}error{% endif %}"
+              value="{{ form.email.value|default:'' }}"
+              placeholder="you@example.com" autocomplete="email" autofocus>
+          </div>
+          {% if form.email.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.email.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        {# Password field #}
+        <div class="field">
+          <label class="field-label" for="{{ form.password1.id_for_label }}">Password</label>
+          <div class="field-input-wrap">
+            <input type="password" name="password1" id="{{ form.password1.id_for_label }}"
+              class="field-input has-icon {% if form.password1.errors %}error{% endif %}"
+              placeholder="Min. 8 characters" autocomplete="new-password">
+            <button type="button" class="field-icon" id="togglePwd1" aria-label="Show password">
+              <i class="bi bi-eye" id="pwdIcon1"></i>
+            </button>
+          </div>
+          {% if form.password1.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.password1.errors.0 }}</div>
+          {% endif %}
+          <div class="pw-rules">
+            <div class="pw-rules-title">Password must be</div>
+            <div class="pw-rule"><i class="bi bi-dot"></i> At least 8 characters</div>
+            <div class="pw-rule"><i class="bi bi-dot"></i> Not entirely numeric</div>
+            <div class="pw-rule"><i class="bi bi-dot"></i> Not a commonly used password</div>
+          </div>
+        </div>
+
+        {# Confirm password field #}
+        <div class="field">
+          <label class="field-label" for="{{ form.password2.id_for_label }}">Confirm password</label>
+          <div class="field-input-wrap">
+            <input type="password" name="password2" id="{{ form.password2.id_for_label }}"
+              class="field-input has-icon {% if form.password2.errors %}error{% endif %}"
+              placeholder="Repeat your password" autocomplete="new-password">
+            <button type="button" class="field-icon" id="togglePwd2" aria-label="Show password">
+              <i class="bi bi-eye" id="pwdIcon2"></i>
+            </button>
+          </div>
+          {% if form.password2.errors %}
+          <div class="field-error"><i class="bi bi-exclamation-circle"></i>{{ form.password2.errors.0 }}</div>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-person-plus"></i> Create Free Account
+        </button>
+
+        <p class="terms-note">
+          By signing up you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        </p>
+      </form>
+
+      <div class="or-divider">or sign up with</div>
+
+      <a href="{% url 'google_login' %}" class="social-btn">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </a>
+
+      <a href="{% url 'linkedin_oauth2_login' %}" class="social-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#0077B5" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+        Continue with LinkedIn
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function togglePassword(inputId, iconId) {
+  const input = document.getElementById(inputId);
+  const icon  = document.getElementById(iconId);
+  const show  = input.type === 'password';
+  input.type  = show ? 'text' : 'password';
+  icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+}
+document.getElementById('togglePwd1').addEventListener('click', () => togglePassword('{{ form.password1.id_for_label }}', 'pwdIcon1'));
+document.getElementById('togglePwd2').addEventListener('click', () => togglePassword('{{ form.password2.id_for_label }}', 'pwdIcon2'));
+</script>
+{% endblock %}

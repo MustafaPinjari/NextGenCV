@@ -210,30 +210,103 @@ def analyse_ats_task(self, resume_id: int, job_description: str, user_id: int):
         raise self.retry(exc=exc, countdown=5)
 
 
-@shared_task(name='resumes.send_verification_email')
-def send_verification_email_task(user_id: int, token: str, base_url: str):
-    """Send email verification link to a newly registered user."""
+def _logo_url(base_url: str) -> str:
+    """Return an absolute URL to the NextGenCV logo for use in email templates."""
+    return f"{base_url}/static/images/logo.png"
+
+
+@shared_task(bind=True, name='resumes.send_verification_email', max_retries=3, default_retry_delay=60)
+def send_verification_email_task(self, user_id: int, token: str, base_url: str):
+    """
+    Send a styled HTML verification email to a newly registered user.
+    Retries up to 3 times on SMTP failure.
+    """
     from django.contrib.auth.models import User
-    from django.core.mail import send_mail
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
     from django.conf import settings
 
     try:
         user = User.objects.get(id=user_id)
         verify_url = f"{base_url}/auth/verify-email/{token}/"
-        send_mail(
-            subject='Verify your NextGenCV email address',
-            message=(
-                f"Hi {user.username},\n\n"
-                f"Please verify your email address by clicking the link below:\n\n"
-                f"{verify_url}\n\n"
-                f"This link expires in 48 hours.\n\n"
-                f"If you didn't create an account, you can ignore this email.\n\n"
-                f"— The NextGenCV Team"
-            ),
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[user.email],
-            fail_silently=False,
+        first_name = user.first_name or user.username
+
+        context = {
+            'first_name': first_name,
+            'verify_url': verify_url,
+            'base_url': base_url,
+            'logo_url': _logo_url(base_url),
+        }
+
+        html_body  = render_to_string('emails/verification_email.html', context)
+        plain_body = (
+            f"Hi {first_name},\n\n"
+            f"Please verify your NextGenCV email address by visiting:\n\n"
+            f"{verify_url}\n\n"
+            f"This link expires in 48 hours.\n\n"
+            f"If you didn't create an account, ignore this email.\n\n"
+            f"— The NextGenCV Team"
         )
+
+        msg = EmailMultiAlternatives(
+            subject='Verify your NextGenCV email address',
+            body=plain_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=False)
+
         logger.info(f"Verification email sent to {user.email}")
-    except Exception as e:
-        logger.error(f"Failed to send verification email to user {user_id}: {e}")
+
+    except Exception as exc:
+        logger.error(f"Failed to send verification email to user {user_id}: {exc}")
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, name='resumes.send_welcome_email', max_retries=3, default_retry_delay=60)
+def send_welcome_email_task(self, user_id: int, base_url: str):
+    """
+    Send a styled HTML welcome email after a user verifies their account
+    or signs up via SSO (Google / LinkedIn).
+    """
+    from django.contrib.auth.models import User
+    from django.core.mail import EmailMultiAlternatives
+    from django.template.loader import render_to_string
+    from django.conf import settings
+
+    try:
+        user = User.objects.get(id=user_id)
+        first_name    = user.first_name or user.username
+        dashboard_url = f"{base_url}/auth/dashboard/"
+
+        context = {
+            'first_name':    first_name,
+            'dashboard_url': dashboard_url,
+            'base_url':      base_url,
+            'logo_url':      _logo_url(base_url),
+        }
+
+        html_body  = render_to_string('emails/welcome_email.html', context)
+        plain_body = (
+            f"Welcome to NextGenCV, {first_name}!\n\n"
+            f"Your account is ready. Head to your dashboard to get started:\n\n"
+            f"{dashboard_url}\n\n"
+            f"Quick start: create a resume, paste a job description, and get your ATS score in under 3 minutes.\n\n"
+            f"— The NextGenCV Team"
+        )
+
+        msg = EmailMultiAlternatives(
+            subject='Welcome to NextGenCV — let\'s build your perfect resume',
+            body=plain_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=False)
+
+        logger.info(f"Welcome email sent to {user.email}")
+
+    except Exception as exc:
+        logger.error(f"Failed to send welcome email to user {user_id}: {exc}")
+        raise self.retry(exc=exc)

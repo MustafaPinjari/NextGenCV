@@ -1,0 +1,288 @@
+{% extends 'layouts/public.html' %}
+{% load static %}
+{% load i18n %}
+{% block title %}Complete Sign Up — NextGenCV{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#030712;--surface:#0d1117;--border:#21262d;--border-focus:#6366f1;
+  --primary:#6366f1;--primary-light:#818cf8;
+  --text:#f0f6fc;--text2:#8b949e;--text3:#6e7681;
+  --success:#34d399;--error:#f87171;
+  --font:'Inter',-apple-system,sans-serif;
+}
+html{-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+.public-nav{display:none!important}
+.public-footer{display:none!important}
+
+/* ── Full-page centred layout ── */
+.social-signup-shell{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px 20px;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,102,241,.1) 0%, transparent 70%);
+}
+
+/* ── Card ── */
+.social-signup-card{
+  width:100%;
+  max-width:460px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+}
+
+/* ── Card header ── */
+.social-signup-header{
+  background:linear-gradient(135deg,#0d1117 0%,#0a0f1e 100%);
+  padding:28px 36px 24px;
+  text-align:center;
+  border-bottom:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+}
+.social-signup-header::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(99,102,241,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(99,102,241,.06) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.social-signup-logo{
+  position:relative;z-index:1;
+  height:48px;width:auto;display:inline-block;
+}
+
+/* ── Provider badge ── */
+.provider-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);
+  color:var(--primary-light);padding:5px 14px;border-radius:99px;
+  font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;
+  margin-top:16px;position:relative;z-index:1;
+}
+
+/* ── Card body ── */
+.social-signup-body{
+  padding:32px 36px 28px;
+}
+
+.social-signup-title{
+  font-size:1.5rem;font-weight:800;letter-spacing:-.025em;
+  margin-bottom:8px;
+}
+.social-signup-sub{
+  font-size:.88rem;color:var(--text2);line-height:1.6;margin-bottom:28px;
+}
+
+/* ── Info box ── */
+.info-box{
+  display:flex;align-items:flex-start;gap:10px;
+  background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.18);
+  border-radius:10px;padding:14px 16px;margin-bottom:24px;
+}
+.info-box-icon{
+  font-size:1rem;color:var(--primary-light);flex-shrink:0;margin-top:1px;
+}
+.info-box p{font-size:.83rem;color:#818cf8;line-height:1.6;margin:0}
+.info-box strong{color:var(--text)}
+
+/* ── Pre-filled email row ── */
+.prefilled-row{
+  display:flex;align-items:center;gap:10px;
+  background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.18);
+  border-radius:10px;padding:12px 16px;margin-bottom:24px;
+}
+.prefilled-row i{color:var(--success);font-size:1rem;flex-shrink:0}
+.prefilled-row span{font-size:.88rem;color:var(--success)}
+.prefilled-row strong{color:#f0f6fc}
+
+/* ── Fields ── */
+.field{margin-bottom:18px}
+.field-label{
+  display:block;font-size:.82rem;font-weight:600;
+  color:var(--text2);margin-bottom:7px;letter-spacing:.01em;
+}
+.field-input{
+  width:100%;background:var(--bg);border:1px solid var(--border);
+  border-radius:10px;padding:12px 16px;font-size:.95rem;color:var(--text);
+  font-family:var(--font);transition:border-color .2s,box-shadow .2s;outline:none;
+}
+.field-input:focus{
+  border-color:var(--border-focus);
+  box-shadow:0 0 0 3px rgba(99,102,241,.15);
+}
+.field-input.error{border-color:var(--error)}
+.field-error{
+  font-size:.78rem;color:var(--error);margin-top:5px;
+  display:flex;align-items:center;gap:4px;
+}
+
+/* ── Submit ── */
+.btn-submit{
+  width:100%;padding:13px;border-radius:10px;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--primary),#8b5cf6);
+  color:#fff;font-size:.95rem;font-weight:700;font-family:var(--font);
+  transition:opacity .2s,transform .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  margin-top:8px;
+}
+.btn-submit:hover{opacity:.9;transform:translateY(-1px)}
+.btn-submit:active{transform:translateY(0)}
+
+/* ── Cancel link ── */
+.cancel-row{
+  text-align:center;margin-top:18px;
+}
+.cancel-link{
+  font-size:.83rem;color:var(--text3);text-decoration:none;
+  transition:color .2s;
+}
+.cancel-link:hover{color:var(--text2)}
+
+/* ── Messages ── */
+.msg-list{margin-bottom:20px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:10px 14px;border-radius:8px;font-size:.84rem;display:flex;align-items:center;gap:8px}
+.msg-error{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:var(--error)}
+.msg-info{background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);color:var(--primary-light)}
+
+@media(max-width:520px){
+  .social-signup-body{padding:24px 20px 20px}
+  .social-signup-header{padding:22px 20px 18px}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="social-signup-shell">
+  <div class="social-signup-card">
+
+    <!-- Header -->
+    <div class="social-signup-header">
+      <a href="{% url 'landing' %}">
+        <img src="{% static 'images/logo.png' %}" alt="NextGenCV" class="social-signup-logo">
+      </a>
+      <div>
+        <span class="provider-badge">
+          {% if account.get_provider.name == 'Google' %}
+            <svg width="13" height="13" viewBox="0 0 18 18">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/>
+            </svg>
+          {% elif account.get_provider.name == 'LinkedIn' %}
+            <svg width="13" height="13" viewBox="0 0 24 24"><path fill="#0077B5" d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          {% endif %}
+          Signing in with {{ account.get_provider.name }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="social-signup-body">
+
+      <h1 class="social-signup-title">One last step</h1>
+      <p class="social-signup-sub">
+        Confirm your details to create your NextGenCV account using
+        <strong>{{ account.get_provider.name }}</strong>.
+      </p>
+
+      <!-- Django messages -->
+      {% if messages %}
+      <div class="msg-list">
+        {% for message in messages %}
+        <div class="msg {% if message.tags == 'error' %}msg-error{% else %}msg-info{% endif %}">
+          <i class="bi {% if message.tags == 'error' %}bi-exclamation-circle{% else %}bi-info-circle{% endif %}"></i>
+          {{ message }}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Show the email coming from the provider -->
+      {% if account.extra_data.email %}
+      <div class="prefilled-row">
+        <i class="bi bi-check-circle-fill"></i>
+        <span>Email confirmed: <strong>{{ account.extra_data.email }}</strong></span>
+      </div>
+      {% endif %}
+
+      <!-- Info -->
+      <div class="info-box">
+        <i class="bi bi-shield-check info-box-icon"></i>
+        <p>
+          Your <strong>{{ account.get_provider.name }}</strong> account is verified.
+          We just need to confirm your email to finish creating your NextGenCV account.
+        </p>
+      </div>
+
+      <!-- allauth social signup form -->
+      <form method="post" action="{% url 'socialaccount_signup' %}" novalidate>
+        {% csrf_token %}
+
+        {# Non-field errors #}
+        {% if form.non_field_errors %}
+        <div class="msg msg-error" style="margin-bottom:16px">
+          <i class="bi bi-exclamation-circle"></i>
+          <span>{{ form.non_field_errors.0 }}</span>
+        </div>
+        {% endif %}
+
+        {# Render each form field with our styling #}
+        {% for field in form.visible_fields %}
+        <div class="field">
+          <label class="field-label" for="{{ field.id_for_label }}">
+            {{ field.label }}
+          </label>
+          <input
+            type="{{ field.field.widget.input_type }}"
+            name="{{ field.html_name }}"
+            id="{{ field.id_for_label }}"
+            class="field-input {% if field.errors %}error{% endif %}"
+            value="{{ field.value|default:'' }}"
+            {% if forloop.first %}autofocus{% endif %}
+          >
+          {% if field.errors %}
+          <div class="field-error">
+            <i class="bi bi-exclamation-circle"></i>
+            {{ field.errors.0 }}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        {# Hidden fields #}
+        {% for field in form.hidden_fields %}
+          {{ field }}
+        {% endfor %}
+
+        {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+        {% endif %}
+
+        <button type="submit" class="btn-submit">
+          <i class="bi bi-person-check"></i>
+          Create My Account
+        </button>
+      </form>
+
+      <div class="cancel-row">
+        <a href="{% url 'login' %}" class="cancel-link">
+          <i class="bi bi-arrow-left" style="font-size:.75rem"></i>
+          Cancel and go back to sign in
+        </a>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

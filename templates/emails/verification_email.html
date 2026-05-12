@@ -1,0 +1,45 @@
+{% extends 'emails/base_email.html' %}
+{% block subject %}Verify your NextGenCV email address{% endblock %}
+
+{% block body %}
+<p class="email-greeting">Hi {{ first_name }}, verify your email 👋</p>
+
+<p class="email-text">
+  Thanks for signing up to <strong>NextGenCV</strong>! You're one step away from
+  building an ATS-optimised resume that gets you more interviews.
+</p>
+
+<p class="email-text">
+  Click the button below to verify your email address and activate your account.
+  This link expires in <strong>48 hours</strong>.
+</p>
+
+<div class="email-cta-wrap">
+  <a href="{{ verify_url }}" class="email-cta">
+    ✓ &nbsp; Verify Email Address
+  </a>
+</div>
+
+<div class="email-warn-box">
+  <p>
+    ⏱ &nbsp; This verification link expires in <strong>48 hours</strong>.
+    If it expires, you can request a new one from the login page.
+  </p>
+</div>
+
+<div class="email-divider"></div>
+
+<p class="email-text" style="font-size:14px;">
+  Button not working? Copy and paste this link into your browser:
+</p>
+<p class="email-url-fallback">
+  <a href="{{ verify_url }}">{{ verify_url }}</a>
+</p>
+
+<div class="email-divider"></div>
+
+<p class="email-text" style="font-size:13px;color:#6e7681;">
+  If you didn't create a NextGenCV account, you can safely ignore this email.
+  Someone may have entered your email address by mistake.
+</p>
+{% endblock %}

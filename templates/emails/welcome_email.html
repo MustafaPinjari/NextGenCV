@@ -1,0 +1,76 @@
+{% extends 'emails/base_email.html' %}
+{% block subject %}Welcome to NextGenCV — let's build your perfect resume{% endblock %}
+
+{% block body %}
+<p class="email-greeting">Welcome aboard, {{ first_name }}! 🎉</p>
+
+<p class="email-text">
+  Your NextGenCV account is ready. You now have access to every tool you need
+  to beat ATS systems, land more interviews, and track your job search — all in one place.
+</p>
+
+<!-- Feature highlights -->
+<ul class="feature-list">
+  <li>
+    <span class="feature-icon">📊</span>
+    <div>
+      <strong>Real-time ATS Score</strong>
+      Paste any job description and get a 6-factor score with exact missing keywords.
+    </div>
+  </li>
+  <li>
+    <span class="feature-icon">✨</span>
+    <div>
+      <strong>AI Resume Optimiser</strong>
+      GPT-4o-mini rewrites your bullet points and injects keywords in seconds.
+    </div>
+  </li>
+  <li>
+    <span class="feature-icon">🛡️</span>
+    <div>
+      <strong>ATS System Simulator</strong>
+      See how Taleo, Workday, Greenhouse, Lever and iCIMS would score your resume.
+    </div>
+  </li>
+  <li>
+    <span class="feature-icon">📁</span>
+    <div>
+      <strong>Job Application Tracker</strong>
+      Track every application with status, ATS score, cover letters and interview prep.
+    </div>
+  </li>
+  <li>
+    <span class="feature-icon">📈</span>
+    <div>
+      <strong>Analytics Dashboard</strong>
+      See your score trends, health scores and improvement reports over time.
+    </div>
+  </li>
+</ul>
+
+<div class="email-cta-wrap">
+  <a href="{{ dashboard_url }}" class="email-cta">
+    🚀 &nbsp; Go to Your Dashboard
+  </a>
+</div>
+
+<div class="email-info-box">
+  <p>
+    💡 <strong style="color:#f0f6fc;">Quick start tip:</strong>
+    Create your first resume using the guided wizard, then paste a job description
+    to get your ATS score instantly — it takes less than 3 minutes.
+  </p>
+</div>
+
+<div class="email-divider"></div>
+
+<p class="email-text" style="font-size:13px;">
+  Need help getting started? Visit our
+  <a href="{{ base_url }}/help/" style="color:#818cf8;text-decoration:none;">Help Centre</a>
+  or reply to this email — we read every message.
+</p>
+
+<p class="email-text" style="font-size:13px;color:#6e7681;">
+  — The NextGenCV Team
+</p>
+{% endblock %}

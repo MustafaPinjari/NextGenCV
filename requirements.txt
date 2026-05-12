@@ -28,3 +28,6 @@ django-ratelimit==4.1.0
 
 # HTTP requests (LinkedIn import, job scraping)
 requests==2.31.0
+
+# SSO — Google & LinkedIn OAuth2
+django-allauth==0.61.1

@@ -70,10 +70,18 @@ def verify_email(request, token: str):
     token_obj.verified_at = timezone.now()
     token_obj.save(update_fields=['verified_at'])
 
-    # Mark user as active (they were already active, but flag the profile)
+    # Mark user as active
     user = token_obj.user
     user.is_active = True
     user.save(update_fields=['is_active'])
+
+    # Send welcome email now that email is confirmed
+    try:
+        from apps.resumes.tasks import send_welcome_email_task
+        base_url = request.build_absolute_uri('/').rstrip('/')
+        send_welcome_email_task.delay(user.id, base_url)
+    except Exception as e:
+        logger.warning(f'Could not queue welcome email for {user.username}: {e}')
 
     messages.success(request, 'Email verified! You can now log in.')
     return redirect('login')

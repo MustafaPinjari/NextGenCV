@@ -28,6 +28,12 @@ urlpatterns = [
     path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots_txt'),
     path('help/', documentation, name='help_documentation'),
     path('auth/', include('apps.authentication.urls')),
+
+    # django-allauth SSO routes (Google + LinkedIn OAuth2 callbacks)
+    # Adds: /auth/google/login/  /auth/google/login/callback/
+    #       /auth/linkedin_oauth2/login/  /auth/linkedin_oauth2/login/callback/
+    path('auth/', include('allauth.urls')),
+
     path('resumes/', include('apps.resumes.urls')),
     path('analyzer/', include('apps.analyzer.urls')),
     path('analytics/', include('apps.analytics.urls')),

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>{% block subject %}NextGenCV{% endblock %}</title>
+  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->
+  <style>
+    /* Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, table, td, a { -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+    table, td { mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+    img { -ms-interpolation-mode: bicubic; border: 0; outline: none; text-decoration: none; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Arial, sans-serif;
+      background-color: #030712;
+      color: #f0f6fc;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    .email-wrapper {
+      background-color: #030712;
+      padding: 40px 16px;
+      width: 100%;
+    }
+
+    .email-container {
+      max-width: 580px;
+      margin: 0 auto;
+      background-color: #0d1117;
+      border-radius: 16px;
+      border: 1px solid #21262d;
+      overflow: hidden;
+    }
+
+    /* Header */
+    .email-header {
+      background: linear-gradient(135deg, #0d1117 0%, #0a0f1e 100%);
+      padding: 32px 40px 28px;
+      text-align: center;
+      border-bottom: 1px solid #21262d;
+      position: relative;
+    }
+    .email-header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(99,102,241,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(99,102,241,.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+    }
+    .email-logo {
+      position: relative;
+      z-index: 1;
+      height: 52px;
+      width: auto;
+      display: inline-block;
+    }
+
+    /* Body */
+    .email-body {
+      padding: 40px 40px 32px;
+    }
+
+    .email-greeting {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f0f6fc;
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .email-text {
+      font-size: 15px;
+      color: #8b949e;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .email-text strong {
+      color: #f0f6fc;
+    }
+
+    /* CTA Button */
+    .email-cta-wrap {
+      text-align: center;
+      margin: 32px 0;
+    }
+    .email-cta {
+      display: inline-block;
+      padding: 14px 36px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    /* Info box */
+    .email-info-box {
+      background: rgba(99,102,241,.08);
+      border: 1px solid rgba(99,102,241,.2);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin: 24px 0;
+    }
+    .email-info-box p {
+      font-size: 13px;
+      color: #818cf8;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Warning box */
+    .email-warn-box {
+      background: rgba(251,191,36,.06);
+      border: 1px solid rgba(251,191,36,.2);
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin: 20px 0;
+    }
+    .email-warn-box p {
+      font-size: 13px;
+      color: #fbbf24;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    /* Feature list */
+    .feature-list {
+      margin: 24px 0;
+      padding: 0;
+      list-style: none;
+    }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid #21262d;
+      font-size: 14px;
+      color: #8b949e;
+      line-height: 1.5;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: rgba(99,102,241,.15);
+      border: 1px solid rgba(99,102,241,.2);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 13px;
+    }
+    .feature-list li strong { color: #f0f6fc; display: block; margin-bottom: 2px; }
+
+    /* Divider */
+    .email-divider {
+      height: 1px;
+      background: #21262d;
+      margin: 28px 0;
+    }
+
+    /* URL fallback */
+    .email-url-fallback {
+      font-size: 12px;
+      color: #6e7681;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+    .email-url-fallback a { color: #818cf8; }
+
+    /* Footer */
+    .email-footer {
+      background: #030712;
+      border-top: 1px solid #21262d;
+      padding: 24px 40px;
+      text-align: center;
+    }
+    .email-footer p {
+      font-size: 12px;
+      color: #6e7681;
+      line-height: 1.7;
+      margin-bottom: 6px;
+    }
+    .email-footer a {
+      color: #818cf8;
+      text-decoration: none;
+    }
+    .email-footer a:hover { text-decoration: underline; }
+    .email-footer-brand {
+      font-size: 13px;
+      font-weight: 700;
+      color: #8b949e;
+      margin-bottom: 8px;
+    }
+
+    /* Responsive */
+    @media only screen and (max-width: 600px) {
+      .email-body { padding: 28px 24px 24px; }
+      .email-header { padding: 24px 24px 20px; }
+      .email-footer { padding: 20px 24px; }
+      .email-greeting { font-size: 19px; }
+    }
+  </style>
+</head>
+<body>
+<div class="email-wrapper">
+  <div class="email-container">
+
+    <!-- Header with logo -->
+    <div class="email-header">
+      <img src="{{ logo_url }}" alt="NextGenCV" class="email-logo">
+    </div>
+
+    <!-- Body -->
+    <div class="email-body">
+      {% block body %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <div class="email-footer">
+      <p class="email-footer-brand">NextGenCV</p>
+      <p>AI-powered resume builder — helping you land your dream job.</p>
+      <p>
+        <a href="{{ base_url }}">nextgencv.com</a> &nbsp;·&nbsp;
+        <a href="{{ base_url }}/help/">Help Centre</a> &nbsp;·&nbsp;
+        <a href="{{ base_url }}/auth/settings/">Unsubscribe</a>
+      </p>
+      <p style="margin-top:12px;font-size:11px;color:#3d444d;">
+        You received this email because you registered at NextGenCV.<br>
+        © 2026 NextGenCV. All rights reserved.
+      </p>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
